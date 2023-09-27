@@ -1,4 +1,4 @@
-from PIL import Image, ImageTk #pip install pillow
+from PIL import Image, ImageTk, ImageDraw #pip install pillow
 import tkinter as tk #pip install tk
 from tkinter.filedialog import askopenfilename
 
@@ -48,6 +48,7 @@ class App(tk.Tk):
         # Adds menu items to the File menu
         file_menu.add_command(label='New')
         file_menu.add_command(label='Open...', command=self.open_file)
+        file_menu.add_command(label='Open PCX...', command=self.open_pcx_file)
         file_menu.add_command(label='Close')
         file_menu.add_separator()
 
@@ -91,7 +92,45 @@ class App(tk.Tk):
         filepath = askopenfilename(filetypes=[("Image Files", "*.jpg *.png *.gif *.bmp *.jpeg *.tiff")])
         if not filepath:
             return
+        
+        self.show_image(filepath)
 
+        # # Opens the image using PIL
+        # image = Image.open(filepath)
+        # label_width = self.image_label.winfo_width()
+        # label_height = self.image_label.winfo_height()
+        
+        # # Define the padding size
+        # padding_x = 20  # Horizontal padding
+        # padding_y = 20  # Vertical padding
+
+        # # Calculate the available space for the image within the label
+        # available_width = label_width - (2 * padding_x)
+        # available_height = label_height - (2 * padding_y)
+
+        # # Calculate the aspect ratio of the image
+        # aspect_ratio = image.width / image.height
+
+        # # Checks if the aspect ratio of the image is greater than the aspect ratio of the space available for the image to display
+        # if aspect_ratio > available_width/available_height:
+        #     wpercent = available_width/float(image.width)
+        #     hsize = int((image.height)*float(wpercent))
+        #     image = image.resize((available_width, hsize))
+        # else:
+        #     hpercent = available_height/float(image.height)
+        #     wsize = int((image.width)*float(hpercent))
+        #     image = image.resize((wsize, available_height))
+
+
+        # # Convert the PIL image to a PhotoImage object
+        # image_tk = ImageTk.PhotoImage(image)
+
+        # self.image_label.config(image=image_tk)
+        # self.image_label.image = image_tk  # Keep a reference to avoid garbage collection
+
+        # self.title(f"Image Viewer - {filepath}")
+        
+    def show_image(self, filepath):
         # Opens the image using PIL
         image = Image.open(filepath)
         label_width = self.image_label.winfo_width()
@@ -126,6 +165,77 @@ class App(tk.Tk):
         self.image_label.image = image_tk  # Keep a reference to avoid garbage collection
 
         self.title(f"Image Viewer - {filepath}")
+    
+    def open_pcx_file(self):
+        filepath = askopenfilename(filetypes=[("PCX Files", "*.pcx")])
+        if not filepath:
+            return
+        
+        self.show_image(filepath)
+        
+        with open(filepath, "rb") as file:
+            self.header = file.read(128)
+            if self.header[0] != 10:
+                raise ValueError("Not a valid PCX file.")
+            
+            print(f"Manufacturer: {self.header[0]}")
+            print(f"Version: {self.header[1]}")
+            
+            x_min = self.header[4] + self.header[5] * 256
+            y_min = self.header[6] + self.header[7] * 256
+            x_max = self.header[8] + self.header[9] * 256
+            y_max = self.header[10] + self.header[11] * 256
+            
+            width = x_max - x_min + 1
+            height = y_max - y_min + 1
+            
+            print(f"Width: {width}, Height: {height}")
+            
+            # Read the palette (256 RGB color entries)
+            file.seek(-768, 2)  # Go to the end of the file and move back 768 bytes
+            color_data = file.read(768)
+            
+            palette = []
+            i = 0
+            
+            while(i < len(color_data)):
+                palette.append((color_data[i], color_data[i+1], color_data[i+2]))
+                i += 3
+                
+            print(palette)
+            
+            # Create a blank image with a white background
+            img = Image.new('RGB', (256, 256), (255, 255, 255))
+            draw = ImageDraw.Draw(img)
+
+            # Define the size of each color block
+            block_size = 16
+
+            # Draw the colored blocks on the image
+            for i, color in enumerate(palette):
+                if i%16 == 0:
+                    x1 = 0
+                    y1 = i
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                else:
+                    x1 = (i%16) * block_size
+                    y1 = (i//16) * block_size
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                    
+                draw.rectangle([x1, y1, x2, y2], fill=color)
+
+            # Show the image
+            img.show()
+            
+            print(f"color: {palette[0]}")
+            # img = Image.new('RGB',(200,200),(palette[0],palette[1],palette[2]))
+            # img.show()
+            
+            # Read the image data
+            file.seek(128, 0)  # Move to the beginning of the image data
+            image_data = file.read()
 
 if __name__ == "__main__":
     app = App()
