@@ -47,7 +47,7 @@ class App(tk.Tk):
 
         # Adds menu items to the File menu
         file_menu.add_command(label='New')
-        file_menu.add_command(label='Open...', command=self.open_file)
+        file_menu.add_command(label='Open...', command=self.open_img_file)
         file_menu.add_command(label='Open PCX...', command=self.open_pcx_file)
         file_menu.add_command(label='Close')
         file_menu.add_separator()
@@ -84,51 +84,16 @@ class App(tk.Tk):
         self.image_label.grid(row=1, column=1, sticky="nsew")
         
         # Configures open file button
-        btn_open = tk.Button(self.sidebar, text="Open", command=self.open_file)
+        btn_open = tk.Button(self.sidebar, text="Open", command=self.open_img_file)
         btn_open.grid(row=1, column=0, sticky="ew", padx=5, pady=5)
         
     # This is the function that opens the image file
-    def open_file(self):
+    def open_img_file(self):
         filepath = askopenfilename(filetypes=[("Image Files", "*.jpg *.png *.gif *.bmp *.jpeg *.tiff")])
         if not filepath:
             return
         
         self.show_image(filepath)
-
-        # # Opens the image using PIL
-        # image = Image.open(filepath)
-        # label_width = self.image_label.winfo_width()
-        # label_height = self.image_label.winfo_height()
-        
-        # # Define the padding size
-        # padding_x = 20  # Horizontal padding
-        # padding_y = 20  # Vertical padding
-
-        # # Calculate the available space for the image within the label
-        # available_width = label_width - (2 * padding_x)
-        # available_height = label_height - (2 * padding_y)
-
-        # # Calculate the aspect ratio of the image
-        # aspect_ratio = image.width / image.height
-
-        # # Checks if the aspect ratio of the image is greater than the aspect ratio of the space available for the image to display
-        # if aspect_ratio > available_width/available_height:
-        #     wpercent = available_width/float(image.width)
-        #     hsize = int((image.height)*float(wpercent))
-        #     image = image.resize((available_width, hsize))
-        # else:
-        #     hpercent = available_height/float(image.height)
-        #     wsize = int((image.width)*float(hpercent))
-        #     image = image.resize((wsize, available_height))
-
-
-        # # Convert the PIL image to a PhotoImage object
-        # image_tk = ImageTk.PhotoImage(image)
-
-        # self.image_label.config(image=image_tk)
-        # self.image_label.image = image_tk  # Keep a reference to avoid garbage collection
-
-        # self.title(f"Image Viewer - {filepath}")
         
     def show_image(self, filepath):
         # Opens the image using PIL
