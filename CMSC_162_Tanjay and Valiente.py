@@ -203,8 +203,6 @@ class App(tk.Tk):
             # Display the image on the canvas
             self.display_image_on_right_sidebar(image_tk)
 
-            
-
             # Add text to the canvas in the right sidebar
             self.add_text_to_right_sidebar(f"Manufacturer: {self.header[0]}", x=65, y=50, fill="white", font=("Arial", 11))
             self.add_text_to_right_sidebar(f"Version: {self.header[1]}", x=44, y=70, fill="white", font=("Arial", 11))
