@@ -2,6 +2,7 @@ from PIL import Image, ImageTk, ImageDraw #pip install pillow
 import tkinter as tk #pip install tk
 from tkinter.filedialog import askopenfilename
 
+
 # This is the class constructor for the Image Processing App
 class App(tk.Tk):
     def __init__(self):
@@ -47,9 +48,6 @@ class App(tk.Tk):
 
         # Adds menu items to the File menu
         file_menu.add_command(label='New')
-        file_menu.add_command(label='Open...', command=self.open_img_file)
-        file_menu.add_command(label='Open PCX...', command=self.open_pcx_file)
-        file_menu.add_command(label='Close', command=self.close_img)
         file_menu.add_separator()
 
         # Adds Exit menu item
@@ -82,10 +80,18 @@ class App(tk.Tk):
         # Configures the portion of the GUI where the image will reside
         self.image_label = tk.Label(self, bg="#242424")
         self.image_label.grid(row=1, column=1, sticky="nsew")
-        
-        # Configures open file button
-        btn_open = tk.Button(self.sidebar, text="Open", command=self.open_pcx_file)
-        btn_open.grid(row=1, column=0, sticky="ew", padx=5, pady=5)
+
+        # Configures open PCX file button
+        btn_open_pcx = tk.Button(self.topbar, text="Open PCX", command=self.open_pcx_file,font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_open_pcx.grid(row=1, column=1, sticky="ew", padx=5, pady=10)
+
+        # Configures open image file button
+        btn_open_img = tk.Button(self.topbar, text="Open Image", command=self.open_img_file, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_open_img.grid(row=1, column=2, sticky="ew", padx=5, pady=10)
+
+        # Configures close file button
+        btn_close_file = tk.Button(self.topbar,  text="Close File", command=self.close_img, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_close_file.grid(row=1, column=3, sticky="ew", padx=5, pady=10)
         
     # This is the function that opens the image file
     def open_img_file(self):
