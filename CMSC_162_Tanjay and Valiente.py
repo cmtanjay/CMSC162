@@ -143,8 +143,6 @@ class App(tk.Tk):
             if self.header[0] != 10:
                 raise ValueError("Not a valid PCX file.")
             
-            print(f"Manufacturer: {self.header[0]}")
-            print(f"Version: {self.header[1]}")
 
             #self.rightsidebar.create_text(50, 50, text="Hello World", fill="white", font='Arial 12 bold')
             
@@ -155,8 +153,6 @@ class App(tk.Tk):
             
             width = x_max - x_min + 1
             height = y_max - y_min + 1
-            
-            print(f"Width: {width}, Height: {height}")
             
             # Read the palette (256 RGB color entries)
             file.seek(-768, 2)  # Go to the end of the file and move back 768 bytes
@@ -192,31 +188,46 @@ class App(tk.Tk):
                     y2 = y1 + block_size
                     
                 draw.rectangle([x1, y1, x2, y2], fill=color)
-            
-            print(f"color: {palette[0]}")
 
             # Resize the image to 128x128
-            img = img.resize((128, 128), Image.ANTIALIAS)
+            img = img.resize((128, 128), Image.LANCZOS)
 
             # Convert the PIL image to a PhotoImage object
             image_tk = ImageTk.PhotoImage(img)
 
+            # Create the canvas in the right sidebar
+            self.create_right_sidebar_canvas()
+
             # Display the image on the canvas
             self.display_image_on_right_sidebar(image_tk)
 
-            # Add text to the canvas in the right sidebar
-            self.add_text_to_right_sidebar(f"Manufacturer: {self.header[0]}", x=65, y=50, fill="white", font=("Arial", 11, "bold"))
+            
 
+            # Add text to the canvas in the right sidebar
+            self.add_text_to_right_sidebar(f"Manufacturer: {self.header[0]}", x=65, y=50, fill="white", font=("Arial", 11))
+            self.add_text_to_right_sidebar(f"Version: {self.header[1]}", x=44, y=70, fill="white", font=("Arial", 11))
+            self.add_text_to_right_sidebar(f"Resolution: {width} x {height}", x=86, y=90, fill="white", font=("Arial", 11))
+            self.add_text_to_right_sidebar(f"Encoding: {self.header[2]}", x=90, y=110, fill="white", font=("Arial", 11))
+            self.add_text_to_right_sidebar(f"Bits Per Pixel: {self.header[3]}", x=90, y=130, fill="white", font=("Arial", 11))
+            self.add_text_to_right_sidebar(f"HDPI: {self.header[12]}", x=90, y=150, fill="white", font=("Arial", 11))
+            self.add_text_to_right_sidebar(f"VDPI: {self.header[14]}", x=90, y=170, fill="white", font=("Arial", 11))
+            self.add_text_to_right_sidebar(f"Colormap: {self.header[16]}", x=90, y=190, fill="white", font=("Arial", 11))
+            self.add_text_to_right_sidebar(f"Number of Color Planes: {self.header[65]}", x=90, y=210, fill="white", font=("Arial", 11))
+            self.add_text_to_right_sidebar(f"Bytes Per Line: {self.header[66]}", x=90, y=230, fill="white", font=("Arial", 11))
+            self.add_text_to_right_sidebar(f"Palette Info: {self.header[68]}", x=90, y=250, fill="white", font=("Arial", 11))
             
             # Read the image data
             file.seek(128, 0)  # Move to the beginning of the image data
             image_data = file.read()
 
-    def add_text_to_right_sidebar(self, text, x, y, fill, font):
-        canvas = tk.Canvas(self.rightsidebar, width=250, bg="#2B2B2B", highlightthickness=0)
-        canvas.grid(row=1, column=2, sticky="nsew")
+    def create_right_sidebar_canvas(self):
+        # Create the canvas in the right sidebar
+        self.canvas = tk.Canvas(self.rightsidebar, width=250, bg="#2B2B2B", highlightthickness=0)
+        self.canvas.grid(row=1, column=2, sticky="nsew")
 
-        canvas.create_text(x, y, text=text, fill=fill, font=font)
+    def add_text_to_right_sidebar(self, text, x, y, fill, font):
+        # Use the previously created canvas
+        self.canvas.create_text(x, y, text=text, fill=fill, font=font)
     
     def display_image_on_right_sidebar(self, image_tk):
         canvas = tk.Canvas(self.rightsidebar, width=256, height=256, bg="#2B2B2B", highlightthickness=0)
