@@ -244,21 +244,22 @@ class App(tk.Tk):
                 # Create the canvas in the right sidebar
                 self.create_right_sidebar_canvas()
 
+                # Add text to the canvas in the right sidebar
+                self.add_text_to_right_sidebar("Header Information", x=76, y=30, fill="white", font=("Arial", 11, "bold"))
+                self.add_text_to_right_sidebar(f"Manufacturer: {manufacturer}", x=68, y=70, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Version: {version}", x=47, y=90, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Resolution: {width} x {height}", x=85, y=110, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Encoding: {encoding}", x=53, y=130, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Bits Per Pixel: {bits_per_pixel}", x=65, y=150, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"HDPI: {hdpi}", x=43, y=170, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"VDPI: {vdpi}", x=43, y=190, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Number of Color Planes: {nplanes}", x=100, y=210, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Bytes Per Line: {bytesperline}", x=78, y=230, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Palette Info: {paletteinfo}", x=60, y=250, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar("Color Palette", x=65, y=290, fill="white", font=("Arial", 11, "bold"))
+
                 # Display the image on the canvas
                 self.display_image_on_right_sidebar(image_tk)
-                
-
-                # Add text to the canvas in the right sidebar
-                self.add_text_to_right_sidebar(f"Manufacturer: {manufacturer}", x=65, y=50, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Version: {version}", x=44, y=70, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Resolution: {width} x {height}", x=86, y=90, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Encoding: {encoding}", x=90, y=110, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Bits Per Pixel: {bits_per_pixel}", x=90, y=130, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"HDPI: {hdpi}", x=90, y=150, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"VDPI: {vdpi}", x=90, y=170, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Number of Color Planes: {nplanes}", x=90, y=210, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Bytes Per Line: {bytesperline}", x=90, y=230, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Palette Info: {paletteinfo}", x=90, y=250, fill="white", font=("Arial", 11))
     
     def decode(self, data):
         decoded_data = []
@@ -278,7 +279,7 @@ class App(tk.Tk):
 
     def create_right_sidebar_canvas(self):
         # Create the canvas in the right sidebar
-        self.canvas = tk.Canvas(self.rightsidebar, width=250, bg="#2B2B2B", highlightthickness=0)
+        self.canvas = tk.Canvas(self.rightsidebar, width=250, height=300, bg="#2B2B2B", highlightthickness=0)
         self.canvas.grid(row=1, column=2, sticky="nsew")
 
     def add_text_to_right_sidebar(self, text, x, y, fill, font):
@@ -286,11 +287,20 @@ class App(tk.Tk):
         self.canvas.create_text(x, y, text=text, fill=fill, font=font)
     
     def display_image_on_right_sidebar(self, image_tk):
-        canvas = tk.Canvas(self.rightsidebar, width=256, height=256, bg="#2B2B2B", highlightthickness=0)
-        canvas.grid(row=5, column=2, sticky="nsew")
+        canvas = tk.Canvas(self.rightsidebar, width=256, height=200, bg="#2B2B2B", highlightthickness=0)
+        canvas.grid(row=2, column=2, sticky="nsew")
 
-        # Create an image item on the canvas
-        canvas.create_image(0, 0, anchor=tk.NW, image=image_tk)
+        # Calculate the coordinates to center the image
+        canvas_width = canvas.winfo_reqwidth()
+        canvas_height = canvas.winfo_reqheight()
+        image_width = image_tk.width()
+        image_height = image_tk.height()
+        
+        x = (canvas_width - image_width) // 2
+        y = (canvas_height - image_height) // 2
+
+        # Create an image item on the canvas at the center
+        canvas.create_image(x, y, anchor=tk.NW, image=image_tk)
         canvas.image = image_tk  # Keep a reference to avoid garbage collection
                 
 
