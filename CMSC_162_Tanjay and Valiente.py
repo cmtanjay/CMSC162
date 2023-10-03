@@ -139,12 +139,14 @@ class App(tk.Tk):
         self.show_image(filepath)
         
         with open(filepath, "rb") as file:
+            print(file.read(128))
+            
             self.header = file.read(128)
             if self.header[0] != 10:
                 raise ValueError("Not a valid PCX file.")
             
-            print(f"Manufacturer: {self.header[0]}")
-            print(f"Version: {self.header[1]}")
+            # print(f"Manufacturer: {self.header[0]}")
+            # print(f"Version: {self.header[1]}")
 
             #self.rightsidebar.create_text(50, 50, text="Hello World", fill="white", font='Arial 12 bold')
             
@@ -156,9 +158,9 @@ class App(tk.Tk):
             width = x_max - x_min + 1
             height = y_max - y_min + 1
             
-            print(f"Width: {width}, Height: {height}")
-            print(f"Color Planes: {self.header[65]}")
-            print(f"Palette Info: {self.header[68]}")
+            # print(f"Width: {width}, Height: {height}")
+            # print(f"Color Planes: {self.header[65]}")
+            # print(f"Palette Info: {self.header[68]}")
             
             # Read the palette (256 RGB color entries)
             file.seek(-768, 2)  # Go to the end of the file and move back 768 bytes
@@ -171,7 +173,7 @@ class App(tk.Tk):
                 palette.append((color_data[i], color_data[i+1], color_data[i+2]))
                 i += 3
                 
-            print(palette)
+            #print(palette)
             
             # Create a blank image with a white background
             img = Image.new('RGB', (256, 256), (255, 255, 255))
@@ -195,10 +197,10 @@ class App(tk.Tk):
                     
                 draw.rectangle([x1, y1, x2, y2], fill=color)
             
-            print(f"color: {palette[0]}")
+            #print(f"color: {palette[0]}")
 
             # Resize the image to 128x128
-            img = img.resize((128, 128), Image.ANTIALIAS)
+            img = img.resize((128, 128), Image.LANCZOS)
 
             # Convert the PIL image to a PhotoImage object
             image_tk = ImageTk.PhotoImage(img)
