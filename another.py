@@ -262,7 +262,7 @@ class App(tk.Tk):
                 self.add_text_to_right_sidebar(f"Number of Color Planes: {nplanes}", x=100, y=210, fill="white", font=("Arial", 11))
                 self.add_text_to_right_sidebar(f"Bytes Per Line: {bytesperline}", x=78, y=230, fill="white", font=("Arial", 11))
                 self.add_text_to_right_sidebar(f"Palette Info: {paletteinfo}", x=60, y=250, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar("Color Palette", x=65, y=290, fill="white", font=("Arial", 11, "bold"))
+                self.add_text_to_right_sidebar("Color Palette", x=58, y=290, fill="white", font=("Arial", 11, "bold"))
 
                 # Display the image on the canvas
 
