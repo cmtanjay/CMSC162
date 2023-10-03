@@ -155,6 +155,8 @@ class App(tk.Tk):
             height = y_max - y_min + 1
             
             print(f"Width: {width}, Height: {height}")
+            print(f"Color Planes: {self.header[65]}")
+            print(f"Palette Info: {self.header[68]}")
             
             # Read the palette (256 RGB color entries)
             file.seek(-768, 2)  # Go to the end of the file and move back 768 bytes
