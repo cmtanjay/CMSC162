@@ -154,6 +154,8 @@ class App(tk.Tk):
             width = x_max - x_min + 1
             height = y_max - y_min + 1
             
+            print(f"Width: {width}, Height: {height}")
+            
             # Read the palette (256 RGB color entries)
             file.seek(-768, 2)  # Go to the end of the file and move back 768 bytes
             color_data = file.read(768)
