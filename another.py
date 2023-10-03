@@ -246,21 +246,19 @@ class App(tk.Tk):
 
                 # Display the image on the canvas
                 self.display_image_on_right_sidebar(image_tk)
-
                 
 
                 # Add text to the canvas in the right sidebar
-                self.add_text_to_right_sidebar(f"Manufacturer: {self.header[0]}", x=65, y=50, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Version: {self.header[1]}", x=44, y=70, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Manufacturer: {manufacturer}", x=65, y=50, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Version: {version}", x=44, y=70, fill="white", font=("Arial", 11))
                 self.add_text_to_right_sidebar(f"Resolution: {width} x {height}", x=86, y=90, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Encoding: {self.header[2]}", x=90, y=110, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Bits Per Pixel: {self.header[3]}", x=90, y=130, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"HDPI: {self.header[12]}", x=90, y=150, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"VDPI: {self.header[14]}", x=90, y=170, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Colormap: {self.header[16]}", x=90, y=190, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Number of Color Planes: {self.header[65]}", x=90, y=210, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Bytes Per Line: {self.header[66]}", x=90, y=230, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Palette Info: {self.header[68]}", x=90, y=250, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Encoding: {encoding}", x=90, y=110, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Bits Per Pixel: {bits_per_pixel}", x=90, y=130, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"HDPI: {hdpi}", x=90, y=150, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"VDPI: {vdpi}", x=90, y=170, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Number of Color Planes: {nplanes}", x=90, y=210, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Bytes Per Line: {bytesperline}", x=90, y=230, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Palette Info: {paletteinfo}", x=90, y=250, fill="white", font=("Arial", 11))
     
     def decode(self, data):
         decoded_data = []
