@@ -84,7 +84,7 @@ class App(tk.Tk):
         self.image_label.grid(row=1, column=1, sticky="nsew")
         
         # Configures open file button
-        btn_open = tk.Button(self.sidebar, text="Open", command=self.open_img_file)
+        btn_open = tk.Button(self.sidebar, text="Open", command=self.open_pcx_file)
         btn_open.grid(row=1, column=0, sticky="ew", padx=5, pady=5)
         
     # This is the function that opens the image file
@@ -93,11 +93,11 @@ class App(tk.Tk):
         if not filepath:
             return
         
-        self.show_image(filepath)
-        
-    def show_image(self, filepath):
-        # Opens the image using PIL
         image = Image.open(filepath)
+        self.show_image(image)
+        
+    def show_image(self, image):
+        # Opens the image using PIL
         label_width = self.image_label.winfo_width()
         label_height = self.image_label.winfo_height()
         
@@ -129,7 +129,7 @@ class App(tk.Tk):
         self.image_label.config(image=image_tk)
         self.image_label.image = image_tk  # Keep a reference to avoid garbage collection
 
-        self.title(f"Image Viewer - {filepath}")
+        self.title(f"Image Viewer - {image}")
     
     def open_pcx_file(self):
         filepath = askopenfilename(filetypes=[("PCX Files", "*.pcx")])
@@ -137,14 +137,40 @@ class App(tk.Tk):
             return
         
         with open(filepath, "rb") as file:
-            self.show_image(filepath)
-        
+            # self.show_image(filepath)
+            
             self.header = file.read(128)
+            
+            file.seek(0)
+            size = len(file.read())
+            print(f"adada: {size}")
+            
+            
+            # pixel_data_size = file.seek(128,2) - 769
+            # print(pixel_data_size)
+            file.seek(128)
+            image_data = file.read(size-128-768)
+            
+            file.seek(-768, 2)  # Go to the end of the file and move back 768 bytes
+            color_data = file.read(768)
+            
+            i=0
+            palette=[]
+            
+            while(i < len(color_data)):
+                palette.append((color_data[i], color_data[i+1], color_data[i+2]))
+                i += 3
             
             if self.header[0] != 10:
                 raise ValueError("Not a valid PCX file.")
             else:
+                content = file.read()
+                #print(content)
+                
                 manufacturer = self.header[0]
+                version = self.header[1]
+                encoding = self.header[2]
+                bits_per_pixel = self.header[3]
                 x_min = self.header[4] + self.header[5] * 256
                 y_min = self.header[6] + self.header[7] * 256
                 x_max = self.header[8] + self.header[9] * 256
@@ -152,78 +178,105 @@ class App(tk.Tk):
                 
                 width = x_max - x_min + 1
                 height = y_max - y_min + 1
+                print(f"{width}x{height}")
                 
-                version = self.header[1]
+                hdpi = self.header[12]
+                vdpi = self.header[14]
+                nplanes = self.header[65]
+                bytesperline = self.header[66] + self.header[67] * 256
+                paletteinfo = self.header[68]
                 
+                pcx_image = self.decode(image_data)
+                print(len(pcx_image))
                 
-            
-            
+                # Create a blank image with a white background
+                img = Image.new('RGB', (width, height), (255, 255, 255))
+                draw = ImageDraw.Draw(img)
 
-            #self.rightsidebar.create_text(50, 50, text="Hello World", fill="white", font='Arial 12 bold')
-            
-            # Read the palette (256 RGB color entries)
-            file.seek(-768, 2)  # Go to the end of the file and move back 768 bytes
-            color_data = file.read(768)
-            
-            palette = []
-            i = 0
-            
-            while(i < len(color_data)):
-                palette.append((color_data[i], color_data[i+1], color_data[i+2]))
-                i += 3
-                
-            #print(palette)
-            
-            # Create a blank image with a white background
-            img = Image.new('RGB', (256, 256), (255, 255, 255))
-            draw = ImageDraw.Draw(img)
+                # Define the size of each color block
+                block_size = 1
 
-            # Define the size of each color block
-            block_size = 16
-
-            # Draw the colored blocks on the image
-            for i, color in enumerate(palette):
-                if i%16 == 0:
-                    x1 = 0
-                    y1 = i
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                else:
-                    x1 = (i%16) * block_size
-                    y1 = (i//16) * block_size
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
+                # Draw the colored blocks on the image
+                for i, color in enumerate(pcx_image):
+                    if i%width == 0:
+                        x1 = 0
+                        y1 = i//width
+                        x2 = x1 + block_size
+                        y2 = y1 + block_size
+                    else:
+                        x1 = (i%width) * block_size
+                        y1 = (i//width) * block_size
+                        x2 = x1 + block_size
+                        y2 = y1 + block_size
+                        
+                    draw.rectangle([x1, y1, x2, y2], fill=palette[color])
                     
-                draw.rectangle([x1, y1, x2, y2], fill=color)
+                self.show_image(img)    
+                
+                # Create a blank image with a white background
+                img = Image.new('RGB', (256, 256), (255, 255, 255))
+                draw = ImageDraw.Draw(img)
 
-            # Resize the image to 128x128
-            img = img.resize((128, 128), Image.LANCZOS)
+                # Define the size of each color block
+                block_size = 16
 
-            # Convert the PIL image to a PhotoImage object
-            image_tk = ImageTk.PhotoImage(img)
+                # Draw the colored blocks on the image
+                for i, color in enumerate(palette):
+                    if i%16 == 0:
+                        x1 = 0
+                        y1 = i
+                        x2 = x1 + block_size
+                        y2 = y1 + block_size
+                    else:
+                        x1 = (i%16) * block_size
+                        y1 = (i//16) * block_size
+                        x2 = x1 + block_size
+                        y2 = y1 + block_size
+                        
+                    draw.rectangle([x1, y1, x2, y2], fill=color)
 
-            # Create the canvas in the right sidebar
-            self.create_right_sidebar_canvas()
+                # Resize the image to 128x128
+                img = img.resize((128, 128), Image.LANCZOS)
 
-            # Display the image on the canvas
-            self.display_image_on_right_sidebar(image_tk)
+                # Convert the PIL image to a PhotoImage object
+                image_tk = ImageTk.PhotoImage(img)
 
-            # Add text to the canvas in the right sidebar
-            self.add_text_to_right_sidebar(f"Manufacturer: {self.header[0]}", x=65, y=50, fill="white", font=("Arial", 11))
-            self.add_text_to_right_sidebar(f"Version: {self.header[1]}", x=44, y=70, fill="white", font=("Arial", 11))
-            self.add_text_to_right_sidebar(f"Resolution: {width} x {height}", x=86, y=90, fill="white", font=("Arial", 11))
-            self.add_text_to_right_sidebar(f"Encoding: {self.header[2]}", x=90, y=110, fill="white", font=("Arial", 11))
-            self.add_text_to_right_sidebar(f"Bits Per Pixel: {self.header[3]}", x=90, y=130, fill="white", font=("Arial", 11))
-            self.add_text_to_right_sidebar(f"HDPI: {self.header[12]}", x=90, y=150, fill="white", font=("Arial", 11))
-            self.add_text_to_right_sidebar(f"VDPI: {self.header[14]}", x=90, y=170, fill="white", font=("Arial", 11))
-            self.add_text_to_right_sidebar(f"Colormap: {self.header[16]}", x=90, y=190, fill="white", font=("Arial", 11))
-            self.add_text_to_right_sidebar(f"Number of Color Planes: {self.header[65]}", x=90, y=210, fill="white", font=("Arial", 11))
-            self.add_text_to_right_sidebar(f"Bytes Per Line: {self.header[66]}", x=90, y=230, fill="white", font=("Arial", 11))
-            self.add_text_to_right_sidebar(f"Palette Info: {self.header[68]}", x=90, y=250, fill="white", font=("Arial", 11))
-            
-            # Read the image data
-            file.seek(128, 0)  # Move to the beginning of the image data
-            image_data = file.read()
+                # Create the canvas in the right sidebar
+                self.create_right_sidebar_canvas()
+
+                # Display the image on the canvas
+                self.display_image_on_right_sidebar(image_tk)
+
+                
+
+                # Add text to the canvas in the right sidebar
+                self.add_text_to_right_sidebar(f"Manufacturer: {self.header[0]}", x=65, y=50, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Version: {self.header[1]}", x=44, y=70, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Resolution: {width} x {height}", x=86, y=90, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Encoding: {self.header[2]}", x=90, y=110, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Bits Per Pixel: {self.header[3]}", x=90, y=130, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"HDPI: {self.header[12]}", x=90, y=150, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"VDPI: {self.header[14]}", x=90, y=170, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Colormap: {self.header[16]}", x=90, y=190, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Number of Color Planes: {self.header[65]}", x=90, y=210, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Bytes Per Line: {self.header[66]}", x=90, y=230, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Palette Info: {self.header[68]}", x=90, y=250, fill="white", font=("Arial", 11))
+    
+    def decode(self, data):
+        decoded_data = []
+        i = 0
+        
+        while i < len(data):
+            if data[i] >= 192:
+                run_length = data[i] - 192
+                pixel_value = data[i+1]
+                decoded_data.extend([pixel_value]*run_length)
+                i += 2
+            else:
+                decoded_data.append(data[i])
+                i += 1
+                
+        return decoded_data
 
     def create_right_sidebar_canvas(self):
         # Create the canvas in the right sidebar
@@ -241,6 +294,7 @@ class App(tk.Tk):
         # Create an image item on the canvas
         canvas.create_image(0, 0, anchor=tk.NW, image=image_tk)
         canvas.image = image_tk  # Keep a reference to avoid garbage collection
+                
 
 
 if __name__ == "__main__":
