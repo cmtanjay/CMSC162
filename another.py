@@ -259,20 +259,12 @@ class App(tk.Tk):
                 self.add_text_to_right_sidebar("Color Palette", x=65, y=290, fill="white", font=("Arial", 11, "bold"))
 
                 # Display the image on the canvas
-                self.display_image_on_right_sidebar(image_tk)
-                
 
-                # Add text to the canvas in the right sidebar
-                self.add_text_to_right_sidebar(f"Manufacturer: {manufacturer}", x=65, y=50, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Version: {version}", x=44, y=70, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Resolution: {width} x {height}", x=86, y=90, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Encoding: {encoding}", x=90, y=110, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Bits Per Pixel: {bits_per_pixel}", x=90, y=130, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"HDPI: {hdpi}", x=90, y=150, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"VDPI: {vdpi}", x=90, y=170, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Number of Color Planes: {nplanes}", x=90, y=210, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Bytes Per Line: {bytesperline}", x=90, y=230, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Palette Info: {paletteinfo}", x=90, y=250, fill="white", font=("Arial", 11))
+                self.display_image_on_right_sidebar(image_tk_palette)
+
+               
+    
+
     
     def decode(self, data):
         decoded_data = []
