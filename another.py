@@ -49,7 +49,7 @@ class App(tk.Tk):
         file_menu.add_command(label='New')
         file_menu.add_command(label='Open...', command=self.open_img_file)
         file_menu.add_command(label='Open PCX...', command=self.open_pcx_file)
-        file_menu.add_command(label='Close')
+        file_menu.add_command(label='Close', command=self.close_img)
         file_menu.add_separator()
 
         # Adds Exit menu item
@@ -190,8 +190,8 @@ class App(tk.Tk):
                 print(len(pcx_image))
                 
                 # Create a blank image with a white background
-                img = Image.new('RGB', (width, height), (255, 255, 255))
-                draw = ImageDraw.Draw(img)
+                img_pcx = Image.new('RGB', (width, height), (255, 255, 255))
+                draw = ImageDraw.Draw(img_pcx)
 
                 # Define the size of each color block
                 block_size = 1
@@ -211,11 +211,11 @@ class App(tk.Tk):
                         
                     draw.rectangle([x1, y1, x2, y2], fill=palette[color])
                     
-                self.show_image(img)    
+                self.show_image(img_pcx)    
                 
                 # Create a blank image with a white background
-                img = Image.new('RGB', (256, 256), (255, 255, 255))
-                draw = ImageDraw.Draw(img)
+                img_palette = Image.new('RGB', (256, 256), (255, 255, 255))
+                draw = ImageDraw.Draw(img_palette)
 
                 # Define the size of each color block
                 block_size = 16
@@ -236,17 +236,17 @@ class App(tk.Tk):
                     draw.rectangle([x1, y1, x2, y2], fill=color)
 
                 # Resize the image to 128x128
-                img = img.resize((128, 128), Image.LANCZOS)
+                img_palette = img_palette.resize((128, 128), Image.LANCZOS)
 
                 # Convert the PIL image to a PhotoImage object
-                image_tk = ImageTk.PhotoImage(img)
+                image_tk_palette = ImageTk.PhotoImage(img_palette)
 
                 # Create the canvas in the right sidebar
                 self.create_right_sidebar_canvas()
 
                 # Display the image on the canvas
-                self.display_image_on_right_sidebar(image_tk)
-                
+
+                self.display_image_on_right_sidebar(image_tk_palette)
 
                 # Add text to the canvas in the right sidebar
                 self.add_text_to_right_sidebar(f"Manufacturer: {manufacturer}", x=65, y=50, fill="white", font=("Arial", 11))
@@ -292,6 +292,15 @@ class App(tk.Tk):
         # Create an image item on the canvas
         canvas.create_image(0, 0, anchor=tk.NW, image=image_tk)
         canvas.image = image_tk  # Keep a reference to avoid garbage collection
+        
+    def close_img(self):
+        self.rightsidebar.destroy()
+        self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
+        self.rightsidebar.grid(row=1, column=2, sticky="nsew")
+        
+        self.image_label.destroy()
+        self.image_label = tk.Label(self, bg="#242424")
+        self.image_label.grid(row=1, column=1, sticky="nsew")
                 
 
 
