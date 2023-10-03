@@ -145,6 +145,8 @@ class App(tk.Tk):
             
             print(f"Manufacturer: {self.header[0]}")
             print(f"Version: {self.header[1]}")
+
+            #self.rightsidebar.create_text(50, 50, text="Hello World", fill="white", font='Arial 12 bold')
             
             x_min = self.header[4] + self.header[5] * 256
             y_min = self.header[6] + self.header[7] * 256
@@ -192,17 +194,40 @@ class App(tk.Tk):
                     y2 = y1 + block_size
                     
                 draw.rectangle([x1, y1, x2, y2], fill=color)
-
-            # Show the image
-            img.show()
             
             print(f"color: {palette[0]}")
-            # img = Image.new('RGB',(200,200),(palette[0],palette[1],palette[2]))
-            # img.show()
+
+            # Resize the image to 128x128
+            img = img.resize((128, 128), Image.ANTIALIAS)
+
+            # Convert the PIL image to a PhotoImage object
+            image_tk = ImageTk.PhotoImage(img)
+
+            # Display the image on the canvas
+            self.display_image_on_right_sidebar(image_tk)
+
+            # Add text to the canvas in the right sidebar
+            self.add_text_to_right_sidebar(f"Manufacturer: {self.header[0]}", x=65, y=50, fill="white", font=("Arial", 11, "bold"))
+
             
             # Read the image data
             file.seek(128, 0)  # Move to the beginning of the image data
             image_data = file.read()
+
+    def add_text_to_right_sidebar(self, text, x, y, fill, font):
+        canvas = tk.Canvas(self.rightsidebar, width=250, bg="#2B2B2B", highlightthickness=0)
+        canvas.grid(row=1, column=2, sticky="nsew")
+
+        canvas.create_text(x, y, text=text, fill=fill, font=font)
+    
+    def display_image_on_right_sidebar(self, image_tk):
+        canvas = tk.Canvas(self.rightsidebar, width=256, height=256, bg="#2B2B2B", highlightthickness=0)
+        canvas.grid(row=5, column=2, sticky="nsew")
+
+        # Create an image item on the canvas
+        canvas.create_image(0, 0, anchor=tk.NW, image=image_tk)
+        canvas.image = image_tk  # Keep a reference to avoid garbage collection
+
 
 if __name__ == "__main__":
     app = App()
