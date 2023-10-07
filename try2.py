@@ -1,27 +1,39 @@
-from PIL import Image, ImageDraw
+from PIL import Image
+import matplotlib.pyplot as plt
 
-# Define the palette of colors as RGB tuples
-palette = [(255, 0, 0),  # Red
-           (0, 255, 0),  # Green
-           (0, 0, 255),  # Blue
-           (255, 255, 0),  # Yellow
-           (255, 0, 255),  # Magenta
-           (0, 255, 255)]  # Cyan
+# Open the PCX image using Pillow
+pcx_image = Image.open("scene.pcx")
 
-# Create a blank image with a white background
-img = Image.new('RGB', (200, 200), (255, 255, 255))
-draw = ImageDraw.Draw(img)
+# Convert the PCX image to grayscale if it's not already
+pcx_image = pcx_image.convert("RGB")
 
-# Define the size of each color block
-block_size = 40
+# Calculate the histogram
+histogram = pcx_image.histogram()
 
-# Draw the colored blocks on the image
-for i, color in enumerate(palette):
-    x1 = i * block_size
-    y1 = 0
-    x2 = x1 + block_size
-    y2 = 200
-    draw.rectangle([x1, y1, x2, y2], fill=color)
+# Split the histogram into three color channels (R, G, B)
+red_channel = histogram[0:256]
+green_channel = histogram[256:512]
+blue_channel = histogram[512:768]
 
-# Show the image
-img.show()
+# Plot the histograms
+plt.figure(figsize=(8, 4))
+plt.subplot(131)
+plt.title("Red Histogram")
+plt.xlabel("Pixel Value")
+plt.ylabel("Frequency")
+plt.bar(range(256), red_channel, color="red", alpha=0.7)
+
+plt.subplot(132)
+plt.title("Green Histogram")
+plt.xlabel("Pixel Value")
+plt.ylabel("Frequency")
+plt.bar(range(256), green_channel, color="green", alpha=0.7)
+
+plt.subplot(133)
+plt.title("Blue Histogram")
+plt.xlabel("Pixel Value")
+plt.ylabel("Frequency")
+plt.bar(range(256), blue_channel, color="blue", alpha=0.7)
+
+plt.tight_layout()
+plt.show()
