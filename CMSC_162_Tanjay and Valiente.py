@@ -1,12 +1,21 @@
 from PIL import Image, ImageTk, ImageDraw #pip install pillow
 import tkinter as tk #pip install tk
 from tkinter.filedialog import askopenfilename
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 # This is the class constructor for the Image Processing App
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
+        
+        self.orig_img = None
+        self.red_channel_image = None
+        self.green_channel_image = None
+        self.blue_channel_image = None
+        self.red_channel = []
+        self.green_channel = []
+        self.blue_channel = []
 
         # Configures the app window
         self.title("Image Processor")
@@ -93,6 +102,22 @@ class App(tk.Tk):
         btn_close_file = tk.Button(self.topbar,  text="Close File", command=self.close_img, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
         btn_close_file.grid(row=1, column=3, sticky="ew", padx=5, pady=10)
         
+        # Configures orig image button
+        btn_orig_img = tk.Button(self.topbar,  text="Original Image", command=lambda: self.show_image(self.orig_img), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_orig_img.grid(row=1, column=4, sticky="ew", padx=5, pady=10)
+        
+        # Configures red channel button
+        btn_red_channel = tk.Button(self.topbar,  text="Red Channel", command=lambda: self.show_img_and_hist(self.red_channel_image, self.red_channel), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_red_channel.grid(row=1, column=5, sticky="ew", padx=5, pady=10)
+        
+        # Configures green channel button
+        btn_green_channel = tk.Button(self.topbar,  text="Green Channel", command=lambda: self.show_img_and_hist(self.green_channel_image, self.green_channel), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_green_channel.grid(row=1, column=6, sticky="ew", padx=5, pady=10)
+        
+        # Configures blue channel button
+        btn_blue_channel = tk.Button(self.topbar,  text="Blue Channel", command=lambda: self.show_img_and_hist(self.blue_channel_image, self.blue_channel), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_blue_channel.grid(row=1, column=7, sticky="ew", padx=5, pady=10)
+        
     # This is the function that opens the image file
     def open_img_file(self):
         filepath = askopenfilename(filetypes=[("Image Files", "*.jpg *.png *.gif *.bmp *.jpeg *.tiff")])
@@ -103,43 +128,47 @@ class App(tk.Tk):
         self.show_image(image)
         
     def show_image(self, image):
-        # Opens the image using PIL
-        label_width = self.image_label.winfo_width()
-        label_height = self.image_label.winfo_height()
-        
-        # Define the padding size
-        padding_x = 20  # Horizontal padding
-        padding_y = 20  # Vertical padding
-
-        # Calculate the available space for the image within the label
-        available_width = label_width - (2 * padding_x)
-        available_height = label_height - (2 * padding_y)
-
-        # Calculate the aspect ratio of the image
-        aspect_ratio = image.width / image.height
-
-        # Checks if the aspect ratio of the image is greater than the aspect ratio of the space available for the image to display
-        if aspect_ratio > available_width/available_height:
-            wpercent = available_width/float(image.width)
-            hsize = int((image.height)*float(wpercent))
-            image = image.resize((available_width, hsize))
+        if(image == None):
+            print("WALAAAAAA")
         else:
-            hpercent = available_height/float(image.height)
-            wsize = int((image.width)*float(hpercent))
-            image = image.resize((wsize, available_height))
+            # Opens the image using PIL
+            label_width = self.image_label.winfo_width()
+            label_height = self.image_label.winfo_height()
+            
+            # Define the padding size
+            padding_x = 20  # Horizontal padding
+            padding_y = 20  # Vertical padding
+
+            # Calculate the available space for the image within the label
+            available_width = label_width - (2 * padding_x)
+            available_height = label_height - (2 * padding_y)
+
+            # Calculate the aspect ratio of the image
+            aspect_ratio = image.width / image.height
+
+            # Checks if the aspect ratio of the image is greater than the aspect ratio of the space available for the image to display
+            if aspect_ratio > available_width/available_height:
+                wpercent = available_width/float(image.width)
+                hsize = int((image.height)*float(wpercent))
+                image = image.resize((available_width, hsize))
+            else:
+                hpercent = available_height/float(image.height)
+                wsize = int((image.width)*float(hpercent))
+                image = image.resize((wsize, available_height))
 
 
-        # Convert the PIL image to a PhotoImage object
-        image_tk = ImageTk.PhotoImage(image)
+            # Convert the PIL image to a PhotoImage object
+            image_tk = ImageTk.PhotoImage(image)
 
-        self.image_label.config(image=image_tk)
-        self.image_label.image = image_tk  # Keep a reference to avoid garbage collection
+            self.image_label.config(image=image_tk)
+            self.image_label.image = image_tk  # Keep a reference to avoid garbage collection
 
-        self.title(f"Image Viewer - {image}")
+            self.title(f"Image Viewer - {image}")
     
     def open_pcx_file(self):
         filepath = askopenfilename(filetypes=[("PCX Files", "*.pcx")])
         if not filepath:
+            print("Not a PCX file")
             return
         
         with open(filepath, "rb") as file:
@@ -149,8 +178,6 @@ class App(tk.Tk):
             
             file.seek(0)
             size = len(file.read())
-            print(f"adada: {size}")
-            
             
             # pixel_data_size = file.seek(128,2) - 769
             # print(pixel_data_size)
@@ -197,7 +224,16 @@ class App(tk.Tk):
                 
                 # Create a blank image with a white background
                 img_pcx = Image.new('RGB', (width, height), (255, 255, 255))
-                draw = ImageDraw.Draw(img_pcx)
+                red_channel = Image.new('RGB', (width, height), (255, 255, 255))
+                green_channel = Image.new('RGB', (width, height), (255, 255, 255))
+                blue_channel = Image.new('RGB', (width, height), (255, 255, 255))
+                draw_orig = ImageDraw.Draw(img_pcx)
+                draw_red = ImageDraw.Draw(red_channel)
+                draw_green = ImageDraw.Draw(green_channel)
+                draw_blue = ImageDraw.Draw(blue_channel)
+                r = []
+                g = []
+                b = []
 
                 # Define the size of each color block
                 block_size = 1
@@ -214,10 +250,26 @@ class App(tk.Tk):
                         y1 = (i//width) * block_size
                         x2 = x1 + block_size
                         y2 = y1 + block_size
-                        
-                    draw.rectangle([x1, y1, x2, y2], fill=palette[color])
                     
+                    rgb = list(palette[color])
+                    r.append(rgb[0])
+                    g.append(rgb[1])
+                    b.append(rgb[2])
+                        
+                    # draw.rectangle([x1, y1, x2, y2], fill=rgb_tuple)
+                    draw_orig.rectangle([x1, y1, x2, y2], fill=palette[color])
+                    draw_red.rectangle([x1, y1, x2, y2], fill=(rgb[0], 0, 0))
+                    draw_green.rectangle([x1, y1, x2, y2], fill=(0, rgb[1], 0))
+                    draw_blue.rectangle([x1, y1, x2, y2], fill=(0, 0, rgb[2]))
+                
+                self.orig_img = img_pcx
+                self.red_channel_image = red_channel
+                self.green_channel_image = green_channel
+                self.blue_channel_image = blue_channel    
                 self.show_image(img_pcx)    
+                self.red_channel = r
+                self.green_channel = g
+                self.blue_channel = b
                 
                 # Create a blank image with a white background
                 img_palette = Image.new('RGB', (256, 256), (255, 255, 255))
@@ -267,10 +319,6 @@ class App(tk.Tk):
                 # Display the image on the canvas
 
                 self.display_image_on_right_sidebar(image_tk_palette)
-
-               
-    
-
     
     def decode(self, data):
         decoded_data = []
@@ -314,7 +362,35 @@ class App(tk.Tk):
         canvas.create_image(x, y, anchor=tk.NW, image=image_tk)
         canvas.image = image_tk  # Keep a reference to avoid garbage collection
         
+    def show_img_and_hist(self, image, channel):
+        if(image == None):
+            print("WALAAAAAA")
+        else:
+            self.show_image(image)
+            self.show_hist(channel)
+        
+    def show_hist(self, channel):
+        channel = np.array(channel)
+                
+        plt.hist(channel, bins=256, color='blue', alpha=0.7, rwidth=0.85)
+        
+        # Customize the plot (optional)
+        plt.title('Histogram')
+        plt.xlabel('Value')
+        plt.ylabel('Frequency')
+
+        # Show the histogram
+        plt.show()
+        
     def close_img(self):
+        self.orig_img = None
+        self.red_channel_image = None
+        self.green_channel_image = None
+        self.blue_channel_image = None
+        self.red_channel = []
+        self.green_channel = []
+        self.blue_channel = []
+        
         self.rightsidebar.destroy()
         self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
         self.rightsidebar.grid(row=1, column=2, sticky="nsew")
