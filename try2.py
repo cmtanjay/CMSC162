@@ -284,7 +284,7 @@ class App(tk.Tk):
                             x2 = x1 + block_size
                             y2 = y1 + block_size
                         
-                        draw_orig.rectangle([x1, y1, x2, y2], fill=(red_plane[i], green_plane[i], blue_plane[i]))
+                        draw_orig.rectangle([x1, y1, x2, y2], fill=(0, 0, blue_plane[i]))
                 
                 self.get_img_channels()
                 
