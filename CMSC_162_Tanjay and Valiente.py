@@ -10,9 +10,6 @@ class App(tk.Tk):
         super().__init__()
         
         self.orig_img = None
-        self.red_channel_image = None
-        self.green_channel_image = None
-        self.blue_channel_image = None
         self.red_channel = []
         self.green_channel = []
         self.blue_channel = []
@@ -107,15 +104,15 @@ class App(tk.Tk):
         btn_orig_img.grid(row=1, column=4, sticky="ew", padx=5, pady=10)
         
         # Configures red channel button
-        btn_red_channel = tk.Button(self.topbar,  text="Red Channel", command=lambda: self.show_img_and_hist(self.red_channel_image, self.red_channel), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_red_channel = tk.Button(self.topbar,  text="Red Channel", command=lambda: self.show_channel(self.red_channel, "red"), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
         btn_red_channel.grid(row=1, column=5, sticky="ew", padx=5, pady=10)
         
         # Configures green channel button
-        btn_green_channel = tk.Button(self.topbar,  text="Green Channel", command=lambda: self.show_img_and_hist(self.green_channel_image, self.green_channel), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_green_channel = tk.Button(self.topbar,  text="Green Channel", command=lambda: self.show_channel(self.green_channel, "green"), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
         btn_green_channel.grid(row=1, column=6, sticky="ew", padx=5, pady=10)
         
         # Configures blue channel button
-        btn_blue_channel = tk.Button(self.topbar,  text="Blue Channel", command=lambda: self.show_img_and_hist(self.blue_channel_image, self.blue_channel), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_blue_channel = tk.Button(self.topbar,  text="Blue Channel", command=lambda: self.show_channel(self.blue_channel, "blue"), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
         btn_blue_channel.grid(row=1, column=7, sticky="ew", padx=5, pady=10)
         
     # This is the function that opens the image file
@@ -188,10 +185,10 @@ class App(tk.Tk):
             color_data = file.read(768)
             
             i=0
-            palette=[]
+            self.palette=[]
             
             while(i < len(color_data)):
-                palette.append((color_data[i], color_data[i+1], color_data[i+2]))
+                self.palette.append((color_data[i], color_data[i+1], color_data[i+2]))
                 i += 3
             
             if self.header[0] != 10:
@@ -209,9 +206,9 @@ class App(tk.Tk):
                 x_max = self.header[8] + self.header[9] * 256
                 y_max = self.header[10] + self.header[11] * 256
                 
-                width = x_max - x_min + 1
-                height = y_max - y_min + 1
-                print(f"{width}x{height}")
+                self.width = x_max - x_min + 1
+                self.height = y_max - y_min + 1
+                print(f"{self.width}x{self.height}")
                 
                 hdpi = self.header[12]
                 vdpi = self.header[14]
@@ -219,57 +216,35 @@ class App(tk.Tk):
                 bytesperline = self.header[66] + self.header[67] * 256
                 paletteinfo = self.header[68]
                 
-                pcx_image = self.decode(image_data)
-                print(len(pcx_image))
+                self.pcx_image_data = self.decode(image_data)
                 
                 # Create a blank image with a white background
-                img_pcx = Image.new('RGB', (width, height), (255, 255, 255))
-                red_channel = Image.new('RGB', (width, height), (255, 255, 255))
-                green_channel = Image.new('RGB', (width, height), (255, 255, 255))
-                blue_channel = Image.new('RGB', (width, height), (255, 255, 255))
+                img_pcx = Image.new('RGB', (self.width, self.height), (255, 255, 255))
+                
                 draw_orig = ImageDraw.Draw(img_pcx)
-                draw_red = ImageDraw.Draw(red_channel)
-                draw_green = ImageDraw.Draw(green_channel)
-                draw_blue = ImageDraw.Draw(blue_channel)
-                r = []
-                g = []
-                b = []
 
                 # Define the size of each color block
                 block_size = 1
 
                 # Draw the colored blocks on the image
-                for i, color in enumerate(pcx_image):
-                    if i%width == 0:
+                for i, color in enumerate(self.pcx_image_data):
+                    if i % self.width == 0:
                         x1 = 0
-                        y1 = i//width
+                        y1 = i // self.width
                         x2 = x1 + block_size
                         y2 = y1 + block_size
                     else:
-                        x1 = (i%width) * block_size
-                        y1 = (i//width) * block_size
+                        x1 = (i % self.width) * block_size
+                        y1 = (i // self.width) * block_size
                         x2 = x1 + block_size
                         y2 = y1 + block_size
-                    
-                    rgb = list(palette[color])
-                    r.append(rgb[0])
-                    g.append(rgb[1])
-                    b.append(rgb[2])
                         
-                    # draw.rectangle([x1, y1, x2, y2], fill=rgb_tuple)
-                    draw_orig.rectangle([x1, y1, x2, y2], fill=palette[color])
-                    draw_red.rectangle([x1, y1, x2, y2], fill=(rgb[0], 0, 0))
-                    draw_green.rectangle([x1, y1, x2, y2], fill=(0, rgb[1], 0))
-                    draw_blue.rectangle([x1, y1, x2, y2], fill=(0, 0, rgb[2]))
+                    draw_orig.rectangle([x1, y1, x2, y2], fill=self.palette[color])
                 
-                self.orig_img = img_pcx
-                self.red_channel_image = red_channel
-                self.green_channel_image = green_channel
-                self.blue_channel_image = blue_channel    
+                self.get_img_channels()
+                
+                self.orig_img = img_pcx 
                 self.show_image(img_pcx)    
-                self.red_channel = r
-                self.green_channel = g
-                self.blue_channel = b
                 
                 # Create a blank image with a white background
                 img_palette = Image.new('RGB', (256, 256), (255, 255, 255))
@@ -279,7 +254,7 @@ class App(tk.Tk):
                 block_size = 16
 
                 # Draw the colored blocks on the image
-                for i, color in enumerate(palette):
+                for i, color in enumerate(self.palette):
                     if i%16 == 0:
                         x1 = 0
                         y1 = i
@@ -306,7 +281,7 @@ class App(tk.Tk):
                 self.add_text_to_right_sidebar("Header Information", x=76, y=30, fill="white", font=("Arial", 11, "bold"))
                 self.add_text_to_right_sidebar(f"Manufacturer: {manufacturer}", x=68, y=70, fill="white", font=("Arial", 11))
                 self.add_text_to_right_sidebar(f"Version: {version}", x=47, y=90, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Resolution: {width} x {height}", x=85, y=110, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Resolution: {self.width} x {self.height}", x=85, y=110, fill="white", font=("Arial", 11))
                 self.add_text_to_right_sidebar(f"Encoding: {encoding}", x=53, y=130, fill="white", font=("Arial", 11))
                 self.add_text_to_right_sidebar(f"Bits Per Pixel: {bits_per_pixel}", x=65, y=150, fill="white", font=("Arial", 11))
                 self.add_text_to_right_sidebar(f"HDPI: {hdpi}", x=43, y=170, fill="white", font=("Arial", 11))
@@ -320,6 +295,7 @@ class App(tk.Tk):
 
                 self.display_image_on_right_sidebar(image_tk_palette)
     
+    # This is a function that executes the run length encoding that gets the index of colors from the palette in image data
     def decode(self, data):
         decoded_data = []
         i = 0
@@ -361,35 +337,70 @@ class App(tk.Tk):
         # Create an image item on the canvas at the center
         canvas.create_image(x, y, anchor=tk.NW, image=image_tk)
         canvas.image = image_tk  # Keep a reference to avoid garbage collection
+    
+    def get_img_channels(self):
+        # Draw the colored blocks on the image
+        for i, color in enumerate(self.pcx_image_data):
+            rgb = list(self.palette[color])
+            self.red_channel.append(rgb[0])
+            self.green_channel.append(rgb[1])
+            self.blue_channel.append(rgb[2])
         
-    def show_img_and_hist(self, image, channel):
-        if(image == None):
-            print("WALAAAAAA")
-        else:
-            self.show_image(image)
-            self.show_hist(channel)
-        
-    def show_hist(self, channel):
+    def show_hist(self, channel, string):
+        plt.close()
         channel = np.array(channel)
                 
-        plt.hist(channel, bins=256, color='blue', alpha=0.7, rwidth=0.85)
+        plt.hist(channel, bins=256, color=string, alpha=0.7, rwidth=0.85)
         
         # Customize the plot (optional)
-        plt.title('Histogram')
+        plt.title(f"Histogram of the {string} channel of the image")
         plt.xlabel('Value')
         plt.ylabel('Frequency')
 
         # Show the histogram
         plt.show()
         
+    def show_channel(self, channel, string):
+        if not channel:
+            print("WALAAAAA")
+        else:
+            channel_img = Image.new('RGB', (self.width, self.height), (255, 255, 255))
+            draw_channel_img = ImageDraw.Draw(channel_img)
+            
+            # Define the size of each color block
+            block_size = 1
+
+            # Draw the colored blocks on the image
+            for i, color in enumerate(self.pcx_image_data):
+                if i % self.width == 0:
+                    x1 = 0
+                    y1 = i // self.width
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                else:
+                    x1 = (i % self.width) * block_size
+                    y1 = (i // self.width) * block_size
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                
+                rgb = list(self.palette[color])
+                
+                if(string == "red"):
+                    draw_channel_img.rectangle([x1, y1, x2, y2], fill=(rgb[0], 0, 0))
+                elif(string == "green"):
+                    draw_channel_img.rectangle([x1, y1, x2, y2], fill=(0, rgb[1], 0))
+                elif(string == "blue"):
+                    draw_channel_img.rectangle([x1, y1, x2, y2], fill=(0, 0, rgb[2]))
+                
+            self.show_image(channel_img)
+            self.show_hist(channel, string)
+        
     def close_img(self):
         self.orig_img = None
-        self.red_channel_image = None
-        self.green_channel_image = None
-        self.blue_channel_image = None
         self.red_channel = []
         self.green_channel = []
         self.blue_channel = []
+        self.pcx_image_data = []
         
         self.rightsidebar.destroy()
         self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
@@ -399,8 +410,6 @@ class App(tk.Tk):
         self.image_label = tk.Label(self, bg="#242424")
         self.image_label.grid(row=1, column=1, sticky="nsew")
                 
-
-
 if __name__ == "__main__":
     app = App()
     app.mainloop()
