@@ -3,6 +3,7 @@ import tkinter as tk #pip install tk
 from tkinter.filedialog import askopenfilename
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 # This is the class constructor for the Image Processing App
 class App(tk.Tk):
@@ -39,8 +40,14 @@ class App(tk.Tk):
         self.rightsidebar.grid(row=1, column=2, sticky="nsew")
         
         # Configures the status bar of the App GUI
-        self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=1, relief="solid")
+        self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+        
+        # Create the canvas in the right sidebar
+        self.create_statusbar_canvas()
+
+        #Adds items to the status bar
+        self.add_text_to_statusbar("Status: No image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         
         # Configures the Menu Bar
         menubar = tk.Menu(self)
@@ -115,6 +122,9 @@ class App(tk.Tk):
         btn_blue_channel = tk.Button(self.topbar,  text="Blue Channel", command=lambda: self.show_channel(self.blue_channel, "blue"), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
         btn_blue_channel.grid(row=1, column=7, sticky="ew", padx=5, pady=10)
         
+        
+        
+    
     # This is the function that opens the image file
     def open_img_file(self):
         filepath = askopenfilename(filetypes=[("Image Files", "*.jpg *.png *.gif *.bmp *.jpeg *.tiff")])
@@ -124,10 +134,27 @@ class App(tk.Tk):
         image = Image.open(filepath)
         self.show_image(image)
         
+        self.statusbar.destroy()
+        self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+        self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+        self.create_statusbar_canvas()
+
+        self.rightsidebar.destroy()
+        self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
+        self.rightsidebar.grid(row=1, column=2, sticky="nsew")
+
+        # Extract the filename from the full filepath
+        filename = os.path.basename(filepath)
+        self.add_text_to_statusbar(f"Status: {filename} loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+        
     def show_image(self, image):
         if(image == None):
             print("WALAAAAAA")
+            #Show status of image here when there's no image loaded
+            #self.canvas.delete(self.add_text_to_statusbar)
+            self.add_text_to_statusbar("Status: No image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
+            
             # Opens the image using PIL
             label_width = self.image_label.winfo_width()
             label_height = self.image_label.winfo_height()
@@ -163,13 +190,17 @@ class App(tk.Tk):
             self.title(f"Image Viewer - {image}")
     
     def open_pcx_file(self):
+        
         filepath = askopenfilename(filetypes=[("PCX Files", "*.pcx")])
         if not filepath:
             print("Not a PCX file")
+            
+            
             return
         
         with open(filepath, "rb") as file:
-            # self.show_image(filepath)
+        
+            self.add_text_to_statusbar("Status: PCX Image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
             
             self.header = file.read(128)
             
@@ -193,6 +224,7 @@ class App(tk.Tk):
             
             if self.header[0] != 10:
                 raise ValueError("Not a valid PCX file.")
+                
             else:
                 content = file.read()
                 #print(content)
@@ -312,15 +344,18 @@ class App(tk.Tk):
                 
         return decoded_data
 
+    # Function to create canvas for the right sidebar
     def create_right_sidebar_canvas(self):
         # Create the canvas in the right sidebar
         self.canvas = tk.Canvas(self.rightsidebar, width=250, height=300, bg="#2B2B2B", highlightthickness=0)
         self.canvas.grid(row=1, column=2, sticky="nsew")
 
+    # Function to add text onto the canvas of the right side bar
     def add_text_to_right_sidebar(self, text, x, y, fill, font):
         # Use the previously created canvas
         self.canvas.create_text(x, y, text=text, fill=fill, font=font)
     
+    # Function to display the generated color palette to the right side bar
     def display_image_on_right_sidebar(self, image_tk):
         canvas = tk.Canvas(self.rightsidebar, width=256, height=200, bg="#2B2B2B", highlightthickness=0)
         canvas.grid(row=2, column=2, sticky="nsew")
@@ -337,6 +372,20 @@ class App(tk.Tk):
         # Create an image item on the canvas at the center
         canvas.create_image(x, y, anchor=tk.NW, image=image_tk)
         canvas.image = image_tk  # Keep a reference to avoid garbage collection
+
+    # Function to create a canvas for the status bar
+    def create_statusbar_canvas(self):
+        # Create the canvas in the right sidebar
+        self.canvas = tk.Canvas(self.statusbar, width=2040, height=40, bg="#2B2B2B", highlightthickness=0)
+        self.canvas.grid(row=1, columnspan=3, sticky="nsew")
+
+    # Function to add text onto the canvas of the status bar
+    def add_text_to_statusbar(self, text, x, y, fill, font):
+        # Clear the previous text on the canvas
+        self.canvas.delete("status_text")
+
+        # Use the previously created canvas
+        self.canvas.create_text(x, y, text=text, fill=fill, font=font, justify="right",tags="status_text")
     
     def get_img_channels(self):
         # Draw the colored blocks on the image
@@ -396,11 +445,16 @@ class App(tk.Tk):
             self.show_hist(channel, string)
         
     def close_img(self):
+        
+
         self.orig_img = None
         self.red_channel = []
         self.green_channel = []
         self.blue_channel = []
         self.pcx_image_data = []
+
+        print("close")
+        
         
         self.rightsidebar.destroy()
         self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
@@ -409,6 +463,17 @@ class App(tk.Tk):
         self.image_label.destroy()
         self.image_label = tk.Label(self, bg="#242424")
         self.image_label.grid(row=1, column=1, sticky="nsew")
+
+        self.statusbar.destroy()
+        self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+        self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+        self.create_statusbar_canvas()
+        self.add_text_to_statusbar("Status: Image closed", x=120, y=20, fill="white", font=("Arial", 9,))
+        
+
+        
+    
+    
                 
 if __name__ == "__main__":
     app = App()
