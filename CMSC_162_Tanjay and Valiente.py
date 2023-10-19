@@ -1,5 +1,6 @@
 from PIL import Image, ImageTk, ImageDraw #pip install pillow
 import tkinter as tk #pip install tk
+from tkinter import ttk
 from tkinter.filedialog import askopenfilename
 import matplotlib.pyplot as plt
 import numpy as np
@@ -122,8 +123,21 @@ class App(tk.Tk):
         btn_blue_channel = tk.Button(self.topbar,  text="Blue Channel", command=lambda: self.show_channel(self.blue_channel, "blue"), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
         btn_blue_channel.grid(row=1, column=7, sticky="ew", padx=5, pady=10)
         
+        # Configures grayscale button
+        btn_grayscale = tk.Button(self.topbar,  text="Grayscale", command=self.grayscale_transform, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_grayscale.grid(row=1, column=8, sticky="ew", padx=5, pady=10)
         
+        # Configures negative button
+        btn_grayscale = tk.Button(self.topbar,  text="Negative", command=self.negative_transform, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_grayscale.grid(row=1, column=9, sticky="ew", padx=5, pady=10)
         
+        # Configures B/W button
+        btn_grayscale = tk.Button(self.topbar,  text="B/W", command=self.BW_manual_thresholding, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_grayscale.grid(row=1, column=10, sticky="ew", padx=5, pady=10)
+        
+        # Configures Power-Law button
+        btn_grayscale = tk.Button(self.topbar,  text="Power-Law", command=self.Power_law_transform, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_grayscale.grid(row=1, column=11, sticky="ew", padx=5, pady=10)
     
     # This is the function that opens the image file
     def open_img_file(self):
@@ -146,7 +160,8 @@ class App(tk.Tk):
         # Extract the filename from the full filepath
         filename = os.path.basename(filepath)
         self.add_text_to_statusbar(f"Status: {filename} loaded", x=120, y=20, fill="white", font=("Arial", 9,))
-        
+    
+    # Function that displays an image to the UI    
     def show_image(self, image):
         if(image == None):
             print("WALAAAAAA")
@@ -188,14 +203,14 @@ class App(tk.Tk):
             self.image_label.image = image_tk  # Keep a reference to avoid garbage collection
 
             self.title(f"Image Viewer - {image}")
-    
+            
+    # Function that opens a PCX file
     def open_pcx_file(self):
         
         filepath = askopenfilename(filetypes=[("PCX Files", "*.pcx")])
         if not filepath:
             print("Not a PCX file")
-            
-            
+                     
             return
         
         with open(filepath, "rb") as file:
@@ -249,6 +264,7 @@ class App(tk.Tk):
                 paletteinfo = self.header[68]
                 
                 self.pcx_image_data = self.decode(image_data)
+                print(f"addada: {len(self.pcx_image_data)}")
                 
                 # Create a blank image with a white background
                 img_pcx = Image.new('RGB', (self.width, self.height), (255, 255, 255))
@@ -387,6 +403,7 @@ class App(tk.Tk):
         # Use the previously created canvas
         self.canvas.create_text(x, y, text=text, fill=fill, font=font, justify="right",tags="status_text")
     
+    # Function that separates the image into the red, green, and blue channels
     def get_img_channels(self):
         # Draw the colored blocks on the image
         for i, color in enumerate(self.pcx_image_data):
@@ -394,7 +411,8 @@ class App(tk.Tk):
             self.red_channel.append(rgb[0])
             self.green_channel.append(rgb[1])
             self.blue_channel.append(rgb[2])
-        
+    
+    # Function that shows the histogram of a color channel in a pop up window    
     def show_hist(self, channel, string):
         plt.close()
         channel = np.array(channel)
@@ -408,7 +426,8 @@ class App(tk.Tk):
 
         # Show the histogram
         plt.show()
-        
+    
+    # Function that displays the color channel in the UI    
     def show_channel(self, channel, string):
         if not channel:
             print("WALAAAAA")
@@ -443,10 +462,228 @@ class App(tk.Tk):
                 
             self.show_image(channel_img)
             self.show_hist(channel, string)
+    
+    # Function that transforms the RGB PCX file to Grayscale
+    def grayscale_transform(self):
+        if not self.pcx_image_data:
+            print("WALAAAAAA")
+        else:
+            grayscale_img = Image.new('L', (self.width, self.height), 255)
+            draw_grayscale = ImageDraw.Draw(grayscale_img)
+            
+            gray = []
+            
+            # Define the size of each color block
+            block_size = 1
+
+            # Draw the colored blocks on the image
+            for i, color in enumerate(self.pcx_image_data):
+                if i % self.width == 0:
+                    x1 = 0
+                    y1 = i // self.width
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                else:
+                    x1 = (i % self.width) * block_size
+                    y1 = (i // self.width) * block_size
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                
+                rgb = list(self.palette[color])
+                gray.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+                    
+                draw_grayscale.rectangle([x1, y1, x2, y2], fill=(gray[i]))
+                
+            self.show_image(grayscale_img)
+    
+    # Function that transforms the RGB PCX file to Negative image
+    def negative_transform(self):
+        if not self.pcx_image_data:
+            print("WALAAAAAA")
+        else:
+            negative_img = Image.new('L', (self.width, self.height), 255)
+            draw_negative = ImageDraw.Draw(negative_img)
+            
+            # Define the size of each color block
+            block_size = 1
+
+            # Draw the colored blocks on the image
+            for i, color in enumerate(self.pcx_image_data):
+                if i % self.width == 0:
+                    x1 = 0
+                    y1 = i // self.width
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                else:
+                    x1 = (i % self.width) * block_size
+                    y1 = (i // self.width) * block_size
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                
+                rgb = list(self.palette[color])
+                s = (int)((rgb[0]+rgb[1]+rgb[2])/3)
+                    
+                draw_negative.rectangle([x1, y1, x2, y2], fill=(255 - s))
+                
+            self.show_image(negative_img)
+    
+    # Function that transforms the PCX image to Black/White via Manual Thresholding      
+    def BW_manual_thresholding(self):
+        if not self.pcx_image_data:
+            print("WALAAAAAA")
+        else:
+            threshold = self.open_popup()
+            BW_img = Image.new('L', (self.width, self.height), 255)
+            draw_BW = ImageDraw.Draw(BW_img)
+            
+            # Define the size of each color block
+            block_size = 1
+
+            # Draw the colored blocks on the image
+            for i, color in enumerate(self.pcx_image_data):
+                if i % self.width == 0:
+                    x1 = 0
+                    y1 = i // self.width
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                else:
+                    x1 = (i % self.width) * block_size
+                    y1 = (i // self.width) * block_size
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                
+                rgb = list(self.palette[color])
+                s = (int)((rgb[0]+rgb[1]+rgb[2])/3)
+                
+                if(s <= threshold):
+                    s = 0
+                else:
+                    s = 255
+                    
+                draw_BW.rectangle([x1, y1, x2, y2], fill=s)
+                
+            self.show_image(BW_img)
+    
+    # Function that pops up a window that show a slider for the manual threshold value
+    def open_popup(self):
+        window = tk.Toplevel()
+        window.geometry("400x130+500+300")
+        window.title("Black/White via Manual Thresholding")
+        window.resizable(False, False)
+        # tk.Label(window, text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
         
+        window.columnconfigure(0, weight=2)
+        window.columnconfigure(1, weight=5)
+        
+        current_value = tk.IntVar()
+        threshold = tk.IntVar()
+        
+        def entry_changed(event):
+            value = text_box.get()  # Get the value from the entry box
+            if value.isdigit():  # Check if the value is a valid integer
+                current_value.set(int(value))  # Set the slider value to the entry value
+            else:
+                # Handle invalid input (e.g., non-integer values)
+                pass
+
+        def slider_changed(*args):
+            value = current_value.get()
+            text_box.delete(0, tk.END)  # Clear the entry box
+            text_box.insert(0, value)
+
+        def on_click():
+            value = current_value.get()
+            threshold.set(value)
+            window.destroy()
+
+        # label for the slider
+        ttk.Label(window, text='Slider:', font=('Arial 10 bold')).place(x=15, y=10)
+
+        #  slider
+        ttk.Scale(window, from_= 0, to = 255, orient='horizontal', command=slider_changed, variable=current_value, length=310).place(x=65, y=10)
+
+        # current value label
+        ttk.Label(window, text='Current Value:', font=('Arial 10 bold')).place(x=150, y=35)
+        
+        text_box = tk.Entry(window, bg="white", width=5, font=('Arial 13'))
+        text_box.place(x=160, y=55)
+        text_box.bind("<KeyRelease>", entry_changed)
+
+        current_value.trace("w", slider_changed)
+        
+        btn = tk.Button(window, command=on_click, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn.place(x=165, y=85)
+        
+        window.wait_window(window)  # Wait for the window to be destroyed
+        return threshold.get()
+    
+    # Function that executes the Power-Law (Gamma) Transformation to the PCX file
+    def Power_law_transform(self):
+        if not self.pcx_image_data:
+            print("WALAAAAAA")
+        else:
+            gamma = self.open_popup_gamma()
+            PL_img = Image.new('L', (self.width, self.height), 255)
+            draw_PL = ImageDraw.Draw(PL_img)
+            
+            # Define the size of each color block
+            block_size = 1
+
+            # Draw the colored blocks on the image
+            for i, color in enumerate(self.pcx_image_data):
+                if i % self.width == 0:
+                    x1 = 0
+                    y1 = i // self.width
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                else:
+                    x1 = (i % self.width) * block_size
+                    y1 = (i // self.width) * block_size
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                
+                rgb = list(self.palette[color])
+                r = (int)((rgb[0]+rgb[1]+rgb[2])/3)
+                c = 1
+                
+                s = (int)(c*(r**gamma))
+                #print(f"{r} => {s} => {(r**gamma)}")
+                    
+                draw_PL.rectangle([x1, y1, x2, y2], fill=s)
+                
+            self.show_image(PL_img)
+    
+    # Function that pops up a window that lets the user input the gamma value    
+    def open_popup_gamma(self):
+        window = tk.Toplevel()
+        window.geometry("400x130+500+300")
+        window.title("Power-Law Transformation")
+        window.resizable(False, False)
+        # tk.Label(window, text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
+        
+        window.columnconfigure(0, weight=2)
+        window.columnconfigure(1, weight=5)
+        
+        current_value = tk.DoubleVar(value=0.0)
+
+        def on_click():
+            window.destroy()
+
+        # current value label
+        ttk.Label(window, text='Current Value:', font=('Arial 10 bold')).place(x=150, y=35)
+        
+        text_box = tk.Entry(window, bg="white", textvariable=current_value, width=5, font=('Arial 13'))
+        text_box.place(x=160, y=55)
+        
+        btn = tk.Button(window, command=on_click, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn.place(x=165, y=85)
+        
+        window.wait_window(window)  # Wait for the window to be destroyed
+        return current_value.get()
+    
+    # Function that closes the image file being displayed    
     def close_img(self):
         
-
         self.orig_img = None
         self.red_channel = []
         self.green_channel = []
@@ -469,12 +706,7 @@ class App(tk.Tk):
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
         self.create_statusbar_canvas()
         self.add_text_to_statusbar("Status: Image closed", x=120, y=20, fill="white", font=("Arial", 9,))
-        
-
-        
-    
-    
-                
+                    
 if __name__ == "__main__":
     app = App()
     app.mainloop()
