@@ -1,167 +1,30 @@
+
 from PIL import Image, ImageTk, ImageDraw #pip install pillow
 import tkinter as tk #pip install tk
 from tkinter import ttk
 from customtkinter import *
-from tkinter.filedialog import askopenfilename
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+from tkinter import filedialog
+from tkinter.filedialog import askopenfilename
 
-# This is the class constructor for the Image Processing App
-class App(tk.Tk):
+class ImageProcessor:
     def __init__(self):
         super().__init__()
         
-        self.orig_img = None
-        self.red_channel = []
-        self.green_channel = []
-        self.blue_channel = []
-
-        # Configures the app window
-        self.title("Image Processor")
-        self.rowconfigure(1, weight=1)
-        self.columnconfigure(1, weight=1)
-        
-
-        # Gets the screen width and height
-        screen_width = self.winfo_screenwidth() - 100
-        screen_height = self.winfo_screenheight() - 100
-
-        # Sets window size with screen dimension
-        self.geometry(f"{screen_width}x{screen_height}+0+0")
-        
-        # Configures the top bar of the App GUI
-        self.topbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=1, relief="solid")
-        self.topbar.grid(row=0, columnspan=3, sticky="ew") 
-        
-        # Configures the side bar of the App GUI
-        self.sidebar = tk.Frame(self, width=100, bg="#2B2B2B")
-        self.sidebar.grid(row=1, column=0, rowspan=4, sticky="nsew")
-        
-        # Configures the right side bar of the App GUI
-        self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
-        self.rightsidebar.grid(row=1, column=2, sticky="nsew")
-        
-        # Configures the status bar of the App GUI
-        self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
-        self.statusbar.grid(row=2, columnspan=3, sticky="ew")
-        
-        # Create the canvas in the right sidebar
-        self.create_statusbar_canvas()
-
-        #Adds items to the status bar
-        self.add_text_to_statusbar("Status: No image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
-        
-        # Configures the Menu Bar
-        menubar = tk.Menu(self)
-        self.config(menu=menubar)
-
-        # Creates the File Menu
-        file_menu = tk.Menu(
-            menubar,
-            tearoff=0
-        )
-
-        # Adds menu items to the File menu
-        file_menu.add_command(label='New')
-        file_menu.add_separator()
-
-        # Adds Exit menu item
-        file_menu.add_command(
-            label='Exit',
-            command=self.destroy
-        )
-
-        # Add the File menu to the menubar
-        menubar.add_cascade(
-            label="File",
-            menu=file_menu
-        )
-        # Create the Help Menu
-        help_menu = tk.Menu(
-            menubar,
-            tearoff=0
-        )
-
-        # Adds items on Help menu
-        help_menu.add_command(label='Welcome')
-        help_menu.add_command(label='About...')
-
-        # Adds the Help menu to the menubar
-        menubar.add_cascade(
-            label="Help",
-            menu=help_menu
-        )
-        
-        # Configures the portion of the GUI where the image will reside
-        self.image_label = tk.Label(self, bg="#242424")
-        self.image_label.grid(row=1, column=1, sticky="nsew")
-
-        # Configures open PCX file button
-        btn_open_pcx = tk.Button(self.topbar, text="Open PCX", command=self.open_pcx_file,font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        btn_open_pcx.grid(row=1, column=1, sticky="ew", padx=5, pady=10)
-
-        # Configures open image file button
-        btn_open_img = tk.Button(self.topbar, text="Open Image", command=self.open_img_file, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        btn_open_img.grid(row=1, column=2, sticky="ew", padx=5, pady=10)
-
-        # Configures close file button
-        btn_close_file = tk.Button(self.topbar,  text="Close File", command=self.close_img, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        btn_close_file.grid(row=1, column=3, sticky="ew", padx=5, pady=10)
-        
-        # Configures orig image button
-        btn_orig_img = tk.Button(self.topbar,  text="Original Image", command=lambda: self.show_image(self.orig_img), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        btn_orig_img.grid(row=1, column=4, sticky="ew", padx=5, pady=10)
-        
-        # Configures red channel button
-        btn_red_channel = tk.Button(self.topbar,  text="Red Channel", command=lambda: self.show_channel(self.red_channel, "red"), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        btn_red_channel.grid(row=1, column=5, sticky="ew", padx=5, pady=10)
-        
-        # Configures green channel button
-        btn_green_channel = tk.Button(self.topbar,  text="Green Channel", command=lambda: self.show_channel(self.green_channel, "green"), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        btn_green_channel.grid(row=1, column=6, sticky="ew", padx=5, pady=10)
-        
-        # Configures blue channel button
-        btn_blue_channel = tk.Button(self.topbar,  text="Blue Channel", command=lambda: self.show_channel(self.blue_channel, "blue"), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        btn_blue_channel.grid(row=1, column=7, sticky="ew", padx=5, pady=10)
-        
-        # Configures grayscale button
-        btn_grayscale = tk.Button(self.topbar,  text="Grayscale", command=self.grayscale_transform, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        btn_grayscale.grid(row=1, column=8, sticky="ew", padx=5, pady=10)
-        
-        # Configures negative button
-        btn_grayscale = tk.Button(self.topbar,  text="Negative", command=self.negative_transform, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        btn_grayscale.grid(row=1, column=9, sticky="ew", padx=5, pady=10)
-        
-        # Configures B/W button
-        btn_grayscale = tk.Button(self.topbar,  text="B/W", command=self.BW_manual_thresholding, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        btn_grayscale.grid(row=1, column=10, sticky="ew", padx=5, pady=10)
-        
-        # Configures Power-Law button
-        btn_grayscale = tk.Button(self.topbar,  text="Power-Law", command=self.Power_law_transform, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        btn_grayscale.grid(row=1, column=11, sticky="ew", padx=5, pady=10)
-    
     # This is the function that opens the image file
     def open_img_file(self):
-        filepath = askopenfilename(filetypes=[("Image Files", "*.jpg *.png *.gif *.bmp *.jpeg *.tiff")])
-        if not filepath:
+        file_path = askopenfilename(filetypes=[("Image Files", "*.jpg *.png *.gif *.bmp *.jpeg *.tiff")])
+        if not file_path:
             return
         
-        image = Image.open(filepath)
+        image = Image.open(file_path)
         self.show_image(image)
         
-        self.statusbar.destroy()
-        self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
-        self.statusbar.grid(row=2, columnspan=3, sticky="ew")
-        self.create_statusbar_canvas()
+        
 
-        self.rightsidebar.destroy()
-        self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
-        self.rightsidebar.grid(row=1, column=2, sticky="nsew")
-
-        # Extract the filename from the full filepath
-        filename = os.path.basename(filepath)
-        self.add_text_to_statusbar(f"Status: {filename} loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+        
     
     # Function that displays an image to the UI    
     def show_image(self, image):
@@ -171,7 +34,9 @@ class App(tk.Tk):
             #self.canvas.delete(self.add_text_to_statusbar)
             self.add_text_to_statusbar("Status: No image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
-            
+            # Configures the portion of the GUI where the image will reside
+            self.image_label = tk.Label(self, bg="#242424")
+            self.image_label.grid(row=1, column=1, sticky="nsew")
             # Opens the image using PIL
             label_width = self.image_label.winfo_width()
             label_height = self.image_label.winfo_height()
@@ -708,7 +573,8 @@ class App(tk.Tk):
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
         self.create_statusbar_canvas()
         self.add_text_to_statusbar("Status: Image closed", x=120, y=20, fill="white", font=("Arial", 9,))
-                    
+
+
 if __name__ == "__main__":
-    app = App()
-    app.mainloop()
+    # You can include testing or example code here
+    pass
