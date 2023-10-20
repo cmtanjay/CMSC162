@@ -24,7 +24,7 @@ class App(tk.Tk):
         
 
         # Gets the screen width and height
-        screen_width = self.winfo_screenwidth() - 100
+        screen_width = self.winfo_screenwidth() - 20
         screen_height = self.winfo_screenheight() - 100
 
         # Sets window size with screen dimension
