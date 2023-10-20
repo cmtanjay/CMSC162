@@ -140,6 +140,16 @@ class App(tk.Tk):
         # Configures Power-Law button
         btn_grayscale = tk.Button(self.topbar,  text="Power-Law", command=self.Power_law_transform, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
         btn_grayscale.grid(row=1, column=11, sticky="ew", padx=5, pady=10)
+        
+        # Configures Power-Law button
+        btn_avg_filter = tk.Button(self.sidebar,  text="Ave Filter", command=self.average_filter, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_avg_filter.grid(row=0, column=1, sticky="ew", padx=5, pady=10)
+        
+        btn_unsharp = tk.Button(self.sidebar,  text="Unsharp", command=self.unsharp_masking, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_unsharp.grid(row=1, column=1, sticky="ew", padx=5, pady=10)
+        
+        btn_highboost = tk.Button(self.sidebar,  text="High-boost", command=self.highboost_filter, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_highboost.grid(row=2, column=1, sticky="ew", padx=5, pady=10)
     
     # This is the function that opens the image file
     def open_img_file(self):
@@ -497,6 +507,12 @@ class App(tk.Tk):
                 draw_grayscale.rectangle([x1, y1, x2, y2], fill=(gray[i]))
                 
             self.show_image(grayscale_img)
+            
+            self.statusbar.destroy()
+            self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+            self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+            self.create_statusbar_canvas()
+            self.add_text_to_statusbar("Status: Image transformed to grayscale through transformation function (R+G+B)/3", x=250, y=20, fill="white", font=("Arial", 9,))
     
     # Function that transforms the RGB PCX file to Negative image
     def negative_transform(self):
@@ -528,13 +544,72 @@ class App(tk.Tk):
                 draw_negative.rectangle([x1, y1, x2, y2], fill=(255 - s))
                 
             self.show_image(negative_img)
+            
+            self.statusbar.destroy()
+            self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+            self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+            self.create_statusbar_canvas()
+            self.add_text_to_statusbar("Status: Image transformed to negative image through transformation function s = L - 1 - r", x=300, y=20, fill="white", font=("Arial", 9,))
     
     # Function that transforms the PCX image to Black/White via Manual Thresholding      
     def BW_manual_thresholding(self):
+        # Function that pops up a window that show a slider for the manual threshold value
+        def open_popup():
+            window = tk.Toplevel()
+            window.geometry("400x130+500+300")
+            window.title("Black/White via Manual Thresholding")
+            window.resizable(False, False)
+            # tk.Label(window, text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
+            
+            window.columnconfigure(0, weight=2)
+            window.columnconfigure(1, weight=5)
+            
+            current_value = tk.IntVar()
+            threshold = tk.IntVar()
+            
+            def entry_changed(event):
+                value = text_box.get()  # Get the value from the entry box
+                if value.isdigit():  # Check if the value is a valid integer
+                    current_value.set(int(value))  # Set the slider value to the entry value
+                else:
+                    # Handle invalid input (e.g., non-integer values)
+                    pass
+
+            def slider_changed(*args):
+                value = current_value.get()
+                text_box.delete(0, tk.END)  # Clear the entry box
+                text_box.insert(0, value)
+
+            def on_click():
+                value = current_value.get()
+                threshold.set(value)
+                window.destroy()
+
+            # label for the slider
+            ttk.Label(window, text='Slider:', font=('Arial 10 bold')).place(x=15, y=10)
+
+            #  slider
+            ttk.Scale(window, from_= 0, to = 255, orient='horizontal', command=slider_changed, variable=current_value, length=310).place(x=65, y=10)
+
+            # current value label
+            ttk.Label(window, text='Current Value:', font=('Arial 10 bold')).place(x=150, y=35)
+            
+            text_box = tk.Entry(window, bg="white", width=5, font=('Arial 13'))
+            text_box.place(x=160, y=55)
+            text_box.bind("<KeyRelease>", entry_changed)
+
+            current_value.trace("w", slider_changed)
+            
+            btn = tk.Button(window, command=on_click, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+            btn.place(x=165, y=85)
+            
+            window.wait_window(window)  # Wait for the window to be destroyed
+            return threshold.get()
+        
         if not self.pcx_image_data:
             print("WALAAAAAA")
         else:
-            threshold = self.open_popup()
+            threshold = open_popup()
             BW_img = Image.new('L', (self.width, self.height), 255)
             draw_BW = ImageDraw.Draw(BW_img)
             
@@ -565,66 +640,48 @@ class App(tk.Tk):
                 draw_BW.rectangle([x1, y1, x2, y2], fill=s)
                 
             self.show_image(BW_img)
-    
-    # Function that pops up a window that show a slider for the manual threshold value
-    def open_popup(self):
-        window = tk.Toplevel()
-        window.geometry("400x130+500+300")
-        window.title("Black/White via Manual Thresholding")
-        window.resizable(False, False)
-        # tk.Label(window, text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
-        
-        window.columnconfigure(0, weight=2)
-        window.columnconfigure(1, weight=5)
-        
-        current_value = tk.IntVar()
-        threshold = tk.IntVar()
-        
-        def entry_changed(event):
-            value = text_box.get()  # Get the value from the entry box
-            if value.isdigit():  # Check if the value is a valid integer
-                current_value.set(int(value))  # Set the slider value to the entry value
-            else:
-                # Handle invalid input (e.g., non-integer values)
-                pass
-
-        def slider_changed(*args):
-            value = current_value.get()
-            text_box.delete(0, tk.END)  # Clear the entry box
-            text_box.insert(0, value)
-
-        def on_click():
-            value = current_value.get()
-            threshold.set(value)
-            window.destroy()
-
-        # label for the slider
-        ttk.Label(window, text='Slider:', font=('Arial 10 bold')).place(x=15, y=10)
-
-        #  slider
-        ttk.Scale(window, from_= 0, to = 255, orient='horizontal', command=slider_changed, variable=current_value, length=310).place(x=65, y=10)
-
-        # current value label
-        ttk.Label(window, text='Current Value:', font=('Arial 10 bold')).place(x=150, y=35)
-        
-        text_box = tk.Entry(window, bg="white", width=5, font=('Arial 13'))
-        text_box.place(x=160, y=55)
-        text_box.bind("<KeyRelease>", entry_changed)
-
-        current_value.trace("w", slider_changed)
-        
-        btn = tk.Button(window, command=on_click, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        btn.place(x=165, y=85)
-        
-        window.wait_window(window)  # Wait for the window to be destroyed
-        return threshold.get()
+            
+            self.statusbar.destroy()
+            self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+            self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+            self.create_statusbar_canvas()
+            self.add_text_to_statusbar(f"Status: Image transformed to Black&White at threshold = {threshold}", x=200, y=20, fill="white", font=("Arial", 9,))
     
     # Function that executes the Power-Law (Gamma) Transformation to the PCX file
     def Power_law_transform(self):
+        # Function that pops up a window that lets the user input the gamma value    
+        def open_popup():
+            window = tk.Toplevel()
+            window.geometry("400x130+500+300")
+            window.title("Power-Law Transformation")
+            window.resizable(False, False)
+            # tk.Label(window, text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
+            
+            window.columnconfigure(0, weight=2)
+            window.columnconfigure(1, weight=5)
+            
+            current_value = tk.DoubleVar(value=0.0)
+
+            def on_click():
+                window.destroy()
+
+            # current value label
+            ttk.Label(window, text='Current Gamma Value:', font=('Arial 10 bold')).place(x=150, y=35)
+            
+            text_box = tk.Entry(window, bg="white", textvariable=current_value, width=5, font=('Arial 13'))
+            text_box.place(x=160, y=55)
+            
+            btn = tk.Button(window, command=on_click, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+            btn.place(x=165, y=85)
+            
+            window.wait_window(window)  # Wait for the window to be destroyed
+            
+            return current_value.get()
+        
         if not self.pcx_image_data:
             print("WALAAAAAA")
         else:
-            gamma = self.open_popup_gamma()
+            gamma = open_popup()
             PL_img = Image.new('L', (self.width, self.height), 255)
             draw_PL = ImageDraw.Draw(PL_img)
             
@@ -654,34 +711,281 @@ class App(tk.Tk):
                 draw_PL.rectangle([x1, y1, x2, y2], fill=s)
                 
             self.show_image(PL_img)
+            
+            self.statusbar.destroy()
+            self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+            self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+            self.create_statusbar_canvas()
+            self.add_text_to_statusbar(f"Status: Image transformed through transformation function s=c*r^(gamma) where c = 1 and gamma = {gamma}", x=330, y=20, fill="white", font=("Arial", 9,))
     
-    # Function that pops up a window that lets the user input the gamma value    
-    def open_popup_gamma(self):
-        window = tk.Toplevel()
-        window.geometry("400x130+500+300")
-        window.title("Power-Law Transformation")
-        window.resizable(False, False)
-        # tk.Label(window, text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
+    # Function that implements the averaging filter which blurs the image
+    def average_filter(self):
+        # Function that gets the average pixel value encompassed by an nxn mask
+        def get_pixel_value(mask, neighbors):
+            avg = 0
+            for i in range(len(mask)):
+                for j in range(len(mask[0])):
+                    avg += neighbors[i][j]*mask[i][j]
+            
+            return int(avg)
         
-        window.columnconfigure(0, weight=2)
-        window.columnconfigure(1, weight=5)
-        
-        current_value = tk.DoubleVar(value=0.0)
+        if not self.pcx_image_data:
+            print("WALAAAAAA")
+        else:
+            avg_filtered_img = Image.new('L', (self.width, self.height), 255)
+            draw_avg_filtered = ImageDraw.Draw(avg_filtered_img)
+            
+            # Initializes the n x n mask
+            n = 3
+            radius = n//2
+            mask = [[1/(n*n) for i in range(n)] for j in range(n)]
+            
+            gray = []
+            row = []
 
-        def on_click():
-            window.destroy()
+            # Transforms image to grayscale
+            for i, color in enumerate(self.pcx_image_data):
+                rgb = list(self.palette[color])
+                if i % self.width == 0:
+                    if i == 0:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+                    else:
+                        gray.append(row)
+                        row = []
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+                else:
+                    if i == len(self.pcx_image_data)-1:
+                        gray.append(row)
+                    else:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+            
+            copy = gray
+            
+            # Updates current pixel value with the average of the sum of it and its neighbors in an nxn mask
+            neighbors = []
+            for i in range(radius, self.height-radius-1):
+                for j in range(radius, self.width-radius-1):
+                    neighbors = self.get_neighbors(i, j, radius, gray)
+                    copy[i][j] = get_pixel_value(mask, neighbors)
+            
+            copy2 = [element for row in copy for element in row]
+                    
+            block_size = 1
+            
+            # Draw the colored blocks on the image
+            for i, color in enumerate(copy2):
+                if i % self.width == 0:
+                    x1 = 0
+                    y1 = i // self.width
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                else:
+                    x1 = (i % self.width) * block_size
+                    y1 = (i // self.width) * block_size
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                    
+                draw_avg_filtered.rectangle([x1, y1, x2, y2], fill=color)
+                
+            self.show_image(avg_filtered_img)
+            
+            self.statusbar.destroy()
+            self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+            self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+            self.create_statusbar_canvas()
+            self.add_text_to_statusbar(f"Status: Averaging filter is applied to the image on a {n}x{n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
+    
+    # Function that implements the unsharp masking       
+    def unsharp_masking(self):
+        # Function that gets the average pixel value encompassed by an nxn mask
+        def get_pixel_value(mask, neighbors):
+            avg = 0
+            for i in range(len(mask)):
+                for j in range(len(mask[0])):
+                    avg += neighbors[i][j]*mask[i][j]
+            
+            return int(avg)
+        
+        if not self.pcx_image_data:
+            print("WALAAAAAA")
+        else:
+            unsharp_masked_img = Image.new('L', (self.width, self.height), 255)
+            draw_avg_filtered = ImageDraw.Draw(unsharp_masked_img)
+            
+            # Initializes the n x n mask
+            n = 3
+            radius = n//2
+            mask = [[1/(n*n) for i in range(n)] for j in range(n)]
+            
+            gray_orig = []
+            row = []
 
-        # current value label
-        ttk.Label(window, text='Current Value:', font=('Arial 10 bold')).place(x=150, y=35)
+            # Transforms image to grayscale
+            for i, color in enumerate(self.pcx_image_data):
+                rgb = list(self.palette[color])
+                if i % self.width == 0:
+                    if i == 0:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+                    else:
+                        gray_orig.append(row)
+                        row = []
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+                else:
+                    if i == len(self.pcx_image_data)-1:
+                        gray_orig.append(row)
+                    else:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+            
+            flat_gray_orig = [element for row in gray_orig for element in row]
+            blur_pixels = gray_orig
+            
+            # Blurs the image
+            neighbors = []
+            for i in range(radius, self.height-radius-1):
+                for j in range(radius, self.width-radius-1):
+                    neighbors = self.get_neighbors(i, j, radius, gray_orig)
+                    blur_pixels[i][j] = get_pixel_value(mask, neighbors)
+            
+            flat_blur_pixels = [element for row in blur_pixels for element in row]
+            
+            # Obtains the mask
+            unsharp_mask = []
+            
+            for orig_pixel, blur_pixel in zip(flat_gray_orig, flat_blur_pixels):
+                unsharp_mask.append(orig_pixel - blur_pixel)
+            
+            img_result = []
+            k=1
+            
+            # Adds the mask to the original image  
+            for orig_pixel, value in zip(flat_gray_orig, unsharp_mask):
+                img_result.append(orig_pixel + (k * value))
+                    
+            block_size = 1
+            
+            # Draw the colored blocks on the image
+            for i, color in enumerate(img_result):
+                if i % self.width == 0:
+                    x1 = 0
+                    y1 = i // self.width
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                else:
+                    x1 = (i % self.width) * block_size
+                    y1 = (i // self.width) * block_size
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                    
+                draw_avg_filtered.rectangle([x1, y1, x2, y2], fill=color)
+                
+            self.show_image(unsharp_masked_img)
+            self.statusbar.destroy()
+            self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+            self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+            self.create_statusbar_canvas()
+            self.add_text_to_statusbar(f"Status: Unsharp masking is applied to the image", x=180, y=20, fill="white", font=("Arial", 9,))
+    
+    # Function that implements the Highboost filtering        
+    def highboost_filter(self):
+        # Function that gets the average pixel value encompassed by an nxn mask
+        def get_pixel_value(mask, neighbors):
+            avg = 0
+            for i in range(len(mask)):
+                for j in range(len(mask[0])):
+                    avg += neighbors[i][j]*mask[i][j]
+                    
+            return int(avg)       
         
-        text_box = tk.Entry(window, bg="white", textvariable=current_value, width=5, font=('Arial 13'))
-        text_box.place(x=160, y=55)
-        
-        btn = tk.Button(window, command=on_click, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        btn.place(x=165, y=85)
-        
-        window.wait_window(window)  # Wait for the window to be destroyed
-        return current_value.get()
+        if not self.pcx_image_data:
+            print("WALAAAAAA")
+        else:
+            highpass_filtered_img = Image.new('L', (self.width, self.height), 255)
+            draw_avg_filtered = ImageDraw.Draw(highpass_filtered_img)
+            
+            # Initializes the n x n mask
+            n = 3
+            radius = n//2
+            mask = [[1/(n*n) for i in range(n)] for j in range(n)]
+            
+            gray_orig = []
+            row = []
+
+            # Transforms image to grayscale
+            for i, color in enumerate(self.pcx_image_data):
+                rgb = list(self.palette[color])
+                if i % self.width == 0:
+                    if i == 0:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+                    else:
+                        gray_orig.append(row)
+                        row = []
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+                else:
+                    if i == len(self.pcx_image_data)-1:
+                        gray_orig.append(row)
+                    else:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+            
+            flat_gray_orig = [element for row in gray_orig for element in row]
+            blur_pixels = gray_orig
+            
+            # Gets lowpass filtered version of image
+            neighbors = []
+            for i in range(radius, self.height-radius-1):
+                for j in range(radius, self.width-radius-1):
+                    neighbors = self.get_neighbors(i, j, radius, gray_orig)
+                    blur_pixels[i][j] = get_pixel_value(mask, neighbors)
+            
+            flat_blur_pixels = [element for row in blur_pixels for element in row]
+            
+            highpass = []
+            
+            # Gets the highpass filtered image
+            for orig_pixel, blur_pixel in zip(flat_gray_orig, flat_blur_pixels):
+                highpass.append(orig_pixel - blur_pixel)
+            
+            img_result = []
+            A = 3.5
+            
+            # Adds the highpass image to the original image multiplied by an amplification value A-1    
+            for orig_pixel, value in zip(flat_gray_orig, highpass):
+                img_result.append(int(((A-1)*orig_pixel) + value))
+                    
+            block_size = 1
+            
+            # Draw the colored blocks on the image
+            for i, color in enumerate(img_result):
+                if i % self.width == 0:
+                    x1 = 0
+                    y1 = i // self.width
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                else:
+                    x1 = (i % self.width) * block_size
+                    y1 = (i // self.width) * block_size
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                
+                draw_avg_filtered.rectangle([x1, y1, x2, y2], fill=color)
+                
+            self.show_image(highpass_filtered_img)
+            
+            self.statusbar.destroy()
+            self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+            self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+            self.create_statusbar_canvas()
+            self.add_text_to_statusbar(f"Status: Highboost filter is applied to the image where the amplification parameter is 3.5", x=300, y=20, fill="white", font=("Arial", 9,))
+    
+    # Function that gets the neighboring pixels of a particular pixel in an image
+    def get_neighbors(self, row_index, column_index, radius, grid):
+        neighbors = []
+        for i in range(row_index-radius, row_index+radius+1):
+            row = []
+            for j in range(column_index-radius, column_index+radius+1):
+                row.append(grid[i][j])   
+            neighbors.append(row)
+                
+        return neighbors        
     
     # Function that closes the image file being displayed    
     def close_img(self):
