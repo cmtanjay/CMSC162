@@ -1290,18 +1290,44 @@ class App(tk.Tk):
             padded_rows = self.height + 2*radius
             padded_cols = self.width + 2*radius
             
-            # Create the padded array and initialize with zeros
-            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
-            
+            # Create the padded array and implement clamp padding
+            clamp_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
+
             # Copy the contents of the original array to the center of the padded array
             for i in range(self.height):
                 for j in range(self.width):
-                    zero_padded_img[i + radius][j + radius] = gray[i][j]
-                    
-            print(zero_padded_img)
+                    # Use clamp padding to set border values
+                    padded_i = i + radius
+                    padded_j = j + radius
+                    clamp_padded_img[padded_i][padded_j] = gray[i][j]
 
-            # Apply Sobel operator to the grayscale image
-            sobel_result = sobelOperator(zero_padded_img)
+            # Fill in the border values using clamp padding
+            for i in range(padded_rows):
+                for j in range(padded_cols):
+                    if i < radius:
+                        # Clamp padding for the top border
+                        padded_i = radius
+                    elif i >= self.height + radius:
+                        # Clamp padding for the bottom border
+                        padded_i = self.height + radius - 1
+                    else:
+                        padded_i = i
+
+                    if j < radius:
+                        # Clamp padding for the left border
+                        padded_j = radius
+                    elif j >= self.width + radius:
+                        # Clamp padding for the right border
+                        padded_j = self.width + radius - 1
+                    else:
+                        padded_j = j
+
+                    clamp_padded_img[i][j] = gray[padded_i - radius][padded_j - radius]
+
+            print(clamp_padded_img)
+
+            # Apply Sobel operator to the grayscale image with clamp padding
+            sobel_result = sobelOperator(clamp_padded_img)
 
             grdn_filtered_img = Image.new('L', (self.width, self.height), 255)
             draw_grdn_filtered = ImageDraw.Draw(grdn_filtered_img)
