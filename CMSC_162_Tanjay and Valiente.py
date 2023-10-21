@@ -1229,8 +1229,6 @@ class App(tk.Tk):
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
             self.add_text_to_statusbar(f"Status: Laplacian filter is applied to the image on a {n}x{n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
-
-     # Function for Laplacian
     
     # Function for Gradient filter using Sobel Operator
     def gradient_filter(self):
@@ -1253,20 +1251,27 @@ class App(tk.Tk):
 
                 rows = len(image)
                 cols = len(image[0])
-                mag = [[0] * cols for _ in range(rows)]  # Initialize output differential/gradient
+                mag = [[0] * (cols-2) for _ in range(rows-2)]  # Initialize output differential/gradient
 
-                for i in range(1, rows - 2):
-                    for j in range(1, cols - 2):
-                        S1 = sum(image[i + m][j + n] * Gx[m][n] for m in range(3) for n in range(3))
-                        S2 = sum(image[i + m][j + n] * Gy[m][n] for m in range(3) for n in range(3))
-                        mag[i + 1][j + 1] = ((S1 ** 2) + (S2 ** 2)) ** 0.5
+                r = 0
+                for i in range(1, rows-1):
+                    c = 0
+                    for j in range(1, cols-1):
+                        S1 = sum(image[(i-1) + m][(j-1) + n] * Gx[m][n] for m in range(3) for n in range(3))
+                        S2 = sum(image[(i-1) + m][(j-1) + n] * Gy[m][n] for m in range(3) for n in range(3))
+                        mag[r][c] = int(((S1 ** 2) + (S2 ** 2)) ** 0.5)
+                        # print(f"{r},{c}")
+                        c+=1
+                    r+=1
 
+                print(mag[0][0])
                 max_magnitude = max(max(row) for row in mag)
 
-                for i in range(rows):
-                    for j in range(cols):
+                for i in range(rows-2):
+                    for j in range(cols-2):
                         mag[i][j] = int(255.0 * mag[i][j] / max_magnitude)
 
+                print(mag[0][0])
                 return mag
 
             gray = []
@@ -1282,8 +1287,21 @@ class App(tk.Tk):
                     gray.append(row)
                     row = []
 
+            padded_rows = self.height + 2*radius
+            padded_cols = self.width + 2*radius
+            
+            # Create the padded array and initialize with zeros
+            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
+            
+            # Copy the contents of the original array to the center of the padded array
+            for i in range(self.height):
+                for j in range(self.width):
+                    zero_padded_img[i + radius][j + radius] = gray[i][j]
+                    
+            print(zero_padded_img)
+
             # Apply Sobel operator to the grayscale image
-            sobel_result = sobelOperator(gray)
+            sobel_result = sobelOperator(zero_padded_img)
 
             grdn_filtered_img = Image.new('L', (self.width, self.height), 255)
             draw_grdn_filtered = ImageDraw.Draw(grdn_filtered_img)
