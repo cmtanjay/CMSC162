@@ -156,6 +156,9 @@ class App(tk.Tk):
 
         btn_laplacian = tk.Button(self.sidebar,  text="Laplacian", command=self.laplacian_filter, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
         btn_laplacian.grid(row=4, column=1, sticky="ew", padx=5, pady=10)
+
+        btn_gradient = tk.Button(self.sidebar,  text="Gradient", command=self.gradient_filter, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_gradient.grid(row=5, column=1, sticky="ew", padx=5, pady=10)
     
     # This is the function that opens the image file
     def open_img_file(self):
@@ -1108,6 +1111,91 @@ class App(tk.Tk):
             n = 3
             radius = n//2
             mask = [ [0,1,0] , [1,-4,1] , [0,1,0] ]
+            
+            gray = []
+            row = []
+
+            # Transforms image to grayscale
+            for i, color in enumerate(self.pcx_image_data):
+                rgb = list(self.palette[color])
+                if i % self.width == 0:
+                    if i == 0:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+                    else:
+                        gray.append(row)
+                        row = []
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+                else:
+                    if i == len(self.pcx_image_data)-1:
+                        gray.append(row)
+                    else:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+            
+            copy = gray
+            
+            # Updates current pixel value with the median in the center of the nxn mask
+            neighbors = []
+            for i in range(radius, self.height-radius-1):
+                for j in range(radius, self.width-radius-1):
+                    neighbors = self.get_neighbors(i, j, radius, gray)
+                    copy[i][j] = get_pixel_value(mask, neighbors)
+            
+            copy2 = [element for row in copy for element in row]
+                    
+            block_size = 1
+            
+            # Draw the colored blocks on the image
+            for i, color in enumerate(copy2):
+                if i % self.width == 0:
+                    x1 = 0
+                    y1 = i // self.width
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                else:
+                    x1 = (i % self.width) * block_size
+                    y1 = (i // self.width) * block_size
+                    x2 = x1 + block_size
+                    y2 = y1 + block_size
+                    
+                draw_mdn_filtered.rectangle([x1, y1, x2, y2], fill=color)
+                
+            self.show_image(mdn_filtered_img)
+            
+            self.statusbar.destroy()
+            self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+            self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+            self.create_statusbar_canvas()
+            self.add_text_to_statusbar(f"Status: Median filter is applied to the image on a {n}x{n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
+
+     # Function for Laplacian
+    
+    # Function for Gradient filter using Sobel Operator
+    def gradient_filter(self):
+        # Function that gets the median pixel value encompassed by an nxn mask
+        def get_pixel_value(mask, neighbors):
+            lap_val = 0
+          
+            for i in range(len(mask)):
+                for j in range(len(mask[i])):
+                    lap_val += mask[i][j]*neighbors[i][j]
+
+            if lap_val < 0:
+                lap_val = 0
+            elif lap_val > 300:
+                lap_val = 1
+            
+            return int(lap_val)
+        
+        if not self.pcx_image_data:
+            print("WALAAAAAA")
+        else:
+            mdn_filtered_img = Image.new('L', (self.width, self.height), 255)
+            draw_mdn_filtered = ImageDraw.Draw(mdn_filtered_img)
+            
+            # Initializes the n x n mask
+            n = 3
+            radius = n//2
+            mask = [ [-1,-2,-1] , [0,0,0] , [1,2,1] ]
             
             gray = []
             row = []
