@@ -764,17 +764,30 @@ class App(tk.Tk):
                         row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
                 else:
                     if i == len(self.pcx_image_data)-1:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
                         gray.append(row)
                     else:
                         row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+                        
             
-            copy = gray
+            copy = [row[:] for row in gray]
+            
+            padded_rows = self.height + 2*radius
+            padded_cols = self.width + 2*radius
+            
+            # Create the padded array and initialize with zeros
+            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
+            
+            # Copy the contents of the original array to the center of the padded array
+            for i in range(self.height):
+                for j in range(self.width):
+                    zero_padded_img[i + radius][j + radius] = copy[i][j]
             
             # Updates current pixel value with the average of the sum of it and its neighbors in an nxn mask
             neighbors = []
-            for i in range(radius, self.height-radius-1):
-                for j in range(radius, self.width-radius-1):
-                    neighbors = self.get_neighbors(i, j, radius, gray)
+            for i in range(self.height):
+                for j in range(self.width):
+                    neighbors = self.get_neighbors(i+radius, j+radius, radius, zero_padded_img)
                     copy[i][j] = get_pixel_value(mask, neighbors)
             
             copy2 = [element for row in copy for element in row]
@@ -841,18 +854,30 @@ class App(tk.Tk):
                         row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
                 else:
                     if i == len(self.pcx_image_data)-1:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
                         gray_orig.append(row)
                     else:
                         row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
             
             flat_gray_orig = [element for row in gray_orig for element in row]
-            blur_pixels = gray_orig
+            blur_pixels = [row[:] for row in gray_orig]
+            
+            padded_rows = self.height + 2*radius
+            padded_cols = self.width + 2*radius
+            
+            # Create the padded array and initialize with zeros
+            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
+            
+            # Copy the contents of the original array to the center of the padded array
+            for i in range(self.height):
+                for j in range(self.width):
+                    zero_padded_img[i + radius][j + radius] = blur_pixels[i][j]
             
             # Blurs the image
             neighbors = []
-            for i in range(radius, self.height-radius-1):
-                for j in range(radius, self.width-radius-1):
-                    neighbors = self.get_neighbors(i, j, radius, gray_orig)
+            for i in range(self.height):
+                for j in range(self.width):
+                    neighbors = self.get_neighbors(i+radius, j+radius, radius, zero_padded_img)
                     blur_pixels[i][j] = get_pixel_value(mask, neighbors)
             
             flat_blur_pixels = [element for row in blur_pixels for element in row]
@@ -931,18 +956,30 @@ class App(tk.Tk):
                         row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
                 else:
                     if i == len(self.pcx_image_data)-1:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
                         gray_orig.append(row)
                     else:
                         row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
             
             flat_gray_orig = [element for row in gray_orig for element in row]
-            blur_pixels = gray_orig
+            blur_pixels = [row[:] for row in gray_orig]
             
-            # Gets lowpass filtered version of image
+            padded_rows = self.height + 2*radius
+            padded_cols = self.width + 2*radius
+            
+            # Create the padded array and initialize with zeros
+            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
+            
+            # Copy the contents of the original array to the center of the padded array
+            for i in range(self.height):
+                for j in range(self.width):
+                    zero_padded_img[i + radius][j + radius] = blur_pixels[i][j]
+            
+            # Blurs the image
             neighbors = []
-            for i in range(radius, self.height-radius-1):
-                for j in range(radius, self.width-radius-1):
-                    neighbors = self.get_neighbors(i, j, radius, gray_orig)
+            for i in range(self.height):
+                for j in range(self.width):
+                    neighbors = self.get_neighbors(i+radius, j+radius, radius, zero_padded_img)
                     blur_pixels[i][j] = get_pixel_value(mask, neighbors)
             
             flat_blur_pixels = [element for row in blur_pixels for element in row]
@@ -988,10 +1025,11 @@ class App(tk.Tk):
     # Function that gets the neighboring pixels of a particular pixel in an image
     def get_neighbors(self, row_index, column_index, radius, grid):
         neighbors = []
-        for i in range(row_index-radius, row_index+radius+1):
+        for i in range(row_index-radius, row_index+2*radius):
             row = []
-            for j in range(column_index-radius, column_index+radius+1):
-                row.append(grid[i][j])   
+            for j in range(column_index-radius, column_index+2*radius):
+                row.append(grid[i][j])  
+                
             neighbors.append(row)
                 
         return neighbors        
@@ -1044,20 +1082,32 @@ class App(tk.Tk):
                         row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
                 else:
                     if i == len(self.pcx_image_data)-1:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
                         gray.append(row)
                     else:
                         row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
             
-            copy = gray
+            blur_pixels = [row[:] for row in gray]
             
-            # Updates current pixel value with the median in the center of the nxn mask
+            padded_rows = self.height + 2*radius
+            padded_cols = self.width + 2*radius
+            
+            # Create the padded array and initialize with zeros
+            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
+            
+            # Copy the contents of the original array to the center of the padded array
+            for i in range(self.height):
+                for j in range(self.width):
+                    zero_padded_img[i + radius][j + radius] = blur_pixels[i][j]
+            
+            # Blurs the image
             neighbors = []
-            for i in range(radius, self.height-radius-1):
-                for j in range(radius, self.width-radius-1):
-                    neighbors = self.get_neighbors(i, j, radius, gray)
-                    copy[i][j] = get_pixel_value(mask, neighbors)
+            for i in range(self.height):
+                for j in range(self.width):
+                    neighbors = self.get_neighbors(i+radius, j+radius, radius, zero_padded_img)
+                    blur_pixels[i][j] = get_pixel_value(mask, neighbors)
             
-            copy2 = [element for row in copy for element in row]
+            copy2 = [element for row in blur_pixels for element in row]
                     
             block_size = 1
             
@@ -1093,7 +1143,7 @@ class App(tk.Tk):
             for i in range(len(mask)):
                 for j in range(len(mask[i])):
                     lap_val += mask[i][j]*neighbors[i][j]
-
+            
             if lap_val < 0:
                 lap_val = 0
             elif lap_val > 255:
@@ -1127,17 +1177,29 @@ class App(tk.Tk):
                         row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
                 else:
                     if i == len(self.pcx_image_data)-1:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
                         gray.append(row)
                     else:
                         row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
             
-            copy = gray
+            copy = [row[:] for row in gray]
             
-            # Updates current pixel value with the median in the center of the nxn mask
+            padded_rows = self.height + 2*radius
+            padded_cols = self.width + 2*radius
+            
+            # Create the padded array and initialize with zeros
+            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
+            
+            # Copy the contents of the original array to the center of the padded array
+            for i in range(self.height):
+                for j in range(self.width):
+                    zero_padded_img[i + radius][j + radius] = copy[i][j]
+            
+            # Blurs the image
             neighbors = []
-            for i in range(radius, self.height-radius-1):
-                for j in range(radius, self.width-radius-1):
-                    neighbors = self.get_neighbors(i, j, radius, gray)
+            for i in range(self.height):
+                for j in range(self.width):
+                    neighbors = self.get_neighbors(i+radius, j+radius, radius, zero_padded_img)
                     copy[i][j] = get_pixel_value(mask, neighbors)
             
             copy2 = [element for row in copy for element in row]
@@ -1156,7 +1218,8 @@ class App(tk.Tk):
                     y1 = (i // self.width) * block_size
                     x2 = x1 + block_size
                     y2 = y1 + block_size
-                    
+                
+                # print(color)    
                 draw_mdn_filtered.rectangle([x1, y1, x2, y2], fill=color)
                 
             self.show_image(mdn_filtered_img)
@@ -1212,17 +1275,29 @@ class App(tk.Tk):
                         row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
                 else:
                     if i == len(self.pcx_image_data)-1:
+                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
                         gray.append(row)
                     else:
                         row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
             
-            copy = gray
+            copy = [row[:] for row in gray]
             
-            # Updates current pixel value with the median in the center of the nxn mask
+            padded_rows = self.height + 2*radius
+            padded_cols = self.width + 2*radius
+            
+            # Create the padded array and initialize with zeros
+            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
+            
+            # Copy the contents of the original array to the center of the padded array
+            for i in range(self.height):
+                for j in range(self.width):
+                    zero_padded_img[i + radius][j + radius] = copy[i][j]
+            
+            # Blurs the image
             neighbors = []
-            for i in range(radius, self.height-radius-1):
-                for j in range(radius, self.width-radius-1):
-                    neighbors = self.get_neighbors(i, j, radius, gray)
+            for i in range(self.height):
+                for j in range(self.width):
+                    neighbors = self.get_neighbors(i+radius, j+radius, radius, zero_padded_img)
                     copy[i][j] = get_pixel_value(mask, neighbors)
             
             copy2 = [element for row in copy for element in row]
