@@ -24,7 +24,7 @@ class App(tk.Tk):
         
 
         # Gets the screen width and height
-        screen_width = self.winfo_screenwidth() - 20
+        screen_width = self.winfo_screenwidth() - 10
         screen_height = self.winfo_screenheight() - 100
 
         # Sets window size with screen dimension
@@ -1154,8 +1154,8 @@ class App(tk.Tk):
         if not self.pcx_image_data:
             print("WALAAAAAA")
         else:
-            mdn_filtered_img = Image.new('L', (self.width, self.height), 255)
-            draw_mdn_filtered = ImageDraw.Draw(mdn_filtered_img)
+            lapla_filtered_img = Image.new('L', (self.width, self.height), 255)
+            draw_lapla_filtered = ImageDraw.Draw(lapla_filtered_img)
             
             # Initializes the n x n mask
             n = 3
@@ -1220,113 +1220,91 @@ class App(tk.Tk):
                     y2 = y1 + block_size
                 
                 # print(color)    
-                draw_mdn_filtered.rectangle([x1, y1, x2, y2], fill=color)
+                draw_lapla_filtered.rectangle([x1, y1, x2, y2], fill=color)
                 
-            self.show_image(mdn_filtered_img)
+            self.show_image(lapla_filtered_img)
             
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Median filter is applied to the image on a {n}x{n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
+            self.add_text_to_statusbar(f"Status: Laplacian filter is applied to the image on a {n}x{n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
 
      # Function for Laplacian
     
     # Function for Gradient filter using Sobel Operator
     def gradient_filter(self):
-        # Function that gets the median pixel value encompassed by an nxn mask
-        def get_pixel_value(mask, neighbors):
-            lap_val = 0
-          
-            for i in range(len(mask)):
-                for j in range(len(mask[i])):
-                    lap_val += mask[i][j]*neighbors[i][j]
-
-            if lap_val < 0:
-                lap_val = 0
-            elif lap_val > 300:
-                lap_val = 1
-            
-            return int(lap_val)
-        
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No image data available.")
         else:
-            mdn_filtered_img = Image.new('L', (self.width, self.height), 255)
-            draw_mdn_filtered = ImageDraw.Draw(mdn_filtered_img)
-            
             # Initializes the n x n mask
             n = 3
-            radius = n//2
-            mask = [ [-1,-2,-1] , [0,0,0] , [1,2,1] ]
-            
+            radius = n // 2
+
+            # Sobel Operator
+            def sobelOperator(image):
+                Gx = [[1, 0, -1],
+                      [2, 0, -2],
+                      [1, 0, -1]]
+
+                Gy = [[1, 2, 1],
+                      [0, 0, 0],
+                      [-1, -2, -1]]
+
+                rows = len(image)
+                cols = len(image[0])
+                mag = [[0] * cols for _ in range(rows)]  # Initialize output differential/gradient
+
+                for i in range(1, rows - 2):
+                    for j in range(1, cols - 2):
+                        S1 = sum(image[i + m][j + n] * Gx[m][n] for m in range(3) for n in range(3))
+                        S2 = sum(image[i + m][j + n] * Gy[m][n] for m in range(3) for n in range(3))
+                        mag[i + 1][j + 1] = ((S1 ** 2) + (S2 ** 2)) ** 0.5
+
+                max_magnitude = max(max(row) for row in mag)
+
+                for i in range(rows):
+                    for j in range(cols):
+                        mag[i][j] = int(255.0 * mag[i][j] / max_magnitude)
+
+                return mag
+
             gray = []
             row = []
 
             # Transforms image to grayscale
             for i, color in enumerate(self.pcx_image_data):
                 rgb = list(self.palette[color])
-                if i % self.width == 0:
-                    if i == 0:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                    else:
-                        gray.append(row)
-                        row = []
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                else:
-                    if i == len(self.pcx_image_data)-1:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                        gray.append(row)
-                    else:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-            
-            copy = [row[:] for row in gray]
-            
-            padded_rows = self.height + 2*radius
-            padded_cols = self.width + 2*radius
-            
-            # Create the padded array and initialize with zeros
-            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
-            
-            # Copy the contents of the original array to the center of the padded array
-            for i in range(self.height):
-                for j in range(self.width):
-                    zero_padded_img[i + radius][j + radius] = copy[i][j]
-            
-            # Blurs the image
-            neighbors = []
-            for i in range(self.height):
-                for j in range(self.width):
-                    neighbors = self.get_neighbors(i+radius, j+radius, radius, zero_padded_img)
-                    copy[i][j] = get_pixel_value(mask, neighbors)
-            
-            copy2 = [element for row in copy for element in row]
-                    
-            block_size = 1
-            
-            # Draw the colored blocks on the image
-            for i, color in enumerate(copy2):
-                if i % self.width == 0:
-                    x1 = 0
-                    y1 = i // self.width
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                else:
-                    x1 = (i % self.width) * block_size
-                    y1 = (i // self.width) * block_size
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                    
-                draw_mdn_filtered.rectangle([x1, y1, x2, y2], fill=color)
-                
-            self.show_image(mdn_filtered_img)
-            
+                grayscale_value = (int)((rgb[0] + rgb[1] + rgb[2]) / 3)
+                row.append(grayscale_value)
+
+                if len(row) == self.width:
+                    gray.append(row)
+                    row = []
+
+            # Apply Sobel operator to the grayscale image
+            sobel_result = sobelOperator(gray)
+
+            grdn_filtered_img = Image.new('L', (self.width, self.height), 255)
+            draw_grdn_filtered = ImageDraw.Draw(grdn_filtered_img)
+
+            # Draw the Sobel result
+            for i, row in enumerate(sobel_result):
+                for j, color in enumerate(row):
+                    x1 = j
+                    y1 = i
+                    x2 = x1 + 1
+                    y2 = y1 + 1
+
+                    draw_grdn_filtered.rectangle([x1, y1, x2, y2], fill=color)
+
+            self.show_image(grdn_filtered_img)
+
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Median filter is applied to the image on a {n}x{n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
- 
+            self.add_text_to_statusbar(f"Status: Gradient filter using the Sobel edge detection is applied to the image", x=180, y=20, fill="white", font=("Arial", 9,))
 
     # Function that closes the image file being displayed    
     def close_img(self):
