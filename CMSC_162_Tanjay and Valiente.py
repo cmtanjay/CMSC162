@@ -2,7 +2,7 @@ from PIL import Image, ImageTk, ImageDraw #pip install pillow
 import tkinter as tk #pip install tk
 from tkinter import ttk
 from customtkinter import *
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -13,9 +13,11 @@ class App(tk.Tk):
         super().__init__()
         
         self.orig_img = None
+        self.curr_img = None
         self.red_channel = []
         self.green_channel = []
         self.blue_channel = []
+        self.n = 3
 
         # Configures the app window
         self.title("Image Processor")
@@ -64,6 +66,10 @@ class App(tk.Tk):
 
         # Adds menu items to the File menu
         file_menu.add_command(label='New')
+        file_menu.add_separator()
+        
+        # Adds menu items to the File menu
+        file_menu.add_command(label='Save as', command=self.save_file_as)
         file_menu.add_separator()
 
         # Adds Exit menu item
@@ -114,15 +120,15 @@ class App(tk.Tk):
         btn_orig_img.grid(row=1, column=4, sticky="ew", padx=5, pady=10)
         
         # Configures red channel button
-        btn_red_channel = tk.Button(self.topbar,  text="Red Channel", command=lambda: self.show_channel(self.red_channel, "red"), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_red_channel = tk.Button(self.topbar,  text="     ", command=lambda: self.show_channel(self.red_channel, "red"), font=("Arial", 10), background="#FF0000", foreground="white",relief="ridge", borderwidth=2)
         btn_red_channel.grid(row=1, column=5, sticky="ew", padx=5, pady=10)
         
         # Configures green channel button
-        btn_green_channel = tk.Button(self.topbar,  text="Green Channel", command=lambda: self.show_channel(self.green_channel, "green"), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_green_channel = tk.Button(self.topbar,  text="     ", command=lambda: self.show_channel(self.green_channel, "green"), font=("Arial", 10), background="#00FF00", foreground="white",relief="ridge", borderwidth=2)
         btn_green_channel.grid(row=1, column=6, sticky="ew", padx=5, pady=10)
         
         # Configures blue channel button
-        btn_blue_channel = tk.Button(self.topbar,  text="Blue Channel", command=lambda: self.show_channel(self.blue_channel, "blue"), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_blue_channel = tk.Button(self.topbar,  text="     ", command=lambda: self.show_channel(self.blue_channel, "blue"), font=("Arial", 10), background="#0000FF", foreground="white",relief="ridge", borderwidth=2)
         btn_blue_channel.grid(row=1, column=7, sticky="ew", padx=5, pady=10)
         
         # Configures grayscale button
@@ -364,6 +370,10 @@ class App(tk.Tk):
 
                 self.display_image_on_right_sidebar(image_tk_palette)
     
+    def save_file_as(self, event=None):
+        file = asksaveasfilename(defaultextension=".pcx", filetypes=[("PCX Files", "*.pcx")])
+        self.curr_img = self.curr_img.save(file)
+    
     # This is a function that executes the run length encoding that gets the index of colors from the palette in image data
     def decode(self, data):
         decoded_data = []
@@ -484,6 +494,52 @@ class App(tk.Tk):
             self.show_image(channel_img)
             self.show_hist(channel, string)
     
+    def get_grayscale_img(self):
+        # Transforms image to grayscale
+        row = []
+        gray = []
+        for i, color in enumerate(self.pcx_image_data):
+            rgb = list(self.palette[color])
+            grayscale_value = (int)((rgb[0] + rgb[1] + rgb[2]) / 3)
+            row.append(grayscale_value)
+
+            if len(row) == self.width:
+                gray.append(row)
+                row = []
+                
+        return gray
+    
+    def drawImage(self, draw, gray):
+        # Define the size of each color block
+        block_size = 1
+
+        for i, row in enumerate(gray):
+            for j, color in enumerate(row):
+                x1 = j
+                y1 = i
+                x2 = x1 + 1
+                y2 = y1 + 1
+
+                draw.rectangle([x1, y1, x2, y2], fill=color)
+                
+    def drawImage1DArray(self, array, draw):
+        block_size = 1
+            
+        # Draw the colored blocks on the image
+        for i, color in enumerate(array):
+            if i % self.width == 0:
+                x1 = 0
+                y1 = i // self.width
+                x2 = x1 + block_size
+                y2 = y1 + block_size
+            else:
+                x1 = (i % self.width) * block_size
+                y1 = (i // self.width) * block_size
+                x2 = x1 + block_size
+                y2 = y1 + block_size
+            
+            draw.rectangle([x1, y1, x2, y2], fill=color)
+    
     # Function that transforms the RGB PCX file to Grayscale
     def grayscale_transform(self):
         if not self.pcx_image_data:
@@ -492,30 +548,12 @@ class App(tk.Tk):
             grayscale_img = Image.new('L', (self.width, self.height), 255)
             draw_grayscale = ImageDraw.Draw(grayscale_img)
             
-            gray = []
+            gray = self.get_grayscale_img()
             
-            # Define the size of each color block
-            block_size = 1
-
-            # Draw the colored blocks on the image
-            for i, color in enumerate(self.pcx_image_data):
-                if i % self.width == 0:
-                    x1 = 0
-                    y1 = i // self.width
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                else:
-                    x1 = (i % self.width) * block_size
-                    y1 = (i // self.width) * block_size
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                
-                rgb = list(self.palette[color])
-                gray.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                    
-                draw_grayscale.rectangle([x1, y1, x2, y2], fill=(gray[i]))
+            self.drawImage(draw_grayscale, gray)
                 
             self.show_image(grayscale_img)
+            self.curr_img = grayscale_img
             
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
@@ -531,28 +569,22 @@ class App(tk.Tk):
             negative_img = Image.new('L', (self.width, self.height), 255)
             draw_negative = ImageDraw.Draw(negative_img)
             
+            gray = self.get_grayscale_img()
+            
             # Define the size of each color block
             block_size = 1
 
-            # Draw the colored blocks on the image
-            for i, color in enumerate(self.pcx_image_data):
-                if i % self.width == 0:
-                    x1 = 0
-                    y1 = i // self.width
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                else:
-                    x1 = (i % self.width) * block_size
-                    y1 = (i // self.width) * block_size
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                
-                rgb = list(self.palette[color])
-                s = (int)((rgb[0]+rgb[1]+rgb[2])/3)
-                    
-                draw_negative.rectangle([x1, y1, x2, y2], fill=(255 - s))
+            for i, row in enumerate(gray):
+                for j, color in enumerate(row):
+                    x1 = j
+                    y1 = i
+                    x2 = x1 + 1
+                    y2 = y1 + 1
+
+                    draw_negative.rectangle([x1, y1, x2, y2], fill=(255-color))
                 
             self.show_image(negative_img)
+            self.curr_img = negative_img
             
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
@@ -622,33 +654,27 @@ class App(tk.Tk):
             BW_img = Image.new('L', (self.width, self.height), 255)
             draw_BW = ImageDraw.Draw(BW_img)
             
+            gray = self.get_grayscale_img()
+            
             # Define the size of each color block
             block_size = 1
 
-            # Draw the colored blocks on the image
-            for i, color in enumerate(self.pcx_image_data):
-                if i % self.width == 0:
-                    x1 = 0
-                    y1 = i // self.width
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                else:
-                    x1 = (i % self.width) * block_size
-                    y1 = (i // self.width) * block_size
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                
-                rgb = list(self.palette[color])
-                s = (int)((rgb[0]+rgb[1]+rgb[2])/3)
-                
-                if(s <= threshold):
-                    s = 0
-                else:
-                    s = 255
-                    
-                draw_BW.rectangle([x1, y1, x2, y2], fill=s)
+            for i, row in enumerate(gray):
+                for j, color in enumerate(row):
+                    x1 = j
+                    y1 = i
+                    x2 = x1 + 1
+                    y2 = y1 + 1
+
+                    if(color <= threshold):
+                        color = 0
+                    else:
+                        color = 255
+
+                    draw_BW.rectangle([x1, y1, x2, y2], fill=color)
                 
             self.show_image(BW_img)
+            self.curr_img = BW_img
             
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
@@ -694,32 +720,25 @@ class App(tk.Tk):
             PL_img = Image.new('L', (self.width, self.height), 255)
             draw_PL = ImageDraw.Draw(PL_img)
             
+            gray = self.get_grayscale_img()
+            
             # Define the size of each color block
             block_size = 1
 
-            # Draw the colored blocks on the image
-            for i, color in enumerate(self.pcx_image_data):
-                if i % self.width == 0:
-                    x1 = 0
-                    y1 = i // self.width
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                else:
-                    x1 = (i % self.width) * block_size
-                    y1 = (i // self.width) * block_size
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                
-                rgb = list(self.palette[color])
-                r = (int)((rgb[0]+rgb[1]+rgb[2])/3)
-                c = 1
-                
-                s = (int)(c*(r**gamma))
-                #print(f"{r} => {s} => {(r**gamma)}")
-                    
-                draw_PL.rectangle([x1, y1, x2, y2], fill=s)
+            for i, row in enumerate(gray):
+                for j, color in enumerate(row):
+                    x1 = j
+                    y1 = i
+                    x2 = x1 + 1
+                    y2 = y1 + 1
+
+                    c = 1
+                    color = (int)(c*(color**gamma))
+
+                    draw_PL.rectangle([x1, y1, x2, y2], fill=color)
                 
             self.show_image(PL_img)
+            self.curr_img = PL_img
             
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
@@ -745,77 +764,32 @@ class App(tk.Tk):
             draw_avg_filtered = ImageDraw.Draw(avg_filtered_img)
             
             # Initializes the n x n mask
-            n = 3
-            radius = n//2
-            mask = [[1/(n*n) for i in range(n)] for j in range(n)]
+            radius = self.n//2
+            mask = [[1/(self.n*self.n) for i in range(self.n)] for j in range(self.n)]
             
-            gray = []
-            row = []
-
-            # Transforms image to grayscale
-            for i, color in enumerate(self.pcx_image_data):
-                rgb = list(self.palette[color])
-                if i % self.width == 0:
-                    if i == 0:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                    else:
-                        gray.append(row)
-                        row = []
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                else:
-                    if i == len(self.pcx_image_data)-1:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                        gray.append(row)
-                    else:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                        
+            gray = self.get_grayscale_img()
+                           
+            blur_pixels = [row[:] for row in gray]
             
-            copy = [row[:] for row in gray]
-            
-            padded_rows = self.height + 2*radius
-            padded_cols = self.width + 2*radius
-            
-            # Create the padded array and initialize with zeros
-            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
-            
-            # Copy the contents of the original array to the center of the padded array
-            for i in range(self.height):
-                for j in range(self.width):
-                    zero_padded_img[i + radius][j + radius] = copy[i][j]
+            padded_img = self.clamp_padding(radius, gray)
             
             # Updates current pixel value with the average of the sum of it and its neighbors in an nxn mask
             neighbors = []
             for i in range(self.height):
                 for j in range(self.width):
-                    neighbors = self.get_neighbors(i+radius, j+radius, radius, zero_padded_img)
-                    copy[i][j] = get_pixel_value(mask, neighbors)
-            
-            copy2 = [element for row in copy for element in row]
+                    neighbors = self.get_neighbors(i+radius, j+radius, radius, padded_img)
+                    blur_pixels[i][j] = get_pixel_value(mask, neighbors)
                     
-            block_size = 1
-            
-            # Draw the colored blocks on the image
-            for i, color in enumerate(copy2):
-                if i % self.width == 0:
-                    x1 = 0
-                    y1 = i // self.width
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                else:
-                    x1 = (i % self.width) * block_size
-                    y1 = (i // self.width) * block_size
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                    
-                draw_avg_filtered.rectangle([x1, y1, x2, y2], fill=color)
+            self.drawImage(draw_avg_filtered, blur_pixels)        
                 
             self.show_image(avg_filtered_img)
+            self.curr_img = avg_filtered_img
             
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Averaging filter is applied to the image on a {n}x{n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
+            self.add_text_to_statusbar(f"Status: Averaging filter is applied to the image on a {self.n}x{self.n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
     
     # Function that implements the unsharp masking       
     def unsharp_masking(self):
@@ -832,52 +806,24 @@ class App(tk.Tk):
             print("WALAAAAAA")
         else:
             unsharp_masked_img = Image.new('L', (self.width, self.height), 255)
-            draw_avg_filtered = ImageDraw.Draw(unsharp_masked_img)
+            draw_unsharp_masked = ImageDraw.Draw(unsharp_masked_img)
             
             # Initializes the n x n mask
-            n = 3
-            radius = n//2
-            mask = [[1/(n*n) for i in range(n)] for j in range(n)]
+            radius = self.n//2
+            mask = [[1/(self.n*self.n) for i in range(self.n)] for j in range(self.n)]
             
-            gray_orig = []
-            row = []
-
-            # Transforms image to grayscale
-            for i, color in enumerate(self.pcx_image_data):
-                rgb = list(self.palette[color])
-                if i % self.width == 0:
-                    if i == 0:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                    else:
-                        gray_orig.append(row)
-                        row = []
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                else:
-                    if i == len(self.pcx_image_data)-1:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                        gray_orig.append(row)
-                    else:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+            gray_orig = self.get_grayscale_img()
             
             flat_gray_orig = [element for row in gray_orig for element in row]
             blur_pixels = [row[:] for row in gray_orig]
             
-            padded_rows = self.height + 2*radius
-            padded_cols = self.width + 2*radius
-            
-            # Create the padded array and initialize with zeros
-            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
-            
-            # Copy the contents of the original array to the center of the padded array
-            for i in range(self.height):
-                for j in range(self.width):
-                    zero_padded_img[i + radius][j + radius] = blur_pixels[i][j]
+            padded_img = self.clamp_padding(radius, gray_orig)
             
             # Blurs the image
             neighbors = []
             for i in range(self.height):
                 for j in range(self.width):
-                    neighbors = self.get_neighbors(i+radius, j+radius, radius, zero_padded_img)
+                    neighbors = self.get_neighbors(i+radius, j+radius, radius, padded_img)
                     blur_pixels[i][j] = get_pixel_value(mask, neighbors)
             
             flat_blur_pixels = [element for row in blur_pixels for element in row]
@@ -894,25 +840,11 @@ class App(tk.Tk):
             # Adds the mask to the original image  
             for orig_pixel, value in zip(flat_gray_orig, unsharp_mask):
                 img_result.append(orig_pixel + (k * value))
-                    
-            block_size = 1
             
-            # Draw the colored blocks on the image
-            for i, color in enumerate(img_result):
-                if i % self.width == 0:
-                    x1 = 0
-                    y1 = i // self.width
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                else:
-                    x1 = (i % self.width) * block_size
-                    y1 = (i // self.width) * block_size
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                    
-                draw_avg_filtered.rectangle([x1, y1, x2, y2], fill=color)
-                
+            self.drawImage1DArray(img_result, draw_unsharp_masked)
             self.show_image(unsharp_masked_img)
+            self.curr_img = unsharp_masked_img
+            
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
@@ -934,52 +866,24 @@ class App(tk.Tk):
             print("WALAAAAAA")
         else:
             highpass_filtered_img = Image.new('L', (self.width, self.height), 255)
-            draw_avg_filtered = ImageDraw.Draw(highpass_filtered_img)
+            draw_highboost = ImageDraw.Draw(highpass_filtered_img)
             
             # Initializes the n x n mask
-            n = 3
-            radius = n//2
-            mask = [[1/(n*n) for i in range(n)] for j in range(n)]
+            radius = self.n//2
+            mask = [[1/(self.n*self.n) for i in range(self.n)] for j in range(self.n)]
             
-            gray_orig = []
-            row = []
-
-            # Transforms image to grayscale
-            for i, color in enumerate(self.pcx_image_data):
-                rgb = list(self.palette[color])
-                if i % self.width == 0:
-                    if i == 0:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                    else:
-                        gray_orig.append(row)
-                        row = []
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                else:
-                    if i == len(self.pcx_image_data)-1:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                        gray_orig.append(row)
-                    else:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+            gray_orig = self.get_grayscale_img()
             
             flat_gray_orig = [element for row in gray_orig for element in row]
             blur_pixels = [row[:] for row in gray_orig]
             
-            padded_rows = self.height + 2*radius
-            padded_cols = self.width + 2*radius
-            
-            # Create the padded array and initialize with zeros
-            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
-            
-            # Copy the contents of the original array to the center of the padded array
-            for i in range(self.height):
-                for j in range(self.width):
-                    zero_padded_img[i + radius][j + radius] = blur_pixels[i][j]
+            padded_img = self.clamp_padding(radius, gray_orig)
             
             # Blurs the image
             neighbors = []
             for i in range(self.height):
                 for j in range(self.width):
-                    neighbors = self.get_neighbors(i+radius, j+radius, radius, zero_padded_img)
+                    neighbors = self.get_neighbors(i+radius, j+radius, radius, padded_img)
                     blur_pixels[i][j] = get_pixel_value(mask, neighbors)
             
             flat_blur_pixels = [element for row in blur_pixels for element in row]
@@ -997,24 +901,10 @@ class App(tk.Tk):
             for orig_pixel, value in zip(flat_gray_orig, highpass):
                 img_result.append(int(((A-1)*orig_pixel) + value))
                     
-            block_size = 1
-            
-            # Draw the colored blocks on the image
-            for i, color in enumerate(img_result):
-                if i % self.width == 0:
-                    x1 = 0
-                    y1 = i // self.width
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                else:
-                    x1 = (i % self.width) * block_size
-                    y1 = (i // self.width) * block_size
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                
-                draw_avg_filtered.rectangle([x1, y1, x2, y2], fill=color)
+            self.drawImage1DArray(img_result, draw_highboost)
                 
             self.show_image(highpass_filtered_img)
+            self.curr_img = highpass_filtered_img
             
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
@@ -1025,9 +915,9 @@ class App(tk.Tk):
     # Function that gets the neighboring pixels of a particular pixel in an image
     def get_neighbors(self, row_index, column_index, radius, grid):
         neighbors = []
-        for i in range(row_index-radius, row_index+2*radius):
+        for i in range(row_index-radius, row_index+radius+1):
             row = []
-            for j in range(column_index-radius, column_index+2*radius):
+            for j in range(column_index-radius, column_index+radius+1):
                 row.append(grid[i][j])  
                 
             neighbors.append(row)
@@ -1063,76 +953,32 @@ class App(tk.Tk):
             draw_mdn_filtered = ImageDraw.Draw(mdn_filtered_img)
             
             # Initializes the n x n mask
-            n = 3
-            radius = n//2
-            mask = [[1/(n*n) for i in range(n)] for j in range(n)]
+            radius = self.n//2
+            mask = [[1/(self.n*self.n) for i in range(self.n)] for j in range(self.n)]
             
-            gray = []
-            row = []
-
-            # Transforms image to grayscale
-            for i, color in enumerate(self.pcx_image_data):
-                rgb = list(self.palette[color])
-                if i % self.width == 0:
-                    if i == 0:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                    else:
-                        gray.append(row)
-                        row = []
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                else:
-                    if i == len(self.pcx_image_data)-1:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                        gray.append(row)
-                    else:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+            gray = self.get_grayscale_img()
             
             blur_pixels = [row[:] for row in gray]
             
-            padded_rows = self.height + 2*radius
-            padded_cols = self.width + 2*radius
-            
-            # Create the padded array and initialize with zeros
-            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
-            
-            # Copy the contents of the original array to the center of the padded array
-            for i in range(self.height):
-                for j in range(self.width):
-                    zero_padded_img[i + radius][j + radius] = blur_pixels[i][j]
+            padded_img = self.clamp_padding(radius, gray)
             
             # Blurs the image
             neighbors = []
             for i in range(self.height):
                 for j in range(self.width):
-                    neighbors = self.get_neighbors(i+radius, j+radius, radius, zero_padded_img)
+                    neighbors = self.get_neighbors(i+radius, j+radius, radius, padded_img)
                     blur_pixels[i][j] = get_pixel_value(mask, neighbors)
             
-            copy2 = [element for row in blur_pixels for element in row]
-                    
-            block_size = 1
-            
-            # Draw the colored blocks on the image
-            for i, color in enumerate(copy2):
-                if i % self.width == 0:
-                    x1 = 0
-                    y1 = i // self.width
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                else:
-                    x1 = (i % self.width) * block_size
-                    y1 = (i // self.width) * block_size
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                    
-                draw_mdn_filtered.rectangle([x1, y1, x2, y2], fill=color)
+            self.drawImage(draw_mdn_filtered, blur_pixels)  
                 
             self.show_image(mdn_filtered_img)
+            self.curr_img = mdn_filtered_img
             
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Median filter is applied to the image on a {n}x{n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
+            self.add_text_to_statusbar(f"Status: Median filter is applied to the image on a {self.n}x{self.n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
 
     # Function for Laplacian
     def laplacian_filter(self):
@@ -1162,67 +1008,23 @@ class App(tk.Tk):
             radius = n//2
             mask = [ [0,1,0] , [1,-4,1] , [0,1,0] ]
             
-            gray = []
-            row = []
-
-            # Transforms image to grayscale
-            for i, color in enumerate(self.pcx_image_data):
-                rgb = list(self.palette[color])
-                if i % self.width == 0:
-                    if i == 0:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                    else:
-                        gray.append(row)
-                        row = []
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                else:
-                    if i == len(self.pcx_image_data)-1:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
-                        gray.append(row)
-                    else:
-                        row.append((int)((rgb[0]+rgb[1]+rgb[2])/3))
+            gray = self.get_grayscale_img()
             
             copy = [row[:] for row in gray]
             
-            padded_rows = self.height + 2*radius
-            padded_cols = self.width + 2*radius
-            
-            # Create the padded array and initialize with zeros
-            zero_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
-            
-            # Copy the contents of the original array to the center of the padded array
-            for i in range(self.height):
-                for j in range(self.width):
-                    zero_padded_img[i + radius][j + radius] = copy[i][j]
+            padded_img = self.clamp_padding(radius, gray)
             
             # Blurs the image
             neighbors = []
             for i in range(self.height):
                 for j in range(self.width):
-                    neighbors = self.get_neighbors(i+radius, j+radius, radius, zero_padded_img)
+                    neighbors = self.get_neighbors(i+radius, j+radius, radius, padded_img)
                     copy[i][j] = get_pixel_value(mask, neighbors)
             
-            copy2 = [element for row in copy for element in row]
-                    
-            block_size = 1
-            
-            # Draw the colored blocks on the image
-            for i, color in enumerate(copy2):
-                if i % self.width == 0:
-                    x1 = 0
-                    y1 = i // self.width
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                else:
-                    x1 = (i % self.width) * block_size
-                    y1 = (i // self.width) * block_size
-                    x2 = x1 + block_size
-                    y2 = y1 + block_size
-                
-                # print(color)    
-                draw_lapla_filtered.rectangle([x1, y1, x2, y2], fill=color)
+            self.drawImage(draw_lapla_filtered, copy) 
                 
             self.show_image(lapla_filtered_img)
+            self.curr_img = lapla_filtered_img
             
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
@@ -1241,13 +1043,13 @@ class App(tk.Tk):
 
             # Sobel Operator
             def sobelOperator(image):
-                Gx = [[1, 0, -1],
-                      [2, 0, -2],
-                      [1, 0, -1]]
+                Gx = [[-1, 0, 1],
+                      [-2, 0, 2],
+                      [-1, 0, 1]]
 
-                Gy = [[1, 2, 1],
+                Gy = [[-1, -2, -1],
                       [0, 0, 0],
-                      [-1, -2, -1]]
+                      [1, 2, 1]]
 
                 rows = len(image)
                 cols = len(image[0])
@@ -1264,91 +1066,79 @@ class App(tk.Tk):
                         c+=1
                     r+=1
 
-                print(mag[0][0])
-                max_magnitude = max(max(row) for row in mag)
+                # max_magnitude = max(max(row) for row in mag)
 
                 for i in range(rows-2):
                     for j in range(cols-2):
-                        mag[i][j] = int(255.0 * mag[i][j] / max_magnitude)
+                        # mag[i][j] = int(255.0 * mag[i][j] / max_magnitude)
+                        
+                        if mag[i][j] < 0:
+                            mag[i][j] = 0
+                        elif mag[i][j] > 255:
+                            mag[i][j] = 255
 
-                print(mag[0][0])
                 return mag
 
-            gray = []
-            row = []
+            gray = self.get_grayscale_img()
 
-            # Transforms image to grayscale
-            for i, color in enumerate(self.pcx_image_data):
-                rgb = list(self.palette[color])
-                grayscale_value = (int)((rgb[0] + rgb[1] + rgb[2]) / 3)
-                row.append(grayscale_value)
-
-                if len(row) == self.width:
-                    gray.append(row)
-                    row = []
-
-            padded_rows = self.height + 2*radius
-            padded_cols = self.width + 2*radius
-            
-            # Create the padded array and implement clamp padding
-            clamp_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
-
-            # Copy the contents of the original array to the center of the padded array
-            for i in range(self.height):
-                for j in range(self.width):
-                    # Use clamp padding to set border values
-                    padded_i = i + radius
-                    padded_j = j + radius
-                    clamp_padded_img[padded_i][padded_j] = gray[i][j]
-
-            # Fill in the border values using clamp padding
-            for i in range(padded_rows):
-                for j in range(padded_cols):
-                    if i < radius:
-                        # Clamp padding for the top border
-                        padded_i = radius
-                    elif i >= self.height + radius:
-                        # Clamp padding for the bottom border
-                        padded_i = self.height + radius - 1
-                    else:
-                        padded_i = i
-
-                    if j < radius:
-                        # Clamp padding for the left border
-                        padded_j = radius
-                    elif j >= self.width + radius:
-                        # Clamp padding for the right border
-                        padded_j = self.width + radius - 1
-                    else:
-                        padded_j = j
-
-                    clamp_padded_img[i][j] = gray[padded_i - radius][padded_j - radius]
-
-            print(clamp_padded_img)
+            padded_img = self.clamp_padding(radius, gray)
 
             # Apply Sobel operator to the grayscale image with clamp padding
-            sobel_result = sobelOperator(clamp_padded_img)
+            sobel_result = sobelOperator(padded_img)
 
             grdn_filtered_img = Image.new('L', (self.width, self.height), 255)
             draw_grdn_filtered = ImageDraw.Draw(grdn_filtered_img)
 
-            # Draw the Sobel result
-            for i, row in enumerate(sobel_result):
-                for j, color in enumerate(row):
-                    x1 = j
-                    y1 = i
-                    x2 = x1 + 1
-                    y2 = y1 + 1
-
-                    draw_grdn_filtered.rectangle([x1, y1, x2, y2], fill=color)
+            self.drawImage(draw_grdn_filtered, sobel_result) 
 
             self.show_image(grdn_filtered_img)
+            self.curr_img = grdn_filtered_img
 
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
             self.add_text_to_statusbar(f"Status: Gradient filter using the Sobel edge detection is applied to the image", x=180, y=20, fill="white", font=("Arial", 9,))
+
+    def clamp_padding(self, radius, gray):
+        padded_rows = self.height + 2*radius
+        padded_cols = self.width + 2*radius
+        
+        # Create the padded array and implement clamp padding
+        clamp_padded_img = [[0 for _ in range(padded_cols)] for _ in range(padded_rows)]
+
+        # Copy the contents of the original array to the center of the padded array
+        for i in range(self.height):
+            for j in range(self.width):
+                # Use clamp padding to set border values
+                padded_i = i + radius
+                padded_j = j + radius
+                clamp_padded_img[padded_i][padded_j] = gray[i][j]
+
+        # Fill in the border values using clamp padding
+        for i in range(padded_rows):
+            for j in range(padded_cols):
+                if i < radius:
+                    # Clamp padding for the top border
+                    padded_i = radius
+                elif i >= self.height + radius:
+                    # Clamp padding for the bottom border
+                    padded_i = self.height + radius - 1
+                else:
+                    padded_i = i
+
+                if j < radius:
+                    # Clamp padding for the left border
+                    padded_j = radius
+                elif j >= self.width + radius:
+                    # Clamp padding for the right border
+                    padded_j = self.width + radius - 1
+                else:
+                    padded_j = j
+
+                clamp_padded_img[i][j] = gray[padded_i - radius][padded_j - radius]
+                
+        return clamp_padded_img
 
     # Function that closes the image file being displayed    
     def close_img(self):
