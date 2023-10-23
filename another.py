@@ -853,7 +853,7 @@ class App(tk.Tk):
 
             def entry_changed(event):
                 value = text_box.get()  # Get the value from the entry box
-                if value.isdigit() and int(value) >= 0:  # Check if the value is a valid integer
+                if int(value) >= 0:  # Check if the value is a valid integer
                     current_value.set(int(value))  # Set the slider value to the entry value
                 else:
                     err_window = tk.Toplevel()
