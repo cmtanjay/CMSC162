@@ -754,16 +754,21 @@ class App(tk.Tk):
             window.columnconfigure(0, weight=2)
             window.columnconfigure(1, weight=5)
             
-            current_value = tk.IntVar()
+            current_value = tk.IntVar(value=0)
             threshold = tk.IntVar()
             
             def entry_changed(event):
                 value = text_box.get()  # Get the value from the entry box
-                if value.isdigit():  # Check if the value is a valid integer
+                if value.isdigit() and int(value) >= 0 and int(value) <= 255:  # Check if the value is a valid integer
                     current_value.set(int(value))  # Set the slider value to the entry value
                 else:
-                    # Handle invalid input (e.g., non-integer values)
-                    pass
+                    err_window = tk.Toplevel()
+                    err_window.geometry("400x130+500+300")
+                    err_window.title("Black/White via Manual Thresholding")
+                    err_window.resizable(False, False)
+                    ttk.Label(err_window, text='Threshold value must be between 0 to 255', font=('Arial 10 bold')).place(x=50, y=35)
+                    btn_ok = tk.Button(err_window, command=err_window.destroy, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+                    btn_ok.place(x=80, y=85)
 
             def slider_changed(*args):
                 value = current_value.get()
@@ -784,7 +789,7 @@ class App(tk.Tk):
             # current value label
             ttk.Label(window, text='Threshold Value:', font=('Arial 10 bold')).place(x=150, y=35)
             
-            text_box = tk.Entry(window, bg="white", width=5, font=('Arial 13'))
+            text_box = tk.Entry(window, bg="white", textvariable=current_value, width=5, font=('Arial 13'))
             text_box.place(x=160, y=55)
             text_box.bind("<KeyRelease>", entry_changed)
 
@@ -846,6 +851,19 @@ class App(tk.Tk):
             
             current_value = tk.DoubleVar(value=0.0)
 
+            def entry_changed(event):
+                value = text_box.get()  # Get the value from the entry box
+                if int(value) >= 0:  # Check if the value is a valid integer
+                    current_value.set(int(value))  # Set the slider value to the entry value
+                else:
+                    err_window = tk.Toplevel()
+                    err_window.geometry("400x130+500+300")
+                    err_window.title("Black/White via Manual Thresholding")
+                    err_window.resizable(False, False)
+                    ttk.Label(err_window, text='Gamma value must be a positive constant', font=('Arial 10 bold')).place(x=50, y=35)
+                    btn_ok = tk.Button(err_window, command=err_window.destroy, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+                    btn_ok.place(x=80, y=85)
+
             def on_click():
                 window.destroy()
 
@@ -854,6 +872,7 @@ class App(tk.Tk):
             
             text_box = tk.Entry(window, bg="white", textvariable=current_value, width=5, font=('Arial 13'))
             text_box.place(x=160, y=55)
+            text_box.bind("<KeyRelease>", entry_changed)
             
             btn = tk.Button(window, command=on_click, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
             btn.place(x=165, y=85)
@@ -883,6 +902,11 @@ class App(tk.Tk):
 
                     c = 1
                     color = (int)(c*(color**gamma))
+                    
+                    if color < 0:
+                        color = 0
+                    elif color > 255:
+                        color = 255
 
                     draw_PL.rectangle([x1, y1, x2, y2], fill=color)
                 
