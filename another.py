@@ -473,6 +473,36 @@ class App(tk.Tk):
                 # Display the image on the canvas
 
                 self.display_image_on_right_sidebar(image_tk_palette)
+                
+                # Create a blank image with a white background
+                img_pcx_small = Image.new('RGB', (256, 256), (255, 255, 255))
+                draw_orig_small = ImageDraw.Draw(img_pcx_small)
+                
+                # Define the size of each color block
+                block_size = 1
+
+                # Draw the colored blocks on the image
+                for i, color in enumerate(self.pcx_image_data):
+                    if i % self.width == 0:
+                        x1 = 0
+                        y1 = i // self.width
+                        x2 = x1 + block_size
+                        y2 = y1 + block_size
+                    else:
+                        x1 = (i % self.width) * block_size
+                        y1 = (i // self.width) * block_size
+                        x2 = x1 + block_size
+                        y2 = y1 + block_size
+                        
+                    draw_orig_small.rectangle([x1, y1, x2, y2], fill=self.palette[color])
+                
+                # Resize the image to 128x128
+                img_pcx_small = img_pcx_small.resize((128, 128), Image.LANCZOS)
+
+                # Convert the PIL image to a PhotoImage object
+                image_tk_orig = ImageTk.PhotoImage(img_pcx_small)
+                
+                # self.display_image_on_right_sidebar(image_tk_orig)
     
     def save_file_as(self, event=None):
         file = asksaveasfilename(defaultextension=".pcx", filetypes=[("PCX Files", "*.pcx")])
