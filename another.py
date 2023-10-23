@@ -286,10 +286,8 @@ class App(tk.Tk):
     # Function that displays an image to the UI    
     def show_image(self, image):
         if(image == None):
-            print("WALAAAAAA")
-            #Show status of image here when there's no image loaded
-            #self.canvas.delete(self.add_text_to_statusbar)
-            self.add_text_to_statusbar("Status: No image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+            print("No PCX Image Loaded")
+            self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
             
             # Opens the image using PIL
@@ -694,7 +692,8 @@ class App(tk.Tk):
     # Function that transforms the RGB PCX file to Grayscale
     def grayscale_transform(self):
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
+            self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
             # Creates the output image
             grayscale_img = Image.new('L', (self.width, self.height), 255)
@@ -717,7 +716,8 @@ class App(tk.Tk):
     # Function that transforms the RGB PCX file to Negative image
     def negative_transform(self):
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
+            self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
             # Creates the output image
             negative_img = Image.new('L', (self.width, self.height), 255)
@@ -812,7 +812,8 @@ class App(tk.Tk):
             return threshold.get()
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
+            self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
             threshold = open_popup()
             # Creates the output image
@@ -897,7 +898,8 @@ class App(tk.Tk):
             return current_value.get()
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
+            self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
             gamma = open_popup()
             # Creates the output image
@@ -950,7 +952,8 @@ class App(tk.Tk):
             return int(avg)
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
+            self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
             # Initializes the n x n mask
             radius = self.n//2
@@ -982,7 +985,7 @@ class App(tk.Tk):
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Averaging filter is applied to the image on a {self.n}x{self.n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
+            self.add_text_to_statusbar(f"Status: Averaging filter is applied to the image on a {self.n}x{self.n} mask", x=220, y=20, fill="white", font=("Arial", 9,))
     
     # Function that implements the unsharp masking       
     def unsharp_masking(self):
@@ -996,7 +999,8 @@ class App(tk.Tk):
             return int(avg)
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
+            self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
             # Initializes the n x n mask
             radius = self.n//2
@@ -1044,7 +1048,7 @@ class App(tk.Tk):
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Unsharp masking is applied to the image", x=180, y=20, fill="white", font=("Arial", 9,))
+            self.add_text_to_statusbar(f"Status: Unsharp masking is applied to the image", x=200, y=20, fill="white", font=("Arial", 9,))
     
     # Function that implements the Highboost filtering        
     def highboost_filter(self):
@@ -1058,7 +1062,8 @@ class App(tk.Tk):
             return int(avg)       
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
+            self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
             # Initializes the n x n mask
             radius = self.n//2
@@ -1148,7 +1153,8 @@ class App(tk.Tk):
             return int(mdn)
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
+            self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
             # Initializes the n x n mask
             radius = self.n//2
@@ -1181,7 +1187,7 @@ class App(tk.Tk):
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Median filter is applied to the image on a {self.n}x{self.n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
+            self.add_text_to_statusbar(f"Status: Median filter is applied to the image on a {self.n}x{self.n} mask", x=220, y=20, fill="white", font=("Arial", 9,))
 
     # Function for Laplacian
     def laplacian_filter(self):
@@ -1202,7 +1208,8 @@ class App(tk.Tk):
             return int(lap_val)
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
+            self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
             # Initializes the n x n mask
             n = 3
@@ -1236,7 +1243,7 @@ class App(tk.Tk):
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Laplacian filter is applied to a {mask} kernel", x=180, y=20, fill="white", font=("Arial", 9,))
+            self.add_text_to_statusbar(f"Status: Laplacian filter is applied to a {mask} kernel", x=250, y=20, fill="white", font=("Arial", 9,))
     
     # Function for Gradient filter using Sobel Operator
     def gradient_filter(self):
@@ -1302,7 +1309,7 @@ class App(tk.Tk):
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Gradient filter using the Sobel edge detection is applied to the image", x=180, y=20, fill="white", font=("Arial", 9,))
+            self.add_text_to_statusbar(f"Status: Gradient filter using the Sobel edge detection is applied to the image", x=280, y=20, fill="white", font=("Arial", 9,))
 
     # Function that implements clamp padding
     # This is to allow the border side of the image to be accounted with the operation being done

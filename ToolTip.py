@@ -1,3 +1,7 @@
+# Portions of this code were adapted from the first comment found on this link: 
+# https://stackoverflow.com/questions/20399243/display-message-when-hovering-over-something-with-mouse-cursor-in-python?fbclid=IwAR3VKK2JDZV03e1cUAw7fFyEGmroWgWK9dp2aIwqETqdylCAeTtmKjZlWTA
+# Original Author: Bryan Oakley
+
 from tkinter import *
 
 class ToolTip(object):
