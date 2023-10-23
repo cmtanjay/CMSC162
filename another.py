@@ -105,39 +105,45 @@ class App(tk.Tk):
         self.image_label = tk.Label(self, bg="#242424")
         self.image_label.grid(row=1, column=1, sticky="nsew")
 
-        img_pcx = Image.open("pcx.png")
+        img_pcx = Image.open("assets\pcx.png")
         img_pcx = img_pcx.resize((35,35))
         icon_pcx = ImageTk.PhotoImage(img_pcx)
     
         # Configures open PCX file button
-        btn_open_pcx = tk.Button(self.topbar, image=icon_pcx, command=self.open_pcx_file,font=("Arial", 10), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_open_pcx = tk.Button(self.topbar, image=icon_pcx, command=self.open_pcx_file, background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_open_pcx.photo = icon_pcx
         btn_open_pcx.grid(row=1, column=1, sticky="ew")
         CreateToolTip(btn_open_pcx, "Open PCX")
 
-        img = Image.open("img.png")
+        img = Image.open("assets\img.png")
         img = img.resize((35,35))
         icon_img = ImageTk.PhotoImage(img)
 
         # Configures open image file button
-        btn_open_img = tk.Button(self.topbar, image=icon_img, command=self.open_img_file, font=("Arial", 10), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_open_img = tk.Button(self.topbar, image=icon_img, command=self.open_img_file, background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_open_img.photo = icon_img
         btn_open_img.grid(row=1, column=2, sticky="ew")
         CreateToolTip(btn_open_img, "Open Image")
 
-        img_close = Image.open("close.png")
+        img_close = Image.open("assets\close.png")
         img_close = img_close.resize((35,35))
         icon_close = ImageTk.PhotoImage(img_close)
 
         # Configures close file button
-        btn_close_file = tk.Button(self.topbar, image=icon_close, command=self.close_img, font=("Arial", 10), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_close_file = tk.Button(self.topbar, image=icon_close, command=self.close_img, background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_close_file.photo = icon_close
         btn_close_file.grid(row=1, column=3, sticky="ew")
         CreateToolTip(btn_close_file, "Close File")
         
+        img_orig_img = Image.open("assets\\revert.png")
+        img_orig_img = img_orig_img.resize((35,35))
+        icon_orig_img = ImageTk.PhotoImage(img_orig_img)
+
         # Configures orig image button
-        btn_orig_img = tk.Button(self.topbar,  text="Original Image", command=lambda: self.show_image(self.orig_img), font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn_orig_img = tk.Button(self.topbar, image=icon_orig_img, command=lambda: self.show_image(self.orig_img), background="#2F333A", relief="ridge", borderwidth=0)
+        btn_orig_img.photo = icon_orig_img
         btn_orig_img.grid(row=1, column=4, sticky="ew", padx=5, pady=10)
+        CreateToolTip(btn_orig_img, "Revert to Original Image")
         
         # Configures red channel button
         btn_red_channel = tk.Button(self.topbar,  text="     ", command=lambda: self.show_channel(self.red_channel, "red"), font=("Arial", 10), background="#FF0000", foreground="white",relief="ridge", borderwidth=2)
@@ -154,101 +160,93 @@ class App(tk.Tk):
         btn_blue_channel.grid(row=1, column=7, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_blue_channel, "Blue Channel")
         
-        img_grayscale = Image.open("grayscale.png")
+        img_grayscale = Image.open("assets\grayscale.png")
         img_grayscale = img_grayscale.resize((35,35))
         icon_grayscale = ImageTk.PhotoImage(img_grayscale)
         
         # Configures grayscale button
-        btn_grayscale = tk.Button(self.topbar, image=icon_grayscale, command=self.grayscale_transform, font=("Arial", 10), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_grayscale = tk.Button(self.topbar, image=icon_grayscale, command=self.grayscale_transform, background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_grayscale.photo = icon_grayscale
         btn_grayscale.grid(row=1, column=8, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_grayscale, "Grayscale Transform (R+G+B)/3")
         
-        img_negative = Image.open("negative.png")
+        img_negative = Image.open("assets\\negative.png")
         img_negative = img_negative.resize((35,35))
         icon_negative = ImageTk.PhotoImage(img_negative)
         
         # Configures negative button
-        btn_negative = tk.Button(self.topbar, image=icon_negative, command=self.negative_transform, font=("Arial", 10), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_negative = tk.Button(self.topbar, image=icon_negative, command=self.negative_transform, background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_negative.photo = icon_negative
         btn_negative.grid(row=1, column=9, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_negative, "Negative")
         
-        img_BW = Image.open("BW.png")
+        img_BW = Image.open("assets\BW.png")
         img_BW = img_BW.resize((35,35))
         icon_BW = ImageTk.PhotoImage(img_BW)
         
         # Configures B/W button
-        btn_BW = tk.Button(self.topbar, image=icon_BW, command=self.BW_manual_thresholding, font=("Arial", 10), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_BW = tk.Button(self.topbar, image=icon_BW, command=self.BW_manual_thresholding, background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_BW.photo = icon_BW
         btn_BW.grid(row=1, column=10, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_BW, "Black and White w/ Thresholding")
         
-        img_gamma = Image.open("gamma.png")
+        img_gamma = Image.open("assets\gamma.png")
         img_gamma = img_gamma.resize((35,35))
         icon_gamma = ImageTk.PhotoImage(img_gamma)
         
         # Configures Power-Law button
-        btn_gamma = tk.Button(self.topbar, image=icon_gamma, command=self.Power_law_transform, font=("Arial", 10), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_gamma = tk.Button(self.topbar, image=icon_gamma, command=self.Power_law_transform, background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_gamma.photo = icon_gamma
         btn_gamma.grid(row=1, column=11, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_gamma, "Power-Law (Gamma) Transform")
         
-        img_avg = Image.open("avg.png")
+        img_avg = Image.open("assets\\avg.png")
         img_avg = img_avg.resize((30,30))
         icon_avg = ImageTk.PhotoImage(img_avg)
         
         # Configures Power-Law button
-        btn_avg_filter = tk.Button(self.sidebar, image=icon_avg, command=self.average_filter, font=("Arial", 10), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
+        btn_avg_filter = tk.Button(self.sidebar, image=icon_avg, command=self.average_filter, background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_avg_filter.photo = icon_avg
         btn_avg_filter.grid(row=0, column=1, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_avg_filter, "Averaging Filter")
         
-        # # Configures Power-Law button
-        # btn_avg_filter = tk.Button(self.sidebar, text="AVG", command=self.average_filter, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        # btn_avg_filter.grid(row=0, column=1, sticky="ew", padx=5, pady=10)
-        
-        img_mdn = Image.open("median.png")
+        img_mdn = Image.open("assets\median.png")
         img_mdn = img_mdn.resize((30,30))
         icon_mdn = ImageTk.PhotoImage(img_mdn)
         
-        btn_median = tk.Button(self.sidebar, image=icon_mdn, command=self.median_filter, font=("Arial", 10), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
+        btn_median = tk.Button(self.sidebar, image=icon_mdn, command=self.median_filter, background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_median.photo = icon_mdn
         btn_median.grid(row=1, column=1, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_median, "Median Filter")
         
-        # btn_median = tk.Button(self.sidebar,  text="MDN", command=self.median_filter, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        # btn_median.grid(row=1, column=1, sticky="ew", padx=5, pady=10)
-        # CreateToolTip(btn_median, "Median Filter")
-        
-        img_highpass = Image.open("highpass.png")
+        img_highpass = Image.open("assets\highpass.png")
         img_highpass = img_highpass.resize((30,30))
         icon_highpass = ImageTk.PhotoImage(img_highpass)
         
-        btn_laplacian = tk.Button(self.sidebar, image=icon_highpass, command=self.laplacian_filter, font=("Arial", 10), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
+        btn_laplacian = tk.Button(self.sidebar, image=icon_highpass, command=self.laplacian_filter, background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_laplacian.photo = icon_highpass
         btn_laplacian.grid(row=2, column=1, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_laplacian, "Highpass Filter (Laplacian Operator)")
 
-        img_unsharp = Image.open("mask.png")
+        img_unsharp = Image.open("assets\mask.png")
         img_unsharp = img_unsharp.resize((30,30))
         icon_unsharp = ImageTk.PhotoImage(img_unsharp)
 
-        btn_unsharp = tk.Button(self.sidebar, image=icon_unsharp, command=self.unsharp_masking, font=("Arial", 10), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
+        btn_unsharp = tk.Button(self.sidebar, image=icon_unsharp, command=self.unsharp_masking, background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_unsharp.photo = icon_unsharp
         btn_unsharp.grid(row=3, column=1, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_unsharp, "Unsharp Masking")
 
-        img_highboost = Image.open("highboost.png")
+        img_highboost = Image.open("assets\highboost.png")
         img_highboost = img_highboost.resize((30,30))
         icon_highboost = ImageTk.PhotoImage(img_highboost)
 
-        btn_highboost = tk.Button(self.sidebar, image=icon_highboost, command=self.highboost_filter, font=("Arial", 10), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
+        btn_highboost = tk.Button(self.sidebar, image=icon_highboost, command=self.highboost_filter, background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_highboost.photo = icon_highboost
         btn_highboost.grid(row=4, column=1, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_highboost, "Highboost Filtering")
 
-        img_gradient = Image.open("gradient.png")
+        img_gradient = Image.open("assets\gradient.png")
         img_gradient = img_gradient.resize((30,30))
         icon_gradient = ImageTk.PhotoImage(img_gradient)
 
@@ -256,7 +254,7 @@ class App(tk.Tk):
         # btn_gradient.grid(row=5, column=1, sticky="ew", padx=5, pady=10)
         # CreateToolTip(btn_gradient, "Gradient: Sobel Magnitude Operator")
         
-        btn_gradient = tk.Button(self.sidebar, image=icon_gradient, command=self.gradient_filter, font=("Arial", 10), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
+        btn_gradient = tk.Button(self.sidebar, image=icon_gradient, command=self.gradient_filter, background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_gradient.photo = icon_gradient
         btn_gradient.grid(row=5, column=1, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_gradient, "Gradient: Sobel Magnitude Operator")
@@ -456,27 +454,8 @@ class App(tk.Tk):
                 # Convert the PIL image to a PhotoImage object
                 image_tk_palette = ImageTk.PhotoImage(img_palette)
 
-                # Create the canvas in the right sidebar
-                self.create_right_sidebar_canvas()
-
-                # Add text to the canvas in the right sidebar
-                self.add_text_to_right_sidebar("Header Information", x=76, y=30, fill="white", font=("Arial", 11, "bold"))
-                self.add_text_to_right_sidebar(f"Manufacturer: {manufacturer}", x=68, y=70, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Version: {version}", x=47, y=90, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Resolution: {self.width} x {self.height}", x=85, y=110, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Encoding: {encoding}", x=53, y=130, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Bits Per Pixel: {bits_per_pixel}", x=65, y=150, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"HDPI: {hdpi}", x=43, y=170, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"VDPI: {vdpi}", x=43, y=190, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Number of Color Planes: {nplanes}", x=100, y=210, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Bytes Per Line: {bytesperline}", x=78, y=230, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar(f"Palette Info: {paletteinfo}", x=60, y=250, fill="white", font=("Arial", 11))
-                self.add_text_to_right_sidebar("Color Palette", x=58, y=290, fill="white", font=("Arial", 11, "bold"))
-
-                # Display the image on the canvas
-
-                self.display_image_on_right_sidebar(image_tk_palette, 2)
                 
+
                 # Create a blank image with a white background
                 img_pcx_small = Image.new('RGB', (256, 256), (255, 255, 255))
                 draw_orig_small = ImageDraw.Draw(img_pcx_small)
@@ -504,8 +483,35 @@ class App(tk.Tk):
 
                 # Convert the PIL image to a PhotoImage object
                 image_tk_orig = ImageTk.PhotoImage(img_pcx_small)
+
+                # Create the canvas in the right sidebar
+                self.create_right_sidebar_canvas(1,50)
+
+                self.add_text_to_right_sidebar("Original Image ", x=65, y=30, fill="white", font=("Arial", 11, "bold"))
+                self.display_image_on_right_sidebar(image_tk_orig, 2)
+
+                # Create the canvas in the right sidebar
+                self.create_right_sidebar_canvas(3,300)
+
+                # Add text to the canvas in the right sidebar
+                self.add_text_to_right_sidebar("Header Information", x=76, y=30, fill="white", font=("Arial", 11, "bold"))
+                self.add_text_to_right_sidebar(f"Manufacturer: {manufacturer}", x=68, y=70, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Version: {version}", x=47, y=90, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Resolution: {self.width} x {self.height}", x=85, y=110, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Encoding: {encoding}", x=53, y=130, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Bits Per Pixel: {bits_per_pixel}", x=65, y=150, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"HDPI: {hdpi}", x=43, y=170, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"VDPI: {vdpi}", x=43, y=190, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Number of Color Planes: {nplanes}", x=100, y=210, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Bytes Per Line: {bytesperline}", x=78, y=230, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar(f"Palette Info: {paletteinfo}", x=60, y=250, fill="white", font=("Arial", 11))
+                self.add_text_to_right_sidebar("Color Palette", x=58, y=290, fill="white", font=("Arial", 11, "bold"))
+
+                # Display the image on the canvas
+
+                self.display_image_on_right_sidebar(image_tk_palette, 4)
                 
-                self.display_image_on_right_sidebar(image_tk_orig, 3)
+                
     
     def save_file_as(self, event=None):
         file = asksaveasfilename(defaultextension=".pcx", filetypes=[("PCX Files", "*.pcx")])
@@ -529,10 +535,10 @@ class App(tk.Tk):
         return decoded_data
 
     # Function to create canvas for the right sidebar
-    def create_right_sidebar_canvas(self):
+    def create_right_sidebar_canvas(self,row,height):
         # Create the canvas in the right sidebar
-        self.canvas = tk.Canvas(self.rightsidebar, width=250, height=300, bg="#2B2B2B", highlightthickness=0)
-        self.canvas.grid(row=1, column=2, sticky="nsew")
+        self.canvas = tk.Canvas(self.rightsidebar, width=250, height=height, bg="#2B2B2B", highlightthickness=0)
+        self.canvas.grid(row=row, column=2, sticky="nsew")
 
     # Function to add text onto the canvas of the right side bar
     def add_text_to_right_sidebar(self, text, x, y, fill, font):
@@ -620,13 +626,25 @@ class App(tk.Tk):
                     y2 = y1 + block_size
                 
                 rgb = list(self.palette[color])
-                
+            
                 if(string == "red"):
-                    draw_channel_img.rectangle([x1, y1, x2, y2], fill=(rgb[0], 0, 0))
+                    draw_channel_img.rectangle([x1, y1, x2, y2], fill=(rgb[0], 0, 0))    
                 elif(string == "green"):
                     draw_channel_img.rectangle([x1, y1, x2, y2], fill=(0, rgb[1], 0))
                 elif(string == "blue"):
                     draw_channel_img.rectangle([x1, y1, x2, y2], fill=(0, 0, rgb[2]))
+
+            self.statusbar.destroy()
+            self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+            self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+            self.create_statusbar_canvas()
+            
+            if(string == "red"):
+                self.add_text_to_statusbar("Status: Extracted Red Channel Filter to Image", x=180, y=20, fill="white", font=("Arial", 9,))
+            elif(string == "green"):
+                self.add_text_to_statusbar("Status: Extracted Green Channel Filter to Image", x=180, y=20, fill="white", font=("Arial", 9,))
+            elif(string == "blue"):
+                self.add_text_to_statusbar("Status: Extracted Blue Channel Filter to Image", x=180, y=20, fill="white", font=("Arial", 9,))
                 
             self.show_image(channel_img)
             self.show_hist(channel, string)
