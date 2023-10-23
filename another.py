@@ -965,7 +965,7 @@ class App(tk.Tk):
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Averaging filter is applied to the image on a {self.n}x{self.n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
+            self.add_text_to_statusbar(f"Status: Averaging filter is applied to the image on a {self.n}x{self.n} mask", x=220, y=20, fill="white", font=("Arial", 9,))
     
     # Function that implements the unsharp masking       
     def unsharp_masking(self):
@@ -1026,7 +1026,7 @@ class App(tk.Tk):
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Unsharp masking is applied to the image", x=180, y=20, fill="white", font=("Arial", 9,))
+            self.add_text_to_statusbar(f"Status: Unsharp masking is applied to the image", x=200, y=20, fill="white", font=("Arial", 9,))
     
     # Function that implements the Highboost filtering        
     def highboost_filter(self):
@@ -1157,7 +1157,7 @@ class App(tk.Tk):
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Median filter is applied to the image on a {self.n}x{self.n} mask", x=180, y=20, fill="white", font=("Arial", 9,))
+            self.add_text_to_statusbar(f"Status: Median filter is applied to the image on a {self.n}x{self.n} mask", x=220, y=20, fill="white", font=("Arial", 9,))
 
     # Function for Laplacian
     def laplacian_filter(self):
@@ -1210,7 +1210,7 @@ class App(tk.Tk):
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Laplacian filter is applied to a {mask} kernel", x=180, y=20, fill="white", font=("Arial", 9,))
+            self.add_text_to_statusbar(f"Status: Laplacian filter is applied to a {mask} kernel", x=250, y=20, fill="white", font=("Arial", 9,))
     
     # Function for Gradient filter using Sobel Operator
     def gradient_filter(self):
@@ -1242,16 +1242,11 @@ class App(tk.Tk):
                         S1 = sum(image[(i-1) + m][(j-1) + n] * Gx[m][n] for m in range(3) for n in range(3))
                         S2 = sum(image[(i-1) + m][(j-1) + n] * Gy[m][n] for m in range(3) for n in range(3))
                         mag[r][c] = int(((S1 ** 2) + (S2 ** 2)) ** 0.5)
-                        # print(f"{r},{c}")
                         c+=1
                     r+=1
 
-                # max_magnitude = max(max(row) for row in mag)
-
                 for i in range(rows-2):
                     for j in range(cols-2):
-                        # mag[i][j] = int(255.0 * mag[i][j] / max_magnitude)
-                        
                         if mag[i][j] < 0:
                             mag[i][j] = 0
                         elif mag[i][j] > 255:
@@ -1278,7 +1273,7 @@ class App(tk.Tk):
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
-            self.add_text_to_statusbar(f"Status: Gradient filter using the Sobel edge detection is applied to the image", x=180, y=20, fill="white", font=("Arial", 9,))
+            self.add_text_to_statusbar(f"Status: Gradient filter using the Sobel edge detection is applied to the image", x=280, y=20, fill="white", font=("Arial", 9,))
 
     def clamp_padding(self, radius, gray):
         padded_rows = self.height + 2*radius
