@@ -346,7 +346,10 @@ class App(tk.Tk):
             self.green_channel = []
             self.blue_channel = []
         
-            self.add_text_to_statusbar("Status: PCX Image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+            # Extract the filename from the full filepath
+            filename = os.path.basename(filepath)
+
+            self.add_text_to_statusbar(f"Status: PCX Image \" {filename} \" loaded", x=150, y=20, fill="white", font=("Arial", 9,))
             
             self.header = file.read(128)
             
