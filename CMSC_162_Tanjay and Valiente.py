@@ -191,9 +191,8 @@ class App(tk.Tk):
     # Function that displays an image to the UI    
     def show_image(self, image):
         if(image == None):
-            print("WALAAAAAA")
+            print("No image loaded")
             #Show status of image here when there's no image loaded
-            #self.canvas.delete(self.add_text_to_statusbar)
             self.add_text_to_statusbar("Status: No image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
             
@@ -543,7 +542,7 @@ class App(tk.Tk):
     # Function that transforms the RGB PCX file to Grayscale
     def grayscale_transform(self):
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX image loaded")
         else:
             grayscale_img = Image.new('L', (self.width, self.height), 255)
             draw_grayscale = ImageDraw.Draw(grayscale_img)
@@ -564,7 +563,7 @@ class App(tk.Tk):
     # Function that transforms the RGB PCX file to Negative image
     def negative_transform(self):
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image loaded")
         else:
             negative_img = Image.new('L', (self.width, self.height), 255)
             draw_negative = ImageDraw.Draw(negative_img)
@@ -648,7 +647,7 @@ class App(tk.Tk):
             return threshold.get()
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
         else:
             threshold = open_popup()
             BW_img = Image.new('L', (self.width, self.height), 255)
@@ -714,7 +713,7 @@ class App(tk.Tk):
             return current_value.get()
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
         else:
             gamma = open_popup()
             PL_img = Image.new('L', (self.width, self.height), 255)
@@ -758,7 +757,7 @@ class App(tk.Tk):
             return int(avg)
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
         else:
             avg_filtered_img = Image.new('L', (self.width, self.height), 255)
             draw_avg_filtered = ImageDraw.Draw(avg_filtered_img)
@@ -803,7 +802,7 @@ class App(tk.Tk):
             return int(avg)
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
         else:
             unsharp_masked_img = Image.new('L', (self.width, self.height), 255)
             draw_unsharp_masked = ImageDraw.Draw(unsharp_masked_img)
@@ -863,7 +862,7 @@ class App(tk.Tk):
             return int(avg)       
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
         else:
             highpass_filtered_img = Image.new('L', (self.width, self.height), 255)
             draw_highboost = ImageDraw.Draw(highpass_filtered_img)
@@ -947,7 +946,7 @@ class App(tk.Tk):
             return int(mdn)
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
         else:
             mdn_filtered_img = Image.new('L', (self.width, self.height), 255)
             draw_mdn_filtered = ImageDraw.Draw(mdn_filtered_img)
@@ -998,7 +997,7 @@ class App(tk.Tk):
             return int(lap_val)
         
         if not self.pcx_image_data:
-            print("WALAAAAAA")
+            print("No PCX Image Loaded")
         else:
             lapla_filtered_img = Image.new('L', (self.width, self.height), 255)
             draw_lapla_filtered = ImageDraw.Draw(lapla_filtered_img)
