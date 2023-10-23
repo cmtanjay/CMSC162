@@ -1163,6 +1163,7 @@ class App(tk.Tk):
                 for j in range(len(mask[i])):
                     lap_val += mask[i][j]*neighbors[i][j]
             
+            # Clips the pixel values to be between 0 and 255
             if lap_val < 0:
                 lap_val = 0
             elif lap_val > 255:
@@ -1179,13 +1180,13 @@ class App(tk.Tk):
             # Initializes the n x n mask
             n = 3
             radius = n//2
-            mask = [ [0,1,0] , [1,-4,1] , [0,1,0] ]
+            mask = [ [0,1,0] , [1,-4,1] , [0,1,0] ] # Sobel Magnitude Operator
             
             gray = self.get_grayscale_img()
             
-            copy = [row[:] for row in gray]
+            copy = [row[:] for row in gray] # copies gray pixel values to another array
             
-            padded_img = self.clamp_padding(radius, gray)
+            padded_img = self.clamp_padding(radius, gray) # implements clamp padding
             
             # Blurs the image
             neighbors = []
