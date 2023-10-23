@@ -267,6 +267,12 @@ class App(tk.Tk):
         if not filepath:
             return
         
+        self.orig_img = None
+        self.curr_img = None
+        self.red_channel = []
+        self.green_channel = []
+        self.blue_channel = []
+        
         image = Image.open(filepath)
         self.show_image(image)
         
@@ -334,6 +340,11 @@ class App(tk.Tk):
             return
         
         with open(filepath, "rb") as file:
+            self.orig_img = None
+            self.curr_img = None
+            self.red_channel = []
+            self.green_channel = []
+            self.blue_channel = []
         
             self.add_text_to_statusbar("Status: PCX Image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
             
