@@ -475,7 +475,7 @@ class App(tk.Tk):
 
                 # Display the image on the canvas
 
-                self.display_image_on_right_sidebar(image_tk_palette)
+                self.display_image_on_right_sidebar(image_tk_palette, 2)
                 
                 # Create a blank image with a white background
                 img_pcx_small = Image.new('RGB', (256, 256), (255, 255, 255))
@@ -505,7 +505,7 @@ class App(tk.Tk):
                 # Convert the PIL image to a PhotoImage object
                 image_tk_orig = ImageTk.PhotoImage(img_pcx_small)
                 
-                # self.display_image_on_right_sidebar(image_tk_orig)
+                self.display_image_on_right_sidebar(image_tk_orig, 3)
     
     def save_file_as(self, event=None):
         file = asksaveasfilename(defaultextension=".pcx", filetypes=[("PCX Files", "*.pcx")])
@@ -540,9 +540,9 @@ class App(tk.Tk):
         self.canvas.create_text(x, y, text=text, fill=fill, font=font)
     
     # Function to display the generated color palette to the right side bar
-    def display_image_on_right_sidebar(self, image_tk):
-        canvas = tk.Canvas(self.rightsidebar, width=256, height=200, bg="#2B2B2B", highlightthickness=0)
-        canvas.grid(row=2, column=2, sticky="nsew")
+    def display_image_on_right_sidebar(self, image_tk, row):
+        canvas = tk.Canvas(self.rightsidebar, width=256, height=150, bg="#2B2B2B", highlightthickness=0)
+        canvas.grid(row=row, column=2, sticky="nsew")
 
         # Calculate the coordinates to center the image
         canvas_width = canvas.winfo_reqwidth()
