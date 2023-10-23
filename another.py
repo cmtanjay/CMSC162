@@ -619,7 +619,6 @@ class App(tk.Tk):
                 
                 rgb = list(self.palette[color])
             
-                # Extracts the color channels
                 if(string == "red"):
                     draw_channel_img.rectangle([x1, y1, x2, y2], fill=(rgb[0], 0, 0))    
                 elif(string == "green"):
