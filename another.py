@@ -365,8 +365,8 @@ class App(tk.Tk):
                 raise ValueError("Not a valid PCX file.")
                 
             else:
+                # Extracts header information of the PCX file
                 content = file.read()
-                #print(content)
                 
                 manufacturer = self.header[0]
                 version = self.header[1]
@@ -390,7 +390,7 @@ class App(tk.Tk):
                 self.pcx_image_data = self.decode(image_data)
                 print(f"addada: {len(self.pcx_image_data)}")
                 
-                # Create a blank image with a white background
+                # Create a blank image with a white background for the opened image
                 img_pcx = Image.new('RGB', (self.width, self.height), (255, 255, 255))
                 
                 draw_orig = ImageDraw.Draw(img_pcx)
@@ -413,12 +413,12 @@ class App(tk.Tk):
                         
                     draw_orig.rectangle([x1, y1, x2, y2], fill=self.palette[color])
                 
-                self.get_img_channels()
+                self.get_img_channels() # Extracts color channels
                 
                 self.orig_img = img_pcx 
-                self.show_image(img_pcx)    
+                self.show_image(img_pcx)     # Displays the opened PCX image to the GUI
                 
-                # Create a blank image with a white background
+                # Create a blank image with a white background for the color palette
                 img_palette = Image.new('RGB', (256, 256), (255, 255, 255))
                 draw = ImageDraw.Draw(img_palette)
 
@@ -501,8 +501,7 @@ class App(tk.Tk):
 
                 self.display_image_on_right_sidebar(image_tk_palette, 4)
                 
-                
-    
+    # Function that allows the user to save an image in the program
     def save_file_as(self, event=None):
         file = asksaveasfilename(defaultextension=".pcx", filetypes=[("PCX Files", "*.pcx")])
         self.curr_img = self.curr_img.save(file)
@@ -596,6 +595,7 @@ class App(tk.Tk):
         if not channel:
             print("WALAAAAA")
         else:
+            # Creates output image
             channel_img = Image.new('RGB', (self.width, self.height), (255, 255, 255))
             draw_channel_img = ImageDraw.Draw(channel_img)
             
@@ -624,6 +624,7 @@ class App(tk.Tk):
                 elif(string == "blue"):
                     draw_channel_img.rectangle([x1, y1, x2, y2], fill=(0, 0, rgb[2]))
 
+            # Updates status
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
@@ -639,7 +640,7 @@ class App(tk.Tk):
             self.show_image(channel_img)
             self.show_hist(channel, string)
     
-    # Function for transforming the colored image to grayscale
+    # Function for transforming the colored (RGB) image to grayscale
     def get_grayscale_img(self):
         # Transforms image to grayscale
         row = []
@@ -655,7 +656,7 @@ class App(tk.Tk):
                 
         return gray
     
-    # Function for drawing the grayscale image
+    # Function that draws the passed pixel values to an image where the said pixel values are stored in a 2D array    
     def drawImage(self, draw, gray):
         # Define the size of each color block
         block_size = 1
@@ -668,7 +669,8 @@ class App(tk.Tk):
                 y2 = y1 + 1
 
                 draw.rectangle([x1, y1, x2, y2], fill=color)
-                
+    
+    # Function that draws the passed pixel values to an image where the said pixel values are stored in a 1D array            
     def drawImage1DArray(self, array, draw):
         block_size = 1
             
@@ -693,16 +695,18 @@ class App(tk.Tk):
             print("No PCX Image Loaded")
             self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
+            # Creates the output image
             grayscale_img = Image.new('L', (self.width, self.height), 255)
             draw_grayscale = ImageDraw.Draw(grayscale_img)
             
-            gray = self.get_grayscale_img()
+            gray = self.get_grayscale_img() # transforms image to grayscale
             
-            self.drawImage(draw_grayscale, gray)
+            self.drawImage(draw_grayscale, gray) # draws resulting pixel values to image
                 
-            self.show_image(grayscale_img)
+            self.show_image(grayscale_img) # shows image to GUI
             self.curr_img = grayscale_img
             
+            # Updates status
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
@@ -715,6 +719,7 @@ class App(tk.Tk):
             print("No PCX Image Loaded")
             self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
+            # Creates the output image
             negative_img = Image.new('L', (self.width, self.height), 255)
             draw_negative = ImageDraw.Draw(negative_img)
             
@@ -723,6 +728,7 @@ class App(tk.Tk):
             # Define the size of each color block
             block_size = 1
 
+            # Draws resulting pixel values to an image
             for i, row in enumerate(gray):
                 for j, color in enumerate(row):
                     x1 = j
@@ -735,6 +741,7 @@ class App(tk.Tk):
             self.show_image(negative_img)
             self.curr_img = negative_img
             
+            # Updates status
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
@@ -757,9 +764,10 @@ class App(tk.Tk):
             current_value = tk.IntVar(value=0)
             threshold = tk.IntVar()
             
+            # Monitors any change in text box
             def entry_changed(event):
                 value = text_box.get()  # Get the value from the entry box
-                if value.isdigit() and int(value) >= 0 and int(value) <= 255:  # Check if the value is a valid integer
+                if value.isdigit() and int(value) >= 0 and int(value) <= 255:  # Check if the value is a valid integer and is between 0 and 255
                     current_value.set(int(value))  # Set the slider value to the entry value
                 else:
                     err_window = tk.Toplevel()
@@ -770,11 +778,13 @@ class App(tk.Tk):
                     btn_ok = tk.Button(err_window, command=err_window.destroy, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
                     btn_ok.place(x=80, y=85)
 
+            # Monitors any change in the slider
             def slider_changed(*args):
                 value = current_value.get()
                 text_box.delete(0, tk.END)  # Clear the entry box
                 text_box.insert(0, value)
 
+            # Function that executes when OK button is clicked
             def on_click():
                 value = current_value.get()
                 threshold.set(value)
@@ -806,14 +816,16 @@ class App(tk.Tk):
             self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
             threshold = open_popup()
+            # Creates the output image
             BW_img = Image.new('L', (self.width, self.height), 255)
             draw_BW = ImageDraw.Draw(BW_img)
             
-            gray = self.get_grayscale_img()
+            gray = self.get_grayscale_img() # transforms image to grayscale
             
             # Define the size of each color block
             block_size = 1
 
+            # Draws the resulting pixel values to an image
             for i, row in enumerate(gray):
                 for j, color in enumerate(row):
                     x1 = j
@@ -831,6 +843,7 @@ class App(tk.Tk):
             self.show_image(BW_img)
             self.curr_img = BW_img
             
+            # Updates status
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
@@ -852,9 +865,10 @@ class App(tk.Tk):
             
             current_value = tk.DoubleVar(value=0.0)
 
+            # Detects the value inside the text box
             def entry_changed(event):
                 value = text_box.get()  # Get the value from the entry box
-                if int(value) >= 0:  # Check if the value is a valid integer
+                if int(value) >= 0:  # Check if the value is a positive constant
                     current_value.set(int(value))  # Set the slider value to the entry value
                 else:
                     err_window = tk.Toplevel()
@@ -865,6 +879,7 @@ class App(tk.Tk):
                     btn_ok = tk.Button(err_window, command=err_window.destroy, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
                     btn_ok.place(x=80, y=85)
 
+            # Function that executes when OK button is clicked
             def on_click():
                 window.destroy()
 
@@ -887,14 +902,16 @@ class App(tk.Tk):
             self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
             gamma = open_popup()
+            # Creates the output image
             PL_img = Image.new('L', (self.width, self.height), 255)
             draw_PL = ImageDraw.Draw(PL_img)
             
-            gray = self.get_grayscale_img()
+            gray = self.get_grayscale_img() # transforms image to grayscale
             
             # Define the size of each color block
             block_size = 1
 
+            # Draws the resulting pixels to an image
             for i, row in enumerate(gray):
                 for j, color in enumerate(row):
                     x1 = j
@@ -905,6 +922,7 @@ class App(tk.Tk):
                     c = 1
                     color = (int)(c*(color**gamma))
                     
+                    # Clips pixel values between 0 and 255
                     if color < 0:
                         color = 0
                     elif color > 255:
@@ -915,6 +933,7 @@ class App(tk.Tk):
             self.show_image(PL_img)
             self.curr_img = PL_img
             
+            # Updates status
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
@@ -923,7 +942,7 @@ class App(tk.Tk):
     
     # Function that implements the averaging filter which blurs the image
     def average_filter(self):
-        # Function that gets the average pixel value encompassed by an nxn mask
+        # Function that gets the average pixel value encompassed by an n x n mask
         def get_pixel_value(mask, neighbors):
             avg = 0
             for i in range(len(mask)):
@@ -936,18 +955,15 @@ class App(tk.Tk):
             print("No PCX Image Loaded")
             self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
-            avg_filtered_img = Image.new('L', (self.width, self.height), 255)
-            draw_avg_filtered = ImageDraw.Draw(avg_filtered_img)
-            
             # Initializes the n x n mask
             radius = self.n//2
             mask = [[1/(self.n*self.n) for i in range(self.n)] for j in range(self.n)]
             
-            gray = self.get_grayscale_img()
+            gray = self.get_grayscale_img() # transforms image to grayscale
                            
             blur_pixels = [row[:] for row in gray]
             
-            padded_img = self.clamp_padding(radius, gray)
+            padded_img = self.clamp_padding(radius, gray) # executes clamp padding
             
             # Updates current pixel value with the average of the sum of it and its neighbors in an nxn mask
             neighbors = []
@@ -955,12 +971,16 @@ class App(tk.Tk):
                 for j in range(self.width):
                     neighbors = self.get_neighbors(i+radius, j+radius, radius, padded_img)
                     blur_pixels[i][j] = get_pixel_value(mask, neighbors)
-                    
+            
+            # Creates the output image
+            avg_filtered_img = Image.new('L', (self.width, self.height), 255)
+            draw_avg_filtered = ImageDraw.Draw(avg_filtered_img)        
             self.drawImage(draw_avg_filtered, blur_pixels)        
                 
             self.show_image(avg_filtered_img)
             self.curr_img = avg_filtered_img
             
+            # Updates status
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
@@ -969,7 +989,7 @@ class App(tk.Tk):
     
     # Function that implements the unsharp masking       
     def unsharp_masking(self):
-        # Function that gets the average pixel value encompassed by an nxn mask
+        # Function that gets the average pixel value encompassed by an n x n mask
         def get_pixel_value(mask, neighbors):
             avg = 0
             for i in range(len(mask)):
@@ -982,21 +1002,18 @@ class App(tk.Tk):
             print("No PCX Image Loaded")
             self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
-            unsharp_masked_img = Image.new('L', (self.width, self.height), 255)
-            draw_unsharp_masked = ImageDraw.Draw(unsharp_masked_img)
-            
             # Initializes the n x n mask
             radius = self.n//2
             mask = [[1/(self.n*self.n) for i in range(self.n)] for j in range(self.n)]
             
-            gray_orig = self.get_grayscale_img()
+            gray_orig = self.get_grayscale_img() # transforms image to grayscale
             
             flat_gray_orig = [element for row in gray_orig for element in row]
             blur_pixels = [row[:] for row in gray_orig]
             
-            padded_img = self.clamp_padding(radius, gray_orig)
+            padded_img = self.clamp_padding(radius, gray_orig) # executes clamp padding
             
-            # Blurs the image
+            # Blurs the image using averaging filter
             neighbors = []
             for i in range(self.height):
                 for j in range(self.width):
@@ -1018,10 +1035,15 @@ class App(tk.Tk):
             for orig_pixel, value in zip(flat_gray_orig, unsharp_mask):
                 img_result.append(orig_pixel + (k * value))
             
+            
+            # Creates the output image
+            unsharp_masked_img = Image.new('L', (self.width, self.height), 255)
+            draw_unsharp_masked = ImageDraw.Draw(unsharp_masked_img)
             self.drawImage1DArray(img_result, draw_unsharp_masked)
             self.show_image(unsharp_masked_img)
             self.curr_img = unsharp_masked_img
             
+            # Updates status
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
@@ -1030,7 +1052,7 @@ class App(tk.Tk):
     
     # Function that implements the Highboost filtering        
     def highboost_filter(self):
-        # Function that gets the average pixel value encompassed by an nxn mask
+        # Function that gets the average pixel value encompassed by an n x n mask
         def get_pixel_value(mask, neighbors):
             avg = 0
             for i in range(len(mask)):
@@ -1043,19 +1065,16 @@ class App(tk.Tk):
             print("No PCX Image Loaded")
             self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
-            highpass_filtered_img = Image.new('L', (self.width, self.height), 255)
-            draw_highboost = ImageDraw.Draw(highpass_filtered_img)
-            
             # Initializes the n x n mask
             radius = self.n//2
             mask = [[1/(self.n*self.n) for i in range(self.n)] for j in range(self.n)]
             
-            gray_orig = self.get_grayscale_img()
+            gray_orig = self.get_grayscale_img() # transforms image to grayscale
             
             flat_gray_orig = [element for row in gray_orig for element in row]
             blur_pixels = [row[:] for row in gray_orig]
             
-            padded_img = self.clamp_padding(radius, gray_orig)
+            padded_img = self.clamp_padding(radius, gray_orig) # executes clamp padding
             
             # Blurs the image
             neighbors = []
@@ -1063,6 +1082,10 @@ class App(tk.Tk):
                 for j in range(self.width):
                     neighbors = self.get_neighbors(i+radius, j+radius, radius, padded_img)
                     blur_pixels[i][j] = get_pixel_value(mask, neighbors)
+
+            # Creates output image
+            highpass_filtered_img = Image.new('L', (self.width, self.height), 255)
+            draw_highboost = ImageDraw.Draw(highpass_filtered_img)
             
             flat_blur_pixels = [element for row in blur_pixels for element in row]
             
@@ -1084,6 +1107,7 @@ class App(tk.Tk):
             self.show_image(highpass_filtered_img)
             self.curr_img = highpass_filtered_img
             
+            # Updates status
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
@@ -1091,6 +1115,7 @@ class App(tk.Tk):
             self.add_text_to_statusbar(f"Status: Highboost filter is applied to the image where the amplification parameter is 3.5", x=300, y=20, fill="white", font=("Arial", 9,))
     
     # Function that gets the neighboring pixels of a particular pixel in an image
+    # It also saves the passed pixel
     def get_neighbors(self, row_index, column_index, radius, grid):
         neighbors = []
         for i in range(row_index-radius, row_index+radius+1):
@@ -1108,13 +1133,16 @@ class App(tk.Tk):
         def get_pixel_value(mask, neighbors):
             mdn = 0
             pxls_array = []
+            
+            # Gets the pixel values encompassed by a mask
             for i in range(len(mask)):
                 for j in range(len(mask[0])):
                     pxls_array.append(neighbors[i][j])
                     
             n = len(pxls_array)      # get the length of the array
-            pxls_array.sort()
+            pxls_array.sort() # sorts the pixel values from least to greatest
 
+            # Finds the median of the pixel values encompassed by the mask
             if n % 2 == 0:
                 mdn1 = pxls_array[n//2]
                 mdn2 = pxls_array[n//2 - 1]
@@ -1128,18 +1156,15 @@ class App(tk.Tk):
             print("No PCX Image Loaded")
             self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
-            mdn_filtered_img = Image.new('L', (self.width, self.height), 255)
-            draw_mdn_filtered = ImageDraw.Draw(mdn_filtered_img)
-            
             # Initializes the n x n mask
             radius = self.n//2
             mask = [[1/(self.n*self.n) for i in range(self.n)] for j in range(self.n)]
             
-            gray = self.get_grayscale_img()
+            gray = self.get_grayscale_img() # transforms image to grayscale
             
-            blur_pixels = [row[:] for row in gray]
+            blur_pixels = [row[:] for row in gray] # copies gray pixel values to another array
             
-            padded_img = self.clamp_padding(radius, gray)
+            padded_img = self.clamp_padding(radius, gray) # executes clamp padding
             
             # Blurs the image
             neighbors = []
@@ -1148,11 +1173,16 @@ class App(tk.Tk):
                     neighbors = self.get_neighbors(i+radius, j+radius, radius, padded_img)
                     blur_pixels[i][j] = get_pixel_value(mask, neighbors)
             
+            # Creates output image
+            mdn_filtered_img = Image.new('L', (self.width, self.height), 255)
+            draw_mdn_filtered = ImageDraw.Draw(mdn_filtered_img)
+            
             self.drawImage(draw_mdn_filtered, blur_pixels)  
                 
             self.show_image(mdn_filtered_img)
             self.curr_img = mdn_filtered_img
             
+            # Updates status
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
@@ -1169,6 +1199,7 @@ class App(tk.Tk):
                 for j in range(len(mask[i])):
                     lap_val += mask[i][j]*neighbors[i][j]
             
+            # Clips the pixel values to be between 0 and 255
             if lap_val < 0:
                 lap_val = 0
             elif lap_val > 255:
@@ -1180,19 +1211,16 @@ class App(tk.Tk):
             print("No PCX Image Loaded")
             self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
         else:
-            lapla_filtered_img = Image.new('L', (self.width, self.height), 255)
-            draw_lapla_filtered = ImageDraw.Draw(lapla_filtered_img)
-            
             # Initializes the n x n mask
             n = 3
             radius = n//2
-            mask = [ [0,1,0] , [1,-4,1] , [0,1,0] ]
+            mask = [ [0,1,0] , [1,-4,1] , [0,1,0] ] # Sobel Magnitude Operator
             
-            gray = self.get_grayscale_img()
+            gray = self.get_grayscale_img() # transforms image to grayscale
             
-            copy = [row[:] for row in gray]
+            copy = [row[:] for row in gray] # copies gray pixel values to another array
             
-            padded_img = self.clamp_padding(radius, gray)
+            padded_img = self.clamp_padding(radius, gray) # executes clamp padding
             
             # Blurs the image
             neighbors = []
@@ -1200,12 +1228,17 @@ class App(tk.Tk):
                 for j in range(self.width):
                     neighbors = self.get_neighbors(i+radius, j+radius, radius, padded_img)
                     copy[i][j] = get_pixel_value(mask, neighbors)
+           
+            # Creates output image
+            lapla_filtered_img = Image.new('L', (self.width, self.height), 255)
+            draw_lapla_filtered = ImageDraw.Draw(lapla_filtered_img)
             
-            self.drawImage(draw_lapla_filtered, copy) 
+            self.drawImage(draw_lapla_filtered, copy) # Draws each pixel value to an image
                 
-            self.show_image(lapla_filtered_img)
-            self.curr_img = lapla_filtered_img
+            self.show_image(lapla_filtered_img) # Shows image applied with laplacian filter
+            self.curr_img = lapla_filtered_img 
             
+            # Updates status bar
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
@@ -1221,7 +1254,7 @@ class App(tk.Tk):
             n = 3
             radius = n // 2
 
-            # Sobel Operator
+            # Function that implements gradient filtering by using the sobel operator
             def sobelOperator(image):
                 Gx = [[-1, 0, 1],
                       [-2, 0, 2],
@@ -1245,6 +1278,7 @@ class App(tk.Tk):
                         c+=1
                     r+=1
 
+                # Clips the pixel values to be between 0 and 255
                 for i in range(rows-2):
                     for j in range(cols-2):
                         if mag[i][j] < 0:
@@ -1254,13 +1288,14 @@ class App(tk.Tk):
 
                 return mag
 
-            gray = self.get_grayscale_img()
+            gray = self.get_grayscale_img() # transforms image to grayscale
 
-            padded_img = self.clamp_padding(radius, gray)
+            padded_img = self.clamp_padding(radius, gray) # implements clamp padding
 
             # Apply Sobel operator to the grayscale image with clamp padding
             sobel_result = sobelOperator(padded_img)
 
+            # Creates output image
             grdn_filtered_img = Image.new('L', (self.width, self.height), 255)
             draw_grdn_filtered = ImageDraw.Draw(grdn_filtered_img)
 
@@ -1269,13 +1304,27 @@ class App(tk.Tk):
             self.show_image(grdn_filtered_img)
             self.curr_img = grdn_filtered_img
 
+            # Updates status
             self.statusbar.destroy()
             self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
             self.statusbar.grid(row=2, columnspan=3, sticky="ew")
             self.create_statusbar_canvas()
             self.add_text_to_statusbar(f"Status: Gradient filter using the Sobel edge detection is applied to the image", x=280, y=20, fill="white", font=("Arial", 9,))
 
+    # Function that implements clamp padding
+    # This is to allow the border side of the image to be accounted with the operation being done
+    # For instance, if an image is 
+    # [1, 2, 3]
+    # [1, 4, 5]
+    # [1, 6, 7]
+    # Then clamp padding will turn it into
+    # [1, 1, 2, 3, 3]
+    # [1, 1, 2, 3, 3]
+    # [1, 1, 4, 5, 5]
+    # [1, 1, 6, 7, 7]
+    # [1, 1, 6, 7, 7]
     def clamp_padding(self, radius, gray):
+        # Initializes rows and columns after padding
         padded_rows = self.height + 2*radius
         padded_cols = self.width + 2*radius
         
@@ -1315,26 +1364,29 @@ class App(tk.Tk):
                 
         return clamp_padded_img
 
-    # Function that closes the image file being displayed    
+    # Function that closes the image file being displayed
+    # It removes all references of the image, information, and applied operations to its respective variables and widgets
+    # It also reverts the program back to its state when it was first opened    
     def close_img(self):
         
         self.orig_img = None
+        self.curr_img = None
         self.red_channel = []
         self.green_channel = []
         self.blue_channel = []
         self.pcx_image_data = []
-
-        print("close")
         
-        
+        # Reverts right sidebar to its original form
         self.rightsidebar.destroy()
         self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
         self.rightsidebar.grid(row=1, column=2, sticky="nsew")
         
+        # Removes image in the image panel
         self.image_label.destroy()
         self.image_label = tk.Label(self, bg="#242424")
         self.image_label.grid(row=1, column=1, sticky="nsew")
 
+        # Updates status
         self.statusbar.destroy()
         self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
