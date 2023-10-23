@@ -249,10 +249,6 @@ class App(tk.Tk):
         img_gradient = Image.open("assets\gradient.png")
         img_gradient = img_gradient.resize((30,30))
         icon_gradient = ImageTk.PhotoImage(img_gradient)
-
-        # btn_gradient = tk.Button(self.sidebar,  text="GRD", command=self.gradient_filter, font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
-        # btn_gradient.grid(row=5, column=1, sticky="ew", padx=5, pady=10)
-        # CreateToolTip(btn_gradient, "Gradient: Sobel Magnitude Operator")
         
         btn_gradient = tk.Button(self.sidebar, image=icon_gradient, command=self.gradient_filter, background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_gradient.photo = icon_gradient
@@ -353,9 +349,7 @@ class App(tk.Tk):
             
             file.seek(0)
             size = len(file.read())
-            
-            # pixel_data_size = file.seek(128,2) - 769
-            # print(pixel_data_size)
+  
             file.seek(128)
             image_data = file.read(size-128-768)
             
@@ -453,8 +447,6 @@ class App(tk.Tk):
 
                 # Convert the PIL image to a PhotoImage object
                 image_tk_palette = ImageTk.PhotoImage(img_palette)
-
-                
 
                 # Create a blank image with a white background
                 img_pcx_small = Image.new('RGB', (256, 256), (255, 255, 255))
@@ -649,6 +641,7 @@ class App(tk.Tk):
             self.show_image(channel_img)
             self.show_hist(channel, string)
     
+    # Function for transforming the colored image to grayscale
     def get_grayscale_img(self):
         # Transforms image to grayscale
         row = []
@@ -664,6 +657,7 @@ class App(tk.Tk):
                 
         return gray
     
+    # Function for drawing the grayscale image
     def drawImage(self, draw, gray):
         # Define the size of each color block
         block_size = 1
