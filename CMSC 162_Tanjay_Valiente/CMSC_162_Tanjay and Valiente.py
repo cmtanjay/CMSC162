@@ -25,6 +25,7 @@ class App(tk.Tk):
         self.title("Image Processor")
         self.rowconfigure(1, weight=1)
         self.columnconfigure(1, weight=1)
+        
 
         # Gets the screen width and height
         screen_width = self.winfo_screenwidth() - 10
@@ -139,7 +140,7 @@ class App(tk.Tk):
         icon_orig_img = ImageTk.PhotoImage(img_orig_img)
 
         # Configures orig image button
-        btn_orig_img = tk.Button(self.topbar, image=icon_orig_img, command=lambda: self.show_image(self.orig_img, "original"), background="#2F333A", relief="ridge", borderwidth=0)
+        btn_orig_img = tk.Button(self.topbar, image=icon_orig_img, command=lambda: self.show_image(self.orig_img), background="#2F333A", relief="ridge", borderwidth=0)
         btn_orig_img.photo = icon_orig_img
         btn_orig_img.grid(row=1, column=4, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_orig_img, "Revert to Original Image")
@@ -203,7 +204,7 @@ class App(tk.Tk):
         img_avg = img_avg.resize((30,30))
         icon_avg = ImageTk.PhotoImage(img_avg)
         
-        # Configures averaging filter button
+        # Configures Power-Law button
         btn_avg_filter = tk.Button(self.sidebar, image=icon_avg, command=self.average_filter, background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_avg_filter.photo = icon_avg
         btn_avg_filter.grid(row=0, column=1, sticky="ew", padx=5, pady=10)
@@ -265,7 +266,6 @@ class App(tk.Tk):
         self.red_channel = []
         self.green_channel = []
         self.blue_channel = []
-        self.pcx_image_data = []
         
         image = Image.open(filepath)
         self.show_image(image)
@@ -284,7 +284,7 @@ class App(tk.Tk):
         self.add_text_to_statusbar(f"Status: {filename} loaded", x=120, y=20, fill="white", font=("Arial", 9,))
     
     # Function that displays an image to the UI    
-    def show_image(self, image, string):
+    def show_image(self, image):
         if(image == None):
             print("No PCX Image Loaded")
             self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
@@ -322,17 +322,6 @@ class App(tk.Tk):
             self.image_label.config(image=image_tk)
             self.image_label.image = image_tk  # Keep a reference to avoid garbage collection
             
-            # self.statusbar.destroy()
-            # self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
-            # self.statusbar.grid(row=2, columnspan=3, sticky="ew")
-            # self.create_statusbar_canvas()
-            
-            # if(string == "original"):
-            # # Updates status
-                
-            #     self.add_text_to_statusbar("Status: Reverted to original image", x=150, y=20, fill="white", font=("Arial", 9,))
-            
-            
     # Function that opens a PCX file
     def open_pcx_file(self):
         
@@ -348,7 +337,6 @@ class App(tk.Tk):
             self.red_channel = []
             self.green_channel = []
             self.blue_channel = []
-            self.pcx_image_data = []
         
             # Extract the filename from the full filepath
             filename = os.path.basename(filepath)
@@ -428,7 +416,7 @@ class App(tk.Tk):
                 self.get_img_channels() # Extracts color channels
                 
                 self.orig_img = img_pcx 
-                self.show_image(img_pcx, " ")     # Displays the opened PCX image to the GUI
+                self.show_image(img_pcx)     # Displays the opened PCX image to the GUI
                 
                 # Create a blank image with a white background for the color palette
                 img_palette = Image.new('RGB', (256, 256), (255, 255, 255))
@@ -459,7 +447,7 @@ class App(tk.Tk):
                 image_tk_palette = ImageTk.PhotoImage(img_palette)
 
                 # Create a blank image with a white background
-                img_pcx_small = Image.new('RGB', (self.width, self.height), (255, 255, 255))
+                img_pcx_small = Image.new('RGB', (256, 256), (255, 255, 255))
                 draw_orig_small = ImageDraw.Draw(img_pcx_small)
                 
                 # Define the size of each color block
@@ -480,21 +468,8 @@ class App(tk.Tk):
                         
                     draw_orig_small.rectangle([x1, y1, x2, y2], fill=self.palette[color])
                 
-                # Calculate the aspect ratio of the image
-                aspect_ratio = img_pcx_small.width / img_pcx_small.height
-
-                available_width = 256
-                available_height = 150
-
-                # Checks if the aspect ratio of the image is greater than the aspect ratio of the space available for the image to display
-                if aspect_ratio > available_width/available_height:
-                    wpercent = available_width/float(img_pcx_small.width)
-                    hsize = int((img_pcx_small.height)*float(wpercent))
-                    img_pcx_small = img_pcx_small.resize((available_width, hsize))
-                else:
-                    hpercent = available_height/float(img_pcx_small.height)
-                    wsize = int((img_pcx_small.width)*float(hpercent))
-                    img_pcx_small = img_pcx_small.resize((wsize, available_height))
+                # Resize the image to 128x128
+                img_pcx_small = img_pcx_small.resize((128, 128), Image.LANCZOS)
 
                 # Convert the PIL image to a PhotoImage object
                 image_tk_orig = ImageTk.PhotoImage(img_pcx_small)
@@ -662,7 +637,7 @@ class App(tk.Tk):
             elif(string == "blue"):
                 self.add_text_to_statusbar("Status: Extracted Blue Channel Filter to Image", x=180, y=20, fill="white", font=("Arial", 9,))
                 
-            self.show_image(channel_img, " ")
+            self.show_image(channel_img)
             self.show_hist(channel, string)
     
     # Function for transforming the colored (RGB) image to grayscale
@@ -728,7 +703,7 @@ class App(tk.Tk):
             
             self.drawImage(draw_grayscale, gray) # draws resulting pixel values to image
                 
-            self.show_image(grayscale_img, " ") # shows image to GUI
+            self.show_image(grayscale_img) # shows image to GUI
             self.curr_img = grayscale_img
             
             # Updates status
@@ -763,7 +738,7 @@ class App(tk.Tk):
 
                     draw_negative.rectangle([x1, y1, x2, y2], fill=(255-color))
                 
-            self.show_image(negative_img, " ")
+            self.show_image(negative_img)
             self.curr_img = negative_img
             
             # Updates status
@@ -865,7 +840,7 @@ class App(tk.Tk):
 
                     draw_BW.rectangle([x1, y1, x2, y2], fill=color)
                 
-            self.show_image(BW_img, " ")
+            self.show_image(BW_img)
             self.curr_img = BW_img
             
             # Updates status
@@ -955,7 +930,7 @@ class App(tk.Tk):
 
                     draw_PL.rectangle([x1, y1, x2, y2], fill=color)
                 
-            self.show_image(PL_img, " ")
+            self.show_image(PL_img)
             self.curr_img = PL_img
             
             # Updates status
@@ -1002,7 +977,7 @@ class App(tk.Tk):
             draw_avg_filtered = ImageDraw.Draw(avg_filtered_img)        
             self.drawImage(draw_avg_filtered, blur_pixels)        
                 
-            self.show_image(avg_filtered_img, " ")
+            self.show_image(avg_filtered_img)
             self.curr_img = avg_filtered_img
             
             # Updates status
@@ -1065,7 +1040,7 @@ class App(tk.Tk):
             unsharp_masked_img = Image.new('L', (self.width, self.height), 255)
             draw_unsharp_masked = ImageDraw.Draw(unsharp_masked_img)
             self.drawImage1DArray(img_result, draw_unsharp_masked)
-            self.show_image(unsharp_masked_img, " ")
+            self.show_image(unsharp_masked_img)
             self.curr_img = unsharp_masked_img
             
             # Updates status
@@ -1129,7 +1104,7 @@ class App(tk.Tk):
                     
             self.drawImage1DArray(img_result, draw_highboost)
                 
-            self.show_image(highpass_filtered_img, " ")
+            self.show_image(highpass_filtered_img)
             self.curr_img = highpass_filtered_img
             
             # Updates status
@@ -1204,7 +1179,7 @@ class App(tk.Tk):
             
             self.drawImage(draw_mdn_filtered, blur_pixels)  
                 
-            self.show_image(mdn_filtered_img, " ")
+            self.show_image(mdn_filtered_img)
             self.curr_img = mdn_filtered_img
             
             # Updates status
@@ -1260,7 +1235,7 @@ class App(tk.Tk):
             
             self.drawImage(draw_lapla_filtered, copy) # Draws each pixel value to an image
                 
-            self.show_image(lapla_filtered_img, " ") # Shows image applied with laplacian filter
+            self.show_image(lapla_filtered_img) # Shows image applied with laplacian filter
             self.curr_img = lapla_filtered_img 
             
             # Updates status bar
@@ -1326,7 +1301,7 @@ class App(tk.Tk):
 
             self.drawImage(draw_grdn_filtered, sobel_result) 
 
-            self.show_image(grdn_filtered_img, " ")
+            self.show_image(grdn_filtered_img)
             self.curr_img = grdn_filtered_img
 
             # Updates status
