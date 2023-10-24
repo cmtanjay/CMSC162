@@ -268,7 +268,7 @@ class App(tk.Tk):
         self.pcx_image_data = []
         
         image = Image.open(filepath)
-        self.show_image(image)
+        self.show_image(image, " ")
         
         self.statusbar.destroy()
         self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
