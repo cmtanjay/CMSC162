@@ -1,0 +1,19 @@
+orig_img = None
+curr_img = None
+red_channel = []
+green_channel = []
+blue_channel = []
+pcx_image_data = []
+n = 3
+
+manufacturer = None
+version = None
+encoding = None
+bits_per_pixel = 0
+img_width = 0
+img_height = 0
+hdpi = 0
+vdpi = 0
+nplanes = 0
+bytesperline = 0
+paletteinfo = 0
