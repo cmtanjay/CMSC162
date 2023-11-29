@@ -41,8 +41,7 @@ def negative_transform(self):
         
         gray = get_grayscale_img(self)
         
-        # Define the size of each color block
-        block_size = 1
+        negative = []
 
         # Draws resulting pixel values to an image
         for i, row in enumerate(gray):
@@ -53,6 +52,7 @@ def negative_transform(self):
                 y2 = y1 + 1
 
                 draw_negative.rectangle([x1, y1, x2, y2], fill=(255-color))
+                negative.append(255-color)
             
         show_image(self, negative_img, " ")
         variables.curr_img = negative_img
