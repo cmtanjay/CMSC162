@@ -21,18 +21,25 @@ def salt_and_pepper_noise(self):
         draw_SP = ImageDraw.Draw(img_SP)
         
         deg_img = []
+        row = []
         
         for i, color in enumerate(flat_gray_orig):
             random = np.random.random()
             
             if random < Pp:
-                deg_img.append(0)
+                row.append(0)
             elif random > (1-Ps):
-                deg_img.append((2**variables.bits_per_pixel)-1)
+                row.append((2**variables.bits_per_pixel)-1)
             else:
-                deg_img.append(color)
+                row.append(color)
+                
+            if len(row) == variables.img_width:
+                deg_img.append(row)
+                row = []
         
-        drawImage1DArray(self, deg_img, draw_SP, [])
+        drawImage(self, draw_SP, deg_img)
         show_image(self, img_SP, " ")
         variables.curr_img = img_SP
+        variables.curr_image_data = deg_img
+        variables.isDegraded = True
     

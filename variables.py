@@ -3,7 +3,10 @@ curr_img = None
 red_channel = []
 green_channel = []
 blue_channel = []
-pcx_image_data = []
+pcx_image_data = [] #orig image data
+curr_image_data = []
+palette = []
+isDegraded = False
 n = 3
 
 manufacturer = None

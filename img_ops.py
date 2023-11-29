@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+from bmp_extract import openBMP
+
 # This is the function that opens the image file
 def open_img_file(self):
     filepath = askopenfilename(filetypes=[("Image Files", "*.jpg *.png *.gif *.bmp *.jpeg *.tiff")])
@@ -18,8 +20,14 @@ def open_img_file(self):
     variables.green_channel = []
     variables.blue_channel = []
     variables.pcx_image_data = []
+    variables.palette = []
+    variables.isDegraded = False
     
-    image = Image.open(filepath)
+    if os.path.basename(filepath).split('.')[-1] == "bmp":
+        image = openBMP(filepath)
+    else:
+        image = Image.open(filepath)
+    
     show_image(self, image, " ")
     
     self.statusbar.destroy()
@@ -29,7 +37,7 @@ def open_img_file(self):
 
     self.rightsidebar.destroy()
     self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
-    self.rightsidebar.grid(row=1, column=2, sticky="nsew")
+    self.rightsidebar.grid(row=1, column=3, sticky="nsew")
 
     # Extract the filename from the full filepath
     filename = os.path.basename(filepath)
@@ -41,6 +49,7 @@ def show_image(self, image, string):
         print("No PCX Image Loaded")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
     else:
+        variables.curr_img = variables.pcx_image_data
         
         # Opens the image using PIL
         label_width = self.image_label.winfo_width()
@@ -64,20 +73,24 @@ def show_image(self, image, string):
 
 # Function that opens a PCX file
 def open_pcx_file(self):
-    
     filepath = askopenfilename(filetypes=[("PCX Files", "*.pcx")])
+    
     if not filepath:
         print("Not a PCX file")
                     
         return
     
     with open(filepath, "rb") as file:
+        # content = file.read()
+        # print(len(content))
         variables.orig_img = None
         variables.curr_img = None
         variables.red_channel = []
         variables.green_channel = []
         variables.blue_channel = []
         variables.pcx_image_data = []
+        variables.palette = []
+        variables.isDegraded = False
     
         # Extract the filename from the full filepath
         filename = os.path.basename(filepath)
@@ -96,10 +109,10 @@ def open_pcx_file(self):
         color_data = file.read(768)
         
         i=0
-        self.palette=[]
+        
         
         while(i < len(color_data)):
-            self.palette.append((color_data[i], color_data[i+1], color_data[i+2]))
+            variables.palette.append((color_data[i], color_data[i+1], color_data[i+2]))
             i += 3
         
         if self.header[0] != 10:
@@ -129,6 +142,7 @@ def open_pcx_file(self):
             variables.paletteinfo = self.header[68]
             
             variables.pcx_image_data = decode(self, image_data)
+            variables.curr_img = variables.pcx_image_data
             print(f"addada: {len(variables.pcx_image_data)}")
             
             # Create a blank image with a white background for the opened image
@@ -136,7 +150,7 @@ def open_pcx_file(self):
             
             draw_orig = ImageDraw.Draw(img_pcx)
             
-            drawImage1DArray(self, variables.pcx_image_data, draw_orig, self.palette)
+            drawImage1DArray(self, variables.pcx_image_data, draw_orig, variables.palette)
             get_img_channels(self) # Extracts color channels
             
             variables.orig_img = img_pcx 
@@ -150,7 +164,7 @@ def open_pcx_file(self):
             block_size = 16
 
             # Draw the colored blocks on the image
-            for i, color in enumerate(self.palette):
+            for i, color in enumerate(variables.palette):
                 if i%16 == 0:
                     x1 = 0
                     y1 = i
@@ -177,7 +191,7 @@ def open_pcx_file(self):
             # Define the size of each color block
             block_size = 1
 
-            drawImage1DArray(self, variables.pcx_image_data, draw_orig_small, self.palette)
+            drawImage1DArray(self, variables.pcx_image_data, draw_orig_small, variables.palette)
             
             img_pcx_small = img_resize_aspectRatio(self, img_pcx_small, 256, 150)
 
@@ -277,7 +291,7 @@ def display_image_on_right_sidebar(self, image_tk, row):
 def get_img_channels(self):
     # Draw the colored blocks on the image
     for i, color in enumerate(variables.pcx_image_data):
-        rgb = list(self.palette[color])
+        rgb = list(variables.palette[color])
         variables.red_channel.append(rgb[0])
         variables.green_channel.append(rgb[1])
         variables.blue_channel.append(rgb[2])
@@ -322,7 +336,10 @@ def show_channel(self, channel, string):
                 x2 = x1 + block_size
                 y2 = y1 + block_size
             
-            rgb = list(self.palette[color])
+            if variables.palette == []:
+                rgb = list(color)
+            else:
+                rgb = list(variables.palette[color])
         
             if(string == "red"):
                 draw_channel_img.rectangle([x1, y1, x2, y2], fill=(rgb[0], 0, 0))    
@@ -353,7 +370,11 @@ def get_grayscale_img(self):
     row = []
     gray = []
     for i, color in enumerate(variables.pcx_image_data):
-        rgb = list(self.palette[color])
+        if variables.palette == []:
+            rgb = list(color)
+        else:
+            rgb = list(variables.palette[color])
+            
         grayscale_value = (int)((rgb[0] + rgb[1] + rgb[2]) / 3)
         row.append(grayscale_value)
 

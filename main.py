@@ -12,6 +12,7 @@ from img_ops import *
 from point_processing import *
 from img_enhancement import *
 from img_degradation import *
+from img_restoration import *
 
 from ToolTip import CreateToolTip
 
@@ -142,7 +143,7 @@ class App(tk.Tk):
         btn_orig_img.grid(row=1, column=4, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_orig_img, "Revert to Original Image")
         
-        img_avg = Image.open("assets\\avg.png")
+        img_avg = Image.open("assets\\channel.png")
         img_avg = img_avg.resize((30,30))
         icon_avg = ImageTk.PhotoImage(img_avg)
         
@@ -152,7 +153,7 @@ class App(tk.Tk):
         btn_channel.grid(row=0, column=1, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_channel, "Channels")
         
-        img_mdn = Image.open("assets\median.png")
+        img_mdn = Image.open("assets\point.png")
         img_mdn = img_mdn.resize((30,30))
         icon_mdn = ImageTk.PhotoImage(img_mdn)
         
@@ -161,7 +162,7 @@ class App(tk.Tk):
         btn_point_process.grid(row=1, column=1, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_point_process, "Point-Processing Methods")
         
-        img_highpass = Image.open("assets\highpass.png")
+        img_highpass = Image.open("assets\enhance.png")
         img_highpass = img_highpass.resize((30,30))
         icon_highpass = ImageTk.PhotoImage(img_highpass)
         
@@ -170,7 +171,7 @@ class App(tk.Tk):
         btn_enhancement.grid(row=2, column=1, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_enhancement, "Image Enhancement")
 
-        img_unsharp = Image.open("assets\mask.png")
+        img_unsharp = Image.open("assets\degrade.png")
         img_unsharp = img_unsharp.resize((30,30))
         icon_unsharp = ImageTk.PhotoImage(img_unsharp)
 
@@ -179,7 +180,7 @@ class App(tk.Tk):
         btn_degradation.grid(row=3, column=1, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_degradation, "Image Degradation")
 
-        img_restoration = Image.open("assets\highboost.png")
+        img_restoration = Image.open("assets\\restore.png")
         img_restoration = img_restoration.resize((30,30))
         icon_restoration = ImageTk.PhotoImage(img_restoration)
 
@@ -188,14 +189,14 @@ class App(tk.Tk):
         btn_restoration.grid(row=4, column=1, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_restoration, "Image Restoration")
 
-        img_gradient = Image.open("assets\gradient.png")
-        img_gradient = img_gradient.resize((30,30))
-        icon_gradient = ImageTk.PhotoImage(img_gradient)
+        img_compression = Image.open("assets\compress.png")
+        img_compression = img_compression.resize((30,30))
+        icon_compression = ImageTk.PhotoImage(img_compression)
         
-        btn_gradient = tk.Button(self.sidebar, image=icon_gradient, command=lambda: gradient_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
-        btn_gradient.photo = icon_gradient
-        btn_gradient.grid(row=5, column=1, sticky="ew", padx=5, pady=10)
-        CreateToolTip(btn_gradient, "Image Compression")
+        btn_compression = tk.Button(self.sidebar, image=icon_compression, command=self.img_compression, background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
+        btn_compression.photo = icon_compression
+        btn_compression.grid(row=5, column=1, sticky="ew", padx=5, pady=10)
+        CreateToolTip(btn_compression, "Image Compression")
 
     # Function that allows the user to save an image in the program
     def save_file_as(self, event=None):
@@ -406,9 +407,9 @@ class App(tk.Tk):
         img_mdn = img_mdn.resize((30,30))
         icon_mdn = ImageTk.PhotoImage(img_mdn)
         
-        btn_median = tk.Button(self.opsbar, image=icon_mdn, command=lambda: median_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
+        btn_median = tk.Button(self.opsbar, image=icon_mdn, command=lambda: median_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=0)
         btn_median.photo = icon_mdn
-        btn_median.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
+        btn_median.grid(row=2, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_median, "Median Filter")
         
         max_filter = Image.open("assets\gamma.png")
@@ -416,7 +417,7 @@ class App(tk.Tk):
         icon_max_filter = ImageTk.PhotoImage(max_filter)
         
         # Configures Power-Law button
-        btn_max_filter = tk.Button(self.opsbar, image=icon_max_filter, command=lambda: salt_and_pepper_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_max_filter = tk.Button(self.opsbar, image=icon_max_filter, command=lambda: maximum_filter(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_max_filter.photo = icon_max_filter
         btn_max_filter.grid(row=3, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_max_filter, "Max Filter")
@@ -426,7 +427,7 @@ class App(tk.Tk):
         icon_min_filter = ImageTk.PhotoImage(min_filter)
         
         # Configures Power-Law button
-        btn_min_filter = tk.Button(self.opsbar, image=icon_min_filter, command=lambda: salt_and_pepper_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_min_filter = tk.Button(self.opsbar, image=icon_min_filter, command=lambda: minimum_filter(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_min_filter.photo = icon_min_filter
         btn_min_filter.grid(row=4, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_min_filter, "Min Filter")
@@ -440,6 +441,31 @@ class App(tk.Tk):
         btn_mid_filter.photo = icon_mid_filter
         btn_mid_filter.grid(row=5, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_mid_filter, "Midpoint Filter")
+        
+    def img_compression(self):
+        self.opsbar.destroy()
+        self.opsbar = tk.Frame(self, width=100, bg="#313131")
+        self.opsbar.grid(row=1, column=1, pady=(290, 260), sticky="nsew")
+        
+        img_RLE = Image.open("assets\gamma.png")
+        img_RLE = img_RLE.resize((35,35))
+        icon_RLE = ImageTk.PhotoImage(img_RLE)
+        
+        # Configures Power-Law button
+        btn_RLE = tk.Button(self.opsbar, image=icon_RLE, command=lambda: salt_and_pepper_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_RLE.photo = icon_RLE
+        btn_RLE.grid(row=0, column=0, sticky="ew", padx=5, pady=10)
+        CreateToolTip(btn_RLE, "Run-Length Coding")
+        
+        img_huffman = Image.open("assets\gamma.png")
+        img_huffman = img_huffman.resize((35,35))
+        icon_huffman = ImageTk.PhotoImage(img_huffman)
+        
+        # Configures Power-Law button
+        btn_huffman = tk.Button(self.opsbar, image=icon_huffman, command=lambda: salt_and_pepper_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_huffman.photo = icon_huffman
+        btn_huffman.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
+        CreateToolTip(btn_huffman, "Huffman Coding")
     
     # Function that closes the image file being displayed
     # It removes all references of the image, information, and applied operations to its respective variables and widgets

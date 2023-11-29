@@ -221,7 +221,10 @@ def median_filter(self):
         radius = variables.n//2
         mask = [[1/(variables.n*variables.n) for i in range(variables.n)] for j in range(variables.n)]
         
-        gray = get_grayscale_img(self) # transforms image to grayscale
+        if variables.isDegraded:
+            gray = variables.curr_image_data
+        else:
+            gray = get_grayscale_img(self) # transforms image to grayscale
         
         blur_pixels = [row[:] for row in gray] # copies gray pixel values to another array
         
@@ -242,6 +245,7 @@ def median_filter(self):
             
         show_image(self, mdn_filtered_img, " ")
         variables.curr_img = mdn_filtered_img
+        variables.curr_image_data = blur_pixels
         
         # Updates status
         self.statusbar.destroy()
@@ -297,7 +301,7 @@ def laplacian_filter(self):
         drawImage(self, draw_lapla_filtered, copy) # Draws each pixel value to an image
             
         show_image(self, lapla_filtered_img, " ") # Shows image applied with laplacian filter
-        variables.curr_img = lapla_filtered_img 
+        variables.curr_img = lapla_filtered_img
         
         # Updates status bar
         self.statusbar.destroy()
