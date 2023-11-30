@@ -38,7 +38,31 @@ def read_bmp_palette(content, offset, colors_used):
 def read_bmp_data(content, offset, width, height, bits_per_pixel):
     # Assuming bits_per_pixel is 8 (8 bits per pixel, grayscale) for simplicity
     # You may need to modify this part based on your specific BMP file format
-    data = content[offset:]
+    # if width % 4 == 0:
+    #     data = content[offset:]
+    # else:
+    row_size = ((width * bits_per_pixel + 31) // 32) * 4
+    
+    # Extract pixel data
+    pixel_data = content[offset:]
+    
+    data = []
+    
+    # Iterate over each row
+    for i in range(height):
+        # Calculate start and end index for each row
+        start_index = i * row_size
+        end_index = start_index + row_size
+
+        # Read row data
+        row_data = pixel_data[start_index:end_index]
+
+        # Unpack pixel values
+        pixels = struct.unpack('<{}B'.format(row_size), row_data)
+
+        # Add pixel values to image data
+        data.extend(pixels[:width * (bits_per_pixel // 8)])
+            
     return data
 
 def openBMP(filepath):
@@ -50,15 +74,27 @@ def openBMP(filepath):
     variables.palette = read_bmp_palette(content, 54, bmp_info['colors_used'])
     bitmap_data = read_bmp_data(content, header_info['data_offset'], bmp_info['width'], bmp_info['height'], bmp_info['bits_per_pixel'])
 
+    print("Header:", header_info)
+    print("BMP Info:", bmp_info)
+
     colors = []
     i=0        
 
     while(i < len(bitmap_data)):
         colors.append((bitmap_data[i+2], bitmap_data[i+1], bitmap_data[i]))
         i += 3
+        
+    arranged_color = []
 
-    colors.reverse()
-    variables.pcx_image_data = colors
+    row = []
+    for i, color in enumerate(colors):
+        row.append(color)
+        
+        if len(row) == bmp_info["width"]:
+            arranged_color = row + arranged_color
+            row = []
+
+    variables.pcx_image_data = arranged_color
     variables.img_width = bmp_info["width"]
     variables.img_height = bmp_info["height"]
 
@@ -70,10 +106,10 @@ def openBMP(filepath):
     block_size = 1
             
     # Draw the colored blocks on the image
-    for i, color in enumerate(colors):
+    for i, color in enumerate(arranged_color):
         if i % bmp_info["width"] == 0:
             x1 = 0
-            y1 = i // bmp_info["width"]
+            y1 = (i // bmp_info["width"])
             x2 = x1 + block_size
             y2 = y1 + block_size
         else:
@@ -86,11 +122,10 @@ def openBMP(filepath):
         
     variables.orig_img = img_pcx
 
-    # # Print or use the extracted information as needed
-    # print("Header:", header_info)
-    # print("BMP Info:", bmp_info)
+    # Print or use the extracted information as needed
+   
     # print("Color Palette:", color_palette)
-    # print("Bitmap Data:", len(bitmap_data))
+    print("Bitmap Data:", len(bitmap_data))
     
     # Draw the colored blocks on the image
     for i, color in enumerate(variables.pcx_image_data):
