@@ -2,6 +2,7 @@ import struct
 from tkinter.filedialog import askopenfilename
 from PIL import Image, ImageTk, ImageDraw #pip install pillow
 from collections import Counter
+import json
 
 def read_bmp_header(content):
     header = struct.unpack('<2sIHHI', content[:14])
@@ -36,7 +37,31 @@ def read_bmp_palette(content, offset, colors_used):
 def read_bmp_data(content, offset, width, height, bits_per_pixel):
     # Assuming bits_per_pixel is 8 (8 bits per pixel, grayscale) for simplicity
     # You may need to modify this part based on your specific BMP file format
-    data = content[offset:]
+    # if width % 4 == 0:
+    #     data = content[offset:]
+    # else:
+    row_size = ((width * bits_per_pixel + 31) // 32) * 4
+    
+    # Extract pixel data
+    pixel_data = content[offset:]
+    
+    data = []
+    
+    # Iterate over each row
+    for i in range(height):
+        # Calculate start and end index for each row
+        start_index = i * row_size
+        end_index = start_index + row_size
+
+        # Read row data
+        row_data = pixel_data[start_index:end_index]
+
+        # Unpack pixel values
+        pixels = struct.unpack('<{}B'.format(row_size), row_data)
+
+        # Add pixel values to image data
+        data.extend(pixels[:width * (bits_per_pixel // 8)])
+            
     return data
 
 # Creating tree nodes
@@ -84,25 +109,33 @@ while(i < len(bitmap_data)):
     colors.append((bitmap_data[i+2], bitmap_data[i+1], bitmap_data[i]))
     i += 3
 
-rev_colors = colors.reverse()
+arranged_color = []
 
-# Create a blank image with a white background for the opened image
-img_pcx = Image.new('RGB', (640, 426), (255, 255, 255))
+row = []
+for i, color in enumerate(colors):
+    row.append(color)
+    
+    if len(row) == bmp_info["width"]:
+        arranged_color = row + arranged_color
+        row = []
+
+ # Create a blank image with a white background for the opened image
+img_pcx = Image.new('RGB', (bmp_info["width"], bmp_info["height"]), (255, 255, 255))
 
 draw = ImageDraw.Draw(img_pcx)
 
 block_size = 1
         
 # Draw the colored blocks on the image
-for i, color in enumerate(colors):
-    if i % 640 == 0:
+for i, color in enumerate(arranged_color):
+    if i % bmp_info["width"] == 0:
         x1 = 0
-        y1 = i // 640
+        y1 = (i // bmp_info["width"])
         x2 = x1 + block_size
         y2 = y1 + block_size
     else:
-        x1 = (i % 640) * block_size
-        y1 = (i // 640) * block_size
+        x1 = (i % bmp_info["width"]) * block_size
+        y1 = (i // bmp_info["width"]) * block_size
         x2 = x1 + block_size
         y2 = y1 + block_size
     
@@ -131,7 +164,7 @@ while(j < len(binary)):
     dec.append(int(binary[j], 2))
     j +=1
 
-#print(dec)
+# print(dec)
 
 value_counts = Counter(dec)
 
@@ -154,14 +187,16 @@ while len(nodes) > 1:
     i+=1
 
 huffmanCode = huffman_code_tree(nodes[0][0])
-print(len(huffmanCode))
 
-coded = []
+print(huffmanCode)
+
+coded = ""
 
 for code in dec:
-    coded.append(huffmanCode[code])
+    coded = coded + huffmanCode[code]
 
-print(len(coded))
+print(f"orig_len: {len(binary)*24}")
+print(f"huf_len: {len(coded)}")
 
 # print(' Char | Huffman code ')
 # print('----------------------')
@@ -170,3 +205,37 @@ print(len(coded))
     
 # for value, count in sorted_value_counts:
 #     print(f"Value {value} occurs {count} times.")
+
+# Calculate the number of bytes needed (ceil(len(huffman_coded_image) / 8))
+num_bytes = (len(coded) + 7) // 8
+
+# Convert the binary string to bytes
+byte_array = bytearray([int(coded[i:i+8], 2) for i in range(0, len(coded), 8)])
+
+# Fill the last byte with zeros if needed
+if len(byte_array) < num_bytes:
+    byte_array.extend([0] * (num_bytes - len(byte_array)))
+    
+print(len(byte_array))
+
+# Combine the headers and the encoded data
+bmp_content = bytes(byte_array)
+
+# huffman_codes_bytes = json.dumps(huffmanCode).encode('utf-8')
+
+huffman_array = b''
+for symbol, code in huffmanCode.items():
+    huffman_array += code.encode('utf-8') + str(symbol).encode('utf-8')
+
+# Calculate the size of the Huffman codes data
+huffman_codes_size = len(huffman_array)
+
+new = content[:header_info['data_offset']] + bmp_content + huffman_array
+
+# Write to the BMP file
+with open('output_image.bmp', 'wb') as bmp_file:
+    bmp_file.write(new)
+
+print(bmp_content)
+
+
