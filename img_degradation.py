@@ -10,6 +10,8 @@ import random
 import variables
 from img_ops import *
 
+import matplotlib.pyplot as plt
+
 def salt_and_pepper_noise(self):
     # Function that pops up a window that lets the user input the gamma value    
     def open_popup():
@@ -35,7 +37,7 @@ def salt_and_pepper_noise(self):
                 err_window.geometry("400x130+500+300")
                 err_window.title("Salt and Pepper Noise")
                 err_window.resizable(False, False)
-                ttk.Label(err_window, text='Both probabilities must be within and equate in range 0-1', font=('Arial 10 bold')).place(x=50, y=35)
+                ttk.Label(err_window, text='Both probabilities must be within and equate in range 0-1', font=('Arial 8 bold')).place(x=50, y=35)
                 btn_ok = tk.Button(err_window, command=err_window.destroy, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
                 btn_ok.place(x=80, y=85)
 
@@ -65,7 +67,7 @@ def salt_and_pepper_noise(self):
         return salt_prob.get(), pepper_prob.get()
     
     if not variables.pcx_image_data:
-        print("No PCX Image Loaded")
+        print("No PCX Image Loaded Damn")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
     else:
         Ps, Pp = open_popup()
@@ -100,8 +102,12 @@ def salt_and_pepper_noise(self):
         show_image(self, img_SP, " ")
         variables.curr_img = img_SP
         variables.curr_image_data = deg_img
+        variables.pcx_image_data = deg_img
         variables.degraded_image_data = deg_img
         variables.isDegraded = True
+
+        # Call show histogram function after applying salt and pepper noise
+        show_histogram(variables.degraded_image_data, 'Salt and Pepper Noise Histogram')
     
 # Function for applying Gaussian noise to an image
 def gaussian_noise(self):
@@ -126,7 +132,7 @@ def gaussian_noise(self):
             row = []
             for y in range(variables.img_width):
                 pixel_value = gray[x][y]
-                noise = int(random.gauss(avg, sigma))
+                noise = int(np.random.randn() * sigma)
                 noisy_value = max(0, min(255, pixel_value + noise))
                 row.append(noisy_value)
             corrupted_img.append(row)
@@ -141,3 +147,59 @@ def gaussian_noise(self):
         variables.curr_image_data = corrupted_img
         variables.isDegraded = True
         variables.degraded_image_data = corrupted_img
+
+        # Call show histogram function after applying Gaussian noise
+        show_histogram(variables.degraded_image_data, 'Gaussian Noise Histogram')
+
+def rayleigh_noise(self):
+    if not variables.pcx_image_data:
+        print("No PCX Image Loaded")
+        self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    else:
+        gray = get_grayscale_img(self)  # transforms image to grayscale
+        flat_gray_orig = [element for row in gray for element in row]
+
+        # Set the scale parameter/ sigma for the Rayleigh distribution
+        scale_param = 20.0
+
+        # Create a blank image with a white background
+        img_Rayleigh = Image.new('L', (variables.img_width, variables.img_height), 255)
+        draw_Rayleigh = ImageDraw.Draw(img_Rayleigh)
+
+        corrupted_img = []
+
+        # Apply Rayleigh noise to each pixel
+        for x in range(variables.img_height):
+            row = []
+            for y in range(variables.img_width):
+                pixel_value = gray[x][y]
+                
+                # Using the random module to generate Rayleigh-distributed noise
+                noise = int(np.random.rayleigh(scale=scale_param))
+                
+                noisy_value = max(0, min(255, pixel_value + noise))
+                row.append(noisy_value)
+            corrupted_img.append(row)
+
+        # Draw the corrupted image
+        drawImage(self, draw_Rayleigh, corrupted_img)
+        show_image(self, img_Rayleigh, "Corrupted Image")
+
+        variables.curr_img = img_Rayleigh
+        variables.curr_image_data = corrupted_img
+        variables.isDegraded = True
+        variables.degraded_image_data = corrupted_img
+        # Call histogram function
+        show_histogram(variables.degraded_image_data, 'Rayleigh Noise Histogram')
+
+# Function for showing histogram for Image degradation
+def show_histogram(image_data, title):
+    flat_image_data = [element for row in image_data for element in row]
+
+    plt.hist(flat_image_data, bins=256, range=(0, 256), density=True, color='gray', alpha=0.75)
+    plt.title(title)
+    plt.xlabel('Pixel Value')
+    plt.ylabel('Frequency')
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.show()
+
