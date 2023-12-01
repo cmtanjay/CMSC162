@@ -64,14 +64,7 @@ def gaussian_noise(self):
         img_Gaussian = Image.new('L', (variables.img_width, variables.img_height), 255)
         draw_Gaussian = ImageDraw.Draw(img_Gaussian)
 
-        deg_img = []
         corrupted_img = []
-
-        # # Ensure flat_gray_orig is a NumPy array
-        # flat_gray_orig = np.array(flat_gray_orig)
-
-        # Apply Gaussian noise to the image
-        # corrupted_img = flat_gray_orig + noise
 
         # Apply Gaussian noise to each pixel
         for x in range(variables.img_height):
@@ -81,7 +74,6 @@ def gaussian_noise(self):
                 noise = int(random.gauss(avg, sigma))
                 noisy_value = max(0, min(255, pixel_value + noise))
                 row.append(noisy_value)
-                # img_Gaussian.putpixel((x, y), noisy_value)
             corrupted_img.append(row)
        
 
@@ -92,5 +84,24 @@ def gaussian_noise(self):
         show_image(self, img_Gaussian, "Corrupted Image")
 
         variables.curr_img = img_Gaussian
-        variables.curr_image_data = deg_img
+        variables.curr_image_data = corrupted_img
         variables.isDegraded = True
+
+# Function for applying Rayleigh noise to an image
+def rayleigh_noise(self):
+    if not variables.pcx_image_data:
+        print("No PCX Image Loaded")
+        self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    else:
+        gray = get_grayscale_img(self)  # transforms image to grayscale
+        flat_gray_orig = [element for row in gray for element in row]
+
+        avg = mean(flat_gray_orig)
+        sigma = pstdev(flat_gray_orig)
+
+        # Create a blank image with a white background
+        img_Rayleigh = Image.new('L', (variables.img_width, variables.img_height), 255)
+        draw_Rayleigh = ImageDraw.Draw(img_Rayleigh)
+
+        # deg_img = []
+        corrupted_img = []
