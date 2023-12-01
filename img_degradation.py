@@ -141,4 +141,4 @@ def gaussian_noise(self):
         variables.curr_img = img_Gaussian
         variables.curr_image_data = corrupted_img
         variables.isDegraded = True
-        variables.degraded_image_data = deg_img
+        variables.degraded_image_data = corrupted_img
