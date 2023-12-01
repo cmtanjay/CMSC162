@@ -142,6 +142,7 @@ def open_pcx_file(self):
             variables.paletteinfo = self.header[68]
             
             variables.pcx_image_data = decode(self, image_data)
+            variables.image_data = variables.pcx_image_data
             variables.curr_img = variables.pcx_image_data
             print(f"addada: {len(variables.pcx_image_data)}")
             

@@ -95,6 +95,7 @@ def openBMP(filepath):
             row = []
 
     variables.pcx_image_data = arranged_color
+    variables.image_data = arranged_color
     variables.img_width = bmp_info["width"]
     variables.img_height = bmp_info["height"]
 
