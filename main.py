@@ -374,8 +374,8 @@ class App(tk.Tk):
         img_erlang = img_erlang.resize((35,35))
         icon_erlang = ImageTk.PhotoImage(img_erlang)
         
-        # Configures Power-Law button
-        btn_erlang = tk.Button(self.opsbar, image=icon_erlang, command=lambda: salt_and_pepper_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+    
+        btn_erlang = tk.Button(self.opsbar, image=icon_erlang, command=lambda: rayleigh_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_erlang.photo = icon_erlang
         btn_erlang.grid(row=2, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_erlang, "Rayleigh / Erlang Noise")

@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from statistics import *
+from scipy.stats import rayleigh
 
 from PIL import Image
 import random
@@ -88,7 +89,6 @@ def gaussian_noise(self):
         variables.curr_image_data = corrupted_img
         variables.isDegraded = True
 
-# Function for applying Rayleigh noise to an image
 def rayleigh_noise(self):
     if not variables.pcx_image_data:
         print("No PCX Image Loaded")
@@ -97,12 +97,29 @@ def rayleigh_noise(self):
         gray = get_grayscale_img(self)  # transforms image to grayscale
         flat_gray_orig = [element for row in gray for element in row]
 
-        avg = mean(flat_gray_orig)
-        sigma = pstdev(flat_gray_orig)
+        # Set the scale parameter for the Rayleigh distribution
+        scale_param = 1.0
 
         # Create a blank image with a white background
         img_Rayleigh = Image.new('L', (variables.img_width, variables.img_height), 255)
         draw_Rayleigh = ImageDraw.Draw(img_Rayleigh)
 
-        # deg_img = []
         corrupted_img = []
+
+        # Apply Rayleigh noise to each pixel
+        for x in range(variables.img_height):
+            row = []
+            for y in range(variables.img_width):
+                pixel_value = gray[x][y]
+                noise = int(rayleigh.rvs(scale=scale_param))
+                noisy_value = max(0, min(255, pixel_value + noise))
+                row.append(noisy_value)
+            corrupted_img.append(row)
+
+        # Draw the corrupted image
+        drawImage(self, draw_Rayleigh, corrupted_img)
+        show_image(self, img_Rayleigh, "Corrupted Image")
+
+        variables.curr_img = img_Rayleigh
+        variables.curr_image_data = corrupted_img
+        variables.isDegraded = True
