@@ -4,6 +4,7 @@ red_channel = []
 green_channel = []
 blue_channel = []
 pcx_image_data = [] #orig image data
+image_data = []
 curr_image_data = []
 palette = []
 isDegraded = False
