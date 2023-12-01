@@ -230,7 +230,7 @@ for symbol, code in huffmanCode.items():
 
 # Calculate the size of the Huffman codes data
 huffman_codes_size = len(huffman_array)
-print(huffman_array)
+# print(huffman_array)
 
 prev_offset = header_info['data_offset']
 
@@ -238,8 +238,8 @@ new_offset = int(header_info['data_offset'] ) + huffman_codes_size
 
 byte_offset = new_offset.to_bytes(4, 'little')
 
-print(f"new: {new_offset}")
-print(f"off: {byte_offset}")
+# print(f"new: {new_offset}")
+# print(f"off: {byte_offset}")
 
 new = content[:10] + byte_offset + content[14:prev_offset] + huffman_array + bmp_content
 
