@@ -13,6 +13,7 @@ from point_processing import *
 from img_enhancement import *
 from img_degradation import *
 from img_restoration import *
+from img_compression import *
 
 from ToolTip import CreateToolTip
 
@@ -462,7 +463,7 @@ class App(tk.Tk):
         icon_huffman = ImageTk.PhotoImage(img_huffman)
         
         # Configures Power-Law button
-        btn_huffman = tk.Button(self.opsbar, image=icon_huffman, command=lambda: salt_and_pepper_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_huffman = tk.Button(self.opsbar, image=icon_huffman, command=lambda: huffman_coding(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_huffman.photo = icon_huffman
         btn_huffman.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_huffman, "Huffman Coding")

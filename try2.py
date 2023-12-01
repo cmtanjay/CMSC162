@@ -148,32 +148,29 @@ for i, color in enumerate(arranged_color):
 print("Bitmap Data:", len(bitmap_data))
 
 colors = []
-binary = []
+count = []
 i=0        
 
-while(i < len(bitmap_data)):
-    colors.append([bitmap_data[i+2], bitmap_data[i+1], bitmap_data[i]])
-    binary.append(bin(bitmap_data[i+2])[2:].zfill(8)+bin(bitmap_data[i+1])[2:].zfill(8)+bin(bitmap_data[i])[2:].zfill(8))
-    i += 3
+while(i < len(arranged_color)):
+    if arranged_color[i] not in colors:
+        colors.append(arranged_color[i])
+        count.append([len(colors)-1, 1])
+    else:
+        count[colors.index(arranged_color[i])][1] += 1
+    print(i)
+    i += 1
+        
+print(colors)
+print(count)
 
-colors.reverse()
+# Sort the 2D array based on the values in the second column
+sorted_array = sorted(count, key=lambda x: x[1])
 
-j=0
-dec=[]
-while(j < len(binary)):
-    dec.append(int(binary[j], 2))
-    j +=1
-
-# print(dec)
-
-value_counts = Counter(dec)
-
-# Sort the counts in descending order
-sorted_value_counts = sorted(value_counts.items(), key=lambda x: x[1], reverse=True)
-
-# print(sorted_value_counts)
-
-nodes = sorted_value_counts
+# Print the sorted array
+for row in sorted_array:
+    print(row)
+    
+nodes = sorted_array
 i = 0
 while len(nodes) > 1:
     (key1, c1) = nodes[-1]
@@ -188,23 +185,16 @@ while len(nodes) > 1:
 
 huffmanCode = huffman_code_tree(nodes[0][0])
 
-# print(huffmanCode)
+print(huffmanCode)
 
 coded = ""
+huffman_coded = []
 
-for code in dec:
+for color in arranged_color:
+    code = colors.index(color)
     coded = coded + huffmanCode[code]
-
-print(f"orig_len: {len(binary)*24}")
-print(f"huf_len: {len(coded)}")
-
-# print(' Char | Huffman code ')
-# print('----------------------')
-# for (char, frequency) in sorted_value_counts:
-#     print(' %-4r |%12s' % (char, huffmanCode[char]))
     
-# for value, count in sorted_value_counts:
-#     print(f"Value {value} occurs {count} times.")
+print(coded)
 
 # Calculate the number of bytes needed (ceil(len(huffman_coded_image) / 8))
 num_bytes = (len(coded) + 7) // 8
@@ -216,7 +206,7 @@ byte_array = bytearray([int(coded[i:i+8], 2) for i in range(0, len(coded), 8)])
 if len(byte_array) < num_bytes:
     byte_array.extend([0] * (num_bytes - len(byte_array)))
     
-# print(len(byte_array))
+print(len(byte_array))
 
 # Combine the headers and the encoded data
 bmp_content = bytes(byte_array)
@@ -230,24 +220,21 @@ for symbol, code in huffmanCode.items():
 
 # Calculate the size of the Huffman codes data
 huffman_codes_size = len(huffman_array)
-print(huffman_array)
+# print(huffman_array)
 
-prev_offset = header_info['data_offset']
+# prev_offset = header_info['data_offset']
 
-new_offset = int(header_info['data_offset'] ) + huffman_codes_size
+# new_offset = int(header_info['data_offset'] ) + huffman_codes_size
 
-byte_offset = new_offset.to_bytes(4, 'little')
+# byte_offset = new_offset.to_bytes(4, 'little')
 
-print(f"new: {new_offset}")
-print(f"off: {byte_offset}")
+# print(f"new: {new_offset}")
+# print(f"off: {byte_offset}")
 
-new = content[:10] + byte_offset + content[14:prev_offset] + huffman_array + bmp_content
+# new = content[:10] + byte_offset + content[14:prev_offset] + huffman_array + bmp_content
 
-# new = bmp_content + huffman_array
+new = bmp_content + huffman_array
 
 # Write to the BMP file
 with open('output_image.bmp', 'wb') as bmp_file:
     bmp_file.write(new)
-    
-
-# print(bmp_content)
