@@ -215,8 +215,11 @@ bmp_content = bytes(byte_array)
 
 huffman_array = b''
 for symbol, code in huffmanCode.items():
+    print(f"symbol: {symbol}")
     new_code = bytearray([int(code[i:i+8], 2) for i in range(0, len(code), 8)])
-    huffman_array += new_code + str(symbol).encode('utf-8')
+    byte_length = (symbol.bit_length() + 7) // 8  # Calculate the number of bytes needed
+    byte_representation = symbol.to_bytes(byte_length, 'big')
+    huffman_array += byte_representation + new_code
 
 # Calculate the size of the Huffman codes data
 huffman_codes_size = len(huffman_array)
