@@ -349,26 +349,27 @@ class App(tk.Tk):
         self.opsbar = tk.Frame(self, width=100, bg="#313131")
         self.opsbar.grid(row=1, column=1, pady=(175, 0), sticky="new")
         
+        # Configures Salt and Pepper Noise button
         img_sp = Image.open("assets\gamma.png")
         img_sp = img_sp.resize((35,35))
         icon_sp = ImageTk.PhotoImage(img_sp)
         
-        # Configures Power-Law button
         btn_sp = tk.Button(self.opsbar, image=icon_sp, command=lambda: salt_and_pepper_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_sp.photo = icon_sp
         btn_sp.grid(row=0, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_sp, "Salt-and-Pepper Noise")
         
+        # Configures Gaussian Noise button
         img_gaussian = Image.open("assets\gamma.png")
         img_gaussian = img_gaussian.resize((35,35))
         icon_gaussian = ImageTk.PhotoImage(img_gaussian)
-        
-        # Configures Power-Law button
-        btn_gaussian = tk.Button(self.opsbar, image=icon_gaussian, command=lambda: salt_and_pepper_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+      
+        btn_gaussian = tk.Button(self.opsbar, image=icon_gaussian, command=lambda: gaussian_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_gaussian.photo = icon_gaussian
         btn_gaussian.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_gaussian, "Gaussian Noise")
         
+        # Configures Reyleigh/Erlang Noise
         img_erlang = Image.open("assets\gamma.png")
         img_erlang = img_erlang.resize((35,35))
         icon_erlang = ImageTk.PhotoImage(img_erlang)
