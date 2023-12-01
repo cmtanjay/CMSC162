@@ -369,16 +369,16 @@ class App(tk.Tk):
         btn_gaussian.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_gaussian, "Gaussian Noise")
         
-        # Configures Reyleigh/Erlang Noise
-        img_erlang = Image.open("assets\gamma.png")
-        img_erlang = img_erlang.resize((35,35))
-        icon_erlang = ImageTk.PhotoImage(img_erlang)
+        # Configures Reyleigh Noise
+        img_rayleigh = Image.open("assets\gamma.png")
+        img_rayleigh = img_rayleigh.resize((35,35))
+        icon_rayleigh = ImageTk.PhotoImage(img_rayleigh)
         
     
-        btn_erlang = tk.Button(self.opsbar, image=icon_erlang, command=lambda: rayleigh_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
-        btn_erlang.photo = icon_erlang
-        btn_erlang.grid(row=2, column=0, sticky="ew", padx=5, pady=10)
-        CreateToolTip(btn_erlang, "Rayleigh / Erlang Noise")
+        btn_rayleigh = tk.Button(self.opsbar, image=icon_rayleigh, command=lambda: rayleigh_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_rayleigh.photo = icon_rayleigh
+        btn_rayleigh.grid(row=2, column=0, sticky="ew", padx=5, pady=10)
+        CreateToolTip(btn_rayleigh, "Rayleigh Noise")
         
     def img_restoration(self):
         self.opsbar.destroy()
