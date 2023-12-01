@@ -19,7 +19,7 @@ def maximum_filter(self):
         # mask = [[1/(variables.n*variables.n) for i in range(variables.n)] for j in range(variables.n)]
         
         if variables.isDegraded:
-            data = variables.curr_image_data
+            data = variables.degraded_image_data
         else:
             data = get_grayscale_img(self) # transforms image to grayscale
                         
@@ -64,7 +64,7 @@ def minimum_filter(self):
         # mask = [[1/(variables.n*variables.n) for i in range(variables.n)] for j in range(variables.n)]
         
         if variables.isDegraded:
-            data = variables.curr_image_data
+            data = variables.degraded_image_data
         else:
             data = get_grayscale_img(self) # transforms image to grayscale
                         
