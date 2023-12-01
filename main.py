@@ -400,7 +400,7 @@ class App(tk.Tk):
         img_geometric = img_geometric.resize((35,35))
         icon_geometric = ImageTk.PhotoImage(img_geometric)
         
-        btn_geometric = tk.Button(self.opsbar, image=icon_geometric, command=lambda: geometric_filter(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_geometric = tk.Button(self.opsbar, image=icon_geometric, command=lambda: geometric_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_geometric.photo = icon_geometric
         btn_geometric.grid(row=0, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_geometric, "Geometric Filter")
@@ -410,7 +410,7 @@ class App(tk.Tk):
         img_contraharmonic = img_contraharmonic.resize((35,35))
         icon_contraharmonic = ImageTk.PhotoImage(img_contraharmonic)
         
-        btn_contraharmonic = tk.Button(self.opsbar, image=icon_contraharmonic, command=lambda: contraharmonic_filter(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_contraharmonic = tk.Button(self.opsbar, image=icon_contraharmonic, command=lambda: contraharmonic_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_contraharmonic.photo = icon_contraharmonic
         btn_contraharmonic.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_contraharmonic, "Contraharmonic Filter")
@@ -430,7 +430,7 @@ class App(tk.Tk):
         max_filter = max_filter.resize((35,35))
         icon_max_filter = ImageTk.PhotoImage(max_filter)
         
-        btn_max_filter = tk.Button(self.opsbar, image=icon_max_filter, command=lambda: maximum_filter(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_max_filter = tk.Button(self.opsbar, image=icon_max_filter, command=lambda: maximum_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_max_filter.photo = icon_max_filter
         btn_max_filter.grid(row=3, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_max_filter, "Max Filter")
@@ -440,7 +440,7 @@ class App(tk.Tk):
         min_filter = min_filter.resize((35,35))
         icon_min_filter = ImageTk.PhotoImage(min_filter)
         
-        btn_min_filter = tk.Button(self.opsbar, image=icon_min_filter, command=lambda: minimum_filter(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_min_filter = tk.Button(self.opsbar, image=icon_min_filter, command=lambda: minimum_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_min_filter.photo = icon_min_filter
         btn_min_filter.grid(row=4, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_min_filter, "Min Filter")
@@ -451,7 +451,7 @@ class App(tk.Tk):
         icon_mid_filter = ImageTk.PhotoImage(mid_filter)
         
         
-        btn_mid_filter = tk.Button(self.opsbar, image=icon_mid_filter, command=lambda: midpoint_filter(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_mid_filter = tk.Button(self.opsbar, image=icon_mid_filter, command=lambda: midpoint_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_mid_filter.photo = icon_mid_filter
         btn_mid_filter.grid(row=5, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_mid_filter, "Midpoint Filter")
