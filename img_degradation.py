@@ -23,8 +23,8 @@ def salt_and_pepper_noise(self):
         window.columnconfigure(0, weight=2)
         window.columnconfigure(1, weight=5)
         
-        salt_prob = tk.DoubleVar(value=0.0)
-        pepper_prob = tk.DoubleVar(value=0.0)
+        salt_prob = tk.DoubleVar()
+        pepper_prob = tk.DoubleVar()
 
         # Detects the value inside the text box
         def entry_changed(event):
@@ -102,7 +102,7 @@ def salt_and_pepper_noise(self):
         show_image(self, img_SP, " ")
         variables.curr_img = img_SP
         variables.curr_image_data = deg_img
-        # variables.pcx_image_data = deg_img
+        variables.pcx_image_data = deg_img
         variables.degraded_image_data = deg_img
         variables.isDegraded = True
 
