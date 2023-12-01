@@ -144,6 +144,16 @@ class App(tk.Tk):
         btn_orig_img.grid(row=1, column=4, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_orig_img, "Revert to Original Image")
         
+        img_hist = Image.open("assets\histogram.png")
+        img_hist = img_hist.resize((40,40))
+        icon_hist = ImageTk.PhotoImage(img_hist)
+
+        # Configures orig image button
+        btn_hist = tk.Button(self.topbar, image=icon_hist, command=lambda: show_image(self, variables.orig_img, "original"), background="#2F333A", relief="ridge", borderwidth=0)
+        btn_hist.photo = icon_hist
+        btn_hist.grid(row=1, column=5, sticky="ew", padx=5, pady=10)
+        CreateToolTip(btn_hist, "Show Histogram")
+        
         img_avg = Image.open("assets\\channel.png")
         img_avg = img_avg.resize((30,30))
         icon_avg = ImageTk.PhotoImage(img_avg)
@@ -350,32 +360,32 @@ class App(tk.Tk):
         self.opsbar.grid(row=1, column=1, pady=(175, 0), sticky="new")
         
         # Configures Salt and Pepper Noise button
-        img_sp = Image.open("assets\gamma.png")
+        img_sp = Image.open("assets\salt.png")
         img_sp = img_sp.resize((35,35))
         icon_sp = ImageTk.PhotoImage(img_sp)
         
-        btn_sp = tk.Button(self.opsbar, image=icon_sp, command=lambda: salt_and_pepper_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_sp = tk.Button(self.opsbar, image=icon_sp, command=lambda: salt_and_pepper_noise(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_sp.photo = icon_sp
         btn_sp.grid(row=0, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_sp, "Salt-and-Pepper Noise")
         
         # Configures Gaussian Noise button
-        img_gaussian = Image.open("assets\gamma.png")
+        img_gaussian = Image.open("assets\gaussian.png")
         img_gaussian = img_gaussian.resize((35,35))
         icon_gaussian = ImageTk.PhotoImage(img_gaussian)
       
-        btn_gaussian = tk.Button(self.opsbar, image=icon_gaussian, command=lambda: gaussian_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_gaussian = tk.Button(self.opsbar, image=icon_gaussian, command=lambda: gaussian_noise(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_gaussian.photo = icon_gaussian
         btn_gaussian.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_gaussian, "Gaussian Noise")
         
         # Configures Reyleigh Noise
-        img_rayleigh = Image.open("assets\gamma.png")
+        img_rayleigh = Image.open("assets\\rayleigh.png")
         img_rayleigh = img_rayleigh.resize((35,35))
         icon_rayleigh = ImageTk.PhotoImage(img_rayleigh)
         
     
-        btn_rayleigh = tk.Button(self.opsbar, image=icon_rayleigh, command=lambda: rayleigh_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_rayleigh = tk.Button(self.opsbar, image=icon_rayleigh, command=lambda: rayleigh_noise(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_rayleigh.photo = icon_rayleigh
         btn_rayleigh.grid(row=2, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_rayleigh, "Rayleigh Noise")
@@ -385,22 +395,22 @@ class App(tk.Tk):
         self.opsbar = tk.Frame(self, width=100, bg="#313131")
         self.opsbar.grid(row=1, column=1, pady=(230, 90), sticky="nsew")
         
-        img_geometric = Image.open("assets\gamma.png")
+        img_geometric = Image.open("assets\geometric.png")
         img_geometric = img_geometric.resize((35,35))
         icon_geometric = ImageTk.PhotoImage(img_geometric)
         
         # Configures Power-Law button
-        btn_geometric = tk.Button(self.opsbar, image=icon_geometric, command=lambda: salt_and_pepper_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_geometric = tk.Button(self.opsbar, image=icon_geometric, command=lambda: salt_and_pepper_noise(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_geometric.photo = icon_geometric
         btn_geometric.grid(row=0, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_geometric, "Geometric Filter")
         
-        img_contraharmonic = Image.open("assets\gamma.png")
+        img_contraharmonic = Image.open("assets\contraharmonic.png")
         img_contraharmonic = img_contraharmonic.resize((35,35))
         icon_contraharmonic = ImageTk.PhotoImage(img_contraharmonic)
         
         # Configures Power-Law button
-        btn_contraharmonic = tk.Button(self.opsbar, image=icon_contraharmonic, command=lambda: salt_and_pepper_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_contraharmonic = tk.Button(self.opsbar, image=icon_contraharmonic, command=lambda: salt_and_pepper_noise(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_contraharmonic.photo = icon_contraharmonic
         btn_contraharmonic.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_contraharmonic, "Contraharmonic Filter")
@@ -409,37 +419,37 @@ class App(tk.Tk):
         img_mdn = img_mdn.resize((30,30))
         icon_mdn = ImageTk.PhotoImage(img_mdn)
         
-        btn_median = tk.Button(self.opsbar, image=icon_mdn, command=lambda: median_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=0)
+        btn_median = tk.Button(self.opsbar, image=icon_mdn, command=lambda: median_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_median.photo = icon_mdn
         btn_median.grid(row=2, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_median, "Median Filter")
         
-        max_filter = Image.open("assets\gamma.png")
+        max_filter = Image.open("assets\maximum.png")
         max_filter = max_filter.resize((35,35))
         icon_max_filter = ImageTk.PhotoImage(max_filter)
         
         # Configures Power-Law button
-        btn_max_filter = tk.Button(self.opsbar, image=icon_max_filter, command=lambda: maximum_filter(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_max_filter = tk.Button(self.opsbar, image=icon_max_filter, command=lambda: maximum_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_max_filter.photo = icon_max_filter
         btn_max_filter.grid(row=3, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_max_filter, "Max Filter")
         
-        min_filter = Image.open("assets\gamma.png")
+        min_filter = Image.open("assets\minimum.png")
         min_filter = min_filter.resize((35,35))
         icon_min_filter = ImageTk.PhotoImage(min_filter)
         
         # Configures Power-Law button
-        btn_min_filter = tk.Button(self.opsbar, image=icon_min_filter, command=lambda: minimum_filter(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_min_filter = tk.Button(self.opsbar, image=icon_min_filter, command=lambda: minimum_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_min_filter.photo = icon_min_filter
         btn_min_filter.grid(row=4, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_min_filter, "Min Filter")
             
-        mid_filter = Image.open("assets\gamma.png")
+        mid_filter = Image.open("assets\midpoint.png")
         mid_filter = mid_filter.resize((35,35))
         icon_mid_filter = ImageTk.PhotoImage(mid_filter)
         
         # Configures Power-Law button
-        btn_mid_filter = tk.Button(self.opsbar, image=icon_mid_filter, command=lambda: salt_and_pepper_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_mid_filter = tk.Button(self.opsbar, image=icon_mid_filter, command=lambda: salt_and_pepper_noise(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_mid_filter.photo = icon_mid_filter
         btn_mid_filter.grid(row=5, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_mid_filter, "Midpoint Filter")
@@ -449,22 +459,22 @@ class App(tk.Tk):
         self.opsbar = tk.Frame(self, width=100, bg="#313131")
         self.opsbar.grid(row=1, column=1, pady=(290, 260), sticky="nsew")
         
-        img_RLE = Image.open("assets\gamma.png")
+        img_RLE = Image.open("assets\\run_length.png")
         img_RLE = img_RLE.resize((35,35))
         icon_RLE = ImageTk.PhotoImage(img_RLE)
         
         # Configures Power-Law button
-        btn_RLE = tk.Button(self.opsbar, image=icon_RLE, command=lambda: salt_and_pepper_noise(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_RLE = tk.Button(self.opsbar, image=icon_RLE, command=lambda: salt_and_pepper_noise(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_RLE.photo = icon_RLE
         btn_RLE.grid(row=0, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_RLE, "Run-Length Coding")
         
-        img_huffman = Image.open("assets\gamma.png")
+        img_huffman = Image.open("assets\huffman.png")
         img_huffman = img_huffman.resize((35,35))
         icon_huffman = ImageTk.PhotoImage(img_huffman)
         
         # Configures Power-Law button
-        btn_huffman = tk.Button(self.opsbar, image=icon_huffman, command=lambda: huffman_coding(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_huffman = tk.Button(self.opsbar, image=icon_huffman, command=lambda: huffman_coding(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_huffman.photo = icon_huffman
         btn_huffman.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_huffman, "Huffman Coding")

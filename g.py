@@ -72,6 +72,8 @@ def compress_image(image_path):
         for i in range(0, len(encoded_data), 8):
             byte = encoded_data[i:i+8]
             encoded_bytes.append(int(byte, 2))
+            
+        print(len(encoded_bytes))
 
         compressed_channels.append(encoded_bytes)
 
@@ -91,7 +93,7 @@ def main():
     original_image, compressed_path = compress_image(input_image_path)
 
     # Display images
-    original_image.show(title='Original Image')
+    # original_image.show(title='Original Image')
     compressed_image = Image.open(compressed_path)
     compressed_image.show(title='Compressed Image')
     compressed_image.save('compressed_image.bmp')
