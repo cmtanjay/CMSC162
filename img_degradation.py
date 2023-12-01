@@ -1,7 +1,12 @@
 import numpy as np
 import math
 from statistics import *
+<<<<<<< HEAD
 from scipy.stats import rayleigh
+=======
+import tkinter as tk #pip install tk
+from tkinter import ttk
+>>>>>>> 9407af1ddd524bea76962f97ec43650083bc91fe
 
 from PIL import Image
 import random
@@ -10,12 +15,64 @@ import variables
 from img_ops import *
 
 def salt_and_pepper_noise(self):
+    # Function that pops up a window that lets the user input the gamma value    
+    def open_popup():
+        window = tk.Toplevel()
+        window.geometry("400x200+500+300")
+        window.title("Salt and Pepper Noise")
+        window.resizable(False, False)
+        
+        window.columnconfigure(0, weight=2)
+        window.columnconfigure(1, weight=5)
+        
+        salt_prob = tk.DoubleVar(value=0.0)
+        pepper_prob = tk.DoubleVar(value=0.0)
+
+        # Detects the value inside the text box
+        def entry_changed(event):
+            salt_value = salt_text_box.get()  # Get the value from the entry box
+            pepper_value = pepper_text_box.get()
+            if (float(salt_value) >= 0 and float(salt_value) <= 1) and (float(pepper_value) >= 0 and float(pepper_value) <= 1) and (float(salt_value) + float(pepper_value) >= 0 and float(salt_value) + float(pepper_value) <= 1): 
+                salt_prob.set(float(salt_value))  # Set the slider value to the entry value
+            else:
+                err_window = tk.Toplevel()
+                err_window.geometry("400x130+500+300")
+                err_window.title("Salt and Pepper Noise")
+                err_window.resizable(False, False)
+                ttk.Label(err_window, text='Both probabilities must be within and equate in range 0-1', font=('Arial 10 bold')).place(x=50, y=35)
+                btn_ok = tk.Button(err_window, command=err_window.destroy, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+                btn_ok.place(x=80, y=85)
+
+        # Function that executes when OK button is clicked
+        def on_click():
+            window.destroy()
+
+        # current value label
+        ttk.Label(window, text='Input Salt Noise Probability:', font=('Arial 10 bold')).place(x=150, y=35)
+        
+        salt_text_box = tk.Entry(window, bg="white", textvariable=salt_prob, width=5, font=('Arial 13'))
+        salt_text_box.place(x=160, y=55)
+        salt_text_box.bind("<KeyRelease>", entry_changed)
+        
+        # current value label
+        ttk.Label(window, text='Input Pepper Noise Probability:', font=('Arial 10 bold')).place(x=150, y=105)
+        
+        pepper_text_box = tk.Entry(window, bg="white", textvariable=pepper_prob, width=5, font=('Arial 13'))
+        pepper_text_box.place(x=160, y=125)
+        pepper_text_box.bind("<KeyRelease>", entry_changed)
+        
+        btn = tk.Button(window, command=on_click, text="OK", font=("Arial", 10), background="#313E4E", foreground="white",relief="ridge", borderwidth=2)
+        btn.place(x=165, y=155)
+        
+        window.wait_window(window)  # Wait for the window to be destroyed
+        
+        return salt_prob.get(), pepper_prob.get()
+    
     if not variables.pcx_image_data:
         print("No PCX Image Loaded")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
     else:
-        Ps = 0.5
-        Pp = 0.5
+        Ps, Pp = open_popup()
         Psp = 1 - (Ps + Pp)    
         
         gray = get_grayscale_img(self) # transforms image to grayscale
@@ -48,6 +105,7 @@ def salt_and_pepper_noise(self):
         variables.curr_img = img_SP
         variables.curr_image_data = deg_img
         variables.pcx_image_data = deg_img
+        variables.degraded_image_data = deg_img
         variables.isDegraded = True
     
 # Function for applying Gaussian noise to an image
@@ -77,7 +135,6 @@ def gaussian_noise(self):
                 noisy_value = max(0, min(255, pixel_value + noise))
                 row.append(noisy_value)
             corrupted_img.append(row)
-       
 
         print(corrupted_img)
 
@@ -88,6 +145,7 @@ def gaussian_noise(self):
         variables.curr_img = img_Gaussian
         variables.curr_image_data = corrupted_img
         variables.isDegraded = True
+<<<<<<< HEAD
 
 def rayleigh_noise(self):
     if not variables.pcx_image_data:
@@ -123,3 +181,6 @@ def rayleigh_noise(self):
         variables.curr_img = img_Rayleigh
         variables.curr_image_data = corrupted_img
         variables.isDegraded = True
+=======
+        variables.degraded_image_data = corrupted_img
+>>>>>>> 9407af1ddd524bea76962f97ec43650083bc91fe

@@ -46,18 +46,11 @@ def huffman_coding(self):
                 count.append([len(colors)-1, 1])
             else:
                 count[colors.index(variables.image_data[i])][1] += 1
-            print(i)
+            # print(i)
             i += 1
-            
-        print(colors)
-        print(count)
 
         # Sort the 2D array based on the values in the second column
         sorted_array = sorted(count, key=lambda x: x[1])
-
-        # Print the sorted array
-        for row in sorted_array:
-            print(row)
             
         nodes = sorted_array
         i = 0
@@ -87,5 +80,5 @@ def huffman_coding(self):
             
         # print(coded)
         
-def decode_huffman(huffman_coded):
+def decode_huffman(huffman_coded, codes):
     print("dsahjasd")

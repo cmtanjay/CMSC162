@@ -8,6 +8,7 @@ image_data = []
 curr_image_data = []
 palette = []
 isDegraded = False
+degraded_image_data = []
 n = 3
 
 manufacturer = None
