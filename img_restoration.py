@@ -1,9 +1,6 @@
 import variables
 from img_ops import *
 from img_enhancement import *
-
-def order_statistics():
-    print("Kapoy na!")
     
 def maximum_filter(self):
     # Function that gets the average pixel value encompassed by an n x n mask
@@ -38,7 +35,6 @@ def maximum_filter(self):
         max_filtered_img = Image.new('L', (variables.img_width, variables.img_height), 255)
         draw_max_filtered = ImageDraw.Draw(max_filtered_img)        
         drawImage(self, draw_max_filtered, data_2D)        
-            
         show_image(self, max_filtered_img, " ")
         variables.curr_image_data = data_2D
         variables.curr_img = max_filtered_img

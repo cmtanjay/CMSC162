@@ -222,7 +222,7 @@ def median_filter(self):
         mask = [[1/(variables.n*variables.n) for i in range(variables.n)] for j in range(variables.n)]
         
         if variables.isDegraded:
-            gray = variables.curr_image_data
+            gray = variables.degraded_image_data
         else:
             gray = get_grayscale_img(self) # transforms image to grayscale
         
