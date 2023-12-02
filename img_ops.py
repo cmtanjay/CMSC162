@@ -341,6 +341,15 @@ def show_hist(self, channel, string):
     # Show the histogram
     plt.show()
 
+# Function for showing histogram for Image degradation
+def show_histogram(image_data, title):
+    plt.hist(image_data, bins=256, range=(0, 256), density=True, color='gray', alpha=0.75)
+    plt.title(title)
+    plt.xlabel('Pixel Value')
+    plt.ylabel('Frequency')
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.show()
+
 # Function that displays the color channel in the UI    
 def show_channel(self, channel, string):
     if not channel:

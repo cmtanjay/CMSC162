@@ -151,10 +151,10 @@ class App(tk.Tk):
         icon_hist = ImageTk.PhotoImage(img_hist)
 
         # Configures orig image button
-        btn_hist = tk.Button(self.topbar, image=icon_hist, command=lambda: show_image(self, variables.orig_img, "original"), background="#2F333A", relief="ridge", borderwidth=0)
-        btn_hist.photo = icon_hist
-        btn_hist.grid(row=1, column=5, sticky="ew", padx=5, pady=10)
-        CreateToolTip(btn_hist, "Show Histogram")
+        self.btn_hist = tk.Button(self.topbar, image=icon_hist, background="#2F333A", relief="ridge", borderwidth=0, state="disabled")
+        self.btn_hist.photo = icon_hist
+        self.btn_hist.grid(row=1, column=5, sticky="ew", padx=5, pady=10)
+        CreateToolTip(self.btn_hist, "Show Histogram")
         
         img_avg = Image.open("assets\\channel.png")
         img_avg = img_avg.resize((30,30))
