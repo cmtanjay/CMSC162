@@ -48,6 +48,11 @@ def average_filter(self):
         self.create_statusbar_canvas()
         self.add_text_to_statusbar(f"Status: Averaging filter is applied to the image on a {variables.n}x{variables.n} mask", x=220, y=20, fill="white", font=("Arial", 9,))
 
+        image_data = [element for row in blur_pixels for element in row]
+
+        # Call histogram function
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Averaging Filtered Image Histogram'))
+
 # Function that implements the unsharp masking       
 def unsharp_masking(self):
     # Function that gets the average pixel value encompassed by an n x n mask
@@ -110,6 +115,9 @@ def unsharp_masking(self):
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
         self.create_statusbar_canvas()
         self.add_text_to_statusbar(f"Status: Unsharp masking is applied to the image", x=200, y=20, fill="white", font=("Arial", 9,))
+
+        # Call histogram function
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(img_result, 'Unsharp Masked Image Histogram'))
 
 # Function that implements the Highboost filtering        
 def highboost_filter(self):
@@ -174,6 +182,9 @@ def highboost_filter(self):
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
         self.create_statusbar_canvas()
         self.add_text_to_statusbar(f"Status: Highboost filter is applied to the image where the amplification parameter is 3.5", x=300, y=20, fill="white", font=("Arial", 9,))
+
+        # Call histogram function
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(img_result, 'Highboost Filtered Image Histogram'))
 
 # Function that gets the neighboring pixels of a particular pixel in an image
 # It also saves the passed pixel
@@ -254,6 +265,11 @@ def median_filter(self):
         self.create_statusbar_canvas()
         self.add_text_to_statusbar(f"Status: Median filter is applied to the image on a {variables.n}x{variables.n} mask", x=220, y=20, fill="white", font=("Arial", 9,))
 
+        image_data = [element for row in blur_pixels for element in row]
+
+        # Call histogram function
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Median Filtered Image Histogram'))
+
 # Function for Laplacian
 def laplacian_filter(self):
     # Function that gets the median pixel value encompassed by an nxn mask
@@ -309,6 +325,11 @@ def laplacian_filter(self):
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
         self.create_statusbar_canvas()
         self.add_text_to_statusbar(f"Status: Laplacian filter is applied to a {mask} kernel", x=250, y=20, fill="white", font=("Arial", 9,))
+
+        image_data = [element for row in copy for element in row]
+
+        # Call histogram function
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Laplacian Filtered Image Histogram'))
 
 # Function for Gradient filter using Sobel Operator
 def gradient_filter(self):
@@ -375,6 +396,11 @@ def gradient_filter(self):
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
         self.create_statusbar_canvas()
         self.add_text_to_statusbar(f"Status: Gradient filter using the Sobel edge detection is applied to the image", x=280, y=20, fill="white", font=("Arial", 9,))
+
+        image_data = [element for row in sobel_result for element in row]
+
+        # Call histogram function
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Gradient Filtered Image Histogram'))
 
 # Function that implements clamp padding
 # This is to allow the border side of the image to be accounted with the operation being done
