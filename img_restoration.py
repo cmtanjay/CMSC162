@@ -51,6 +51,11 @@ def maximum_filter(self):
         self.create_statusbar_canvas()
         self.add_text_to_statusbar(f"Status: Averaging filter is applied to the image on a {variables.n}x{variables.n} mask", x=220, y=20, fill="white", font=("Arial", 9,))
 
+        image_data = [element for row in data_2D for element in row]
+
+        # Call show histogram function after applying salt and pepper noise
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Maximum Filtered Histogram'))
+
 def minimum_filter(self):
     # Function that gets the average pixel value encompassed by an n x n mask
     def get_pixel_value(neighbors):        
@@ -96,6 +101,10 @@ def minimum_filter(self):
         self.create_statusbar_canvas()
         self.add_text_to_statusbar(f"Status: Averaging filter is applied to the image on a {variables.n}x{variables.n} mask", x=220, y=20, fill="white", font=("Arial", 9,))
 
+        image_data = [element for row in data_2D for element in row]
+
+        # Call show histogram function after applying salt and pepper noise
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Minimum Filtered Histogram'))
 
 def geometric_filter(self):
     def get_pixel_value(neighbors):
@@ -148,6 +157,11 @@ def geometric_filter(self):
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
         self.create_statusbar_canvas()
         self.add_text_to_statusbar(f"Status: Geometric mean filter is applied to the image on a {variables.n}x{variables.n} mask", x=220, y=20, fill="white", font=("Arial", 9,))
+
+        image_data = [element for row in data_2D for element in row]
+
+        # Call show histogram function after applying salt and pepper noise
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Geometric Filtered Histogram'))
 
 # def contraharmonic_mean(img, size, Q):
 #     """Smooth the given image with contraharmonic mean filter
@@ -235,8 +249,12 @@ def contraharmonic_filter(self):
         self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
         self.create_statusbar_canvas()
-        self.add_text_to_statusbar(f"Status: Contraharmonic filter (Q={Q}) is applied to the image on a {variables.n}x{variables.n} mask",
-                                   x=220, y=20, fill="white", font=("Arial", 9,))
+        self.add_text_to_statusbar(f"Status: Contraharmonic filter (Q={Q}) is applied to the image on a {variables.n}x{variables.n} mask", x=220, y=20, fill="white", font=("Arial", 9,))
+        
+        image_data = [element for row in data_2D for element in row]
+
+        # Call show histogram function after applying salt and pepper noise
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Contraharmonic Filtered Histogram'))
         
 
 def midpoint_filter(self):
@@ -277,5 +295,9 @@ def midpoint_filter(self):
         self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
         self.create_statusbar_canvas()
-        self.add_text_to_statusbar(f"Status: Midpoint filter is applied to the image on a {variables.n}x{variables.n} mask",
-                                   x=220, y=20, fill="white", font=("Arial", 9,))
+        self.add_text_to_statusbar(f"Status: Midpoint filter is applied to the image on a {variables.n}x{variables.n} mask", x=220, y=20, fill="white", font=("Arial", 9,))
+        
+        image_data = [element for row in data_2D for element in row]
+
+        # Call show histogram function after applying salt and pepper noise
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Midpoint Filtered Histogram'))

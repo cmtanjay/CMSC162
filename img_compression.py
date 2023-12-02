@@ -8,39 +8,55 @@ import numpy as np
 
 def run_length_coding(self):
     print("Run length skrt skrt")
-
-    # Convert to list if it's a NumPy array
-    data = np.array(variables.image_data).flatten().tolist()
-
+    
     encoded_data = []
-    current_value = data[0]
+    current_value = variables.image_data[0]
     count = 1
-
-    compressed_img = Image.new('L', (variables.img_width, variables.img_height), 255)
-    draw_compressed_img = ImageDraw.Draw(compressed_img)
-
-    for value in data[1:]:
+    
+    for value in variables.image_data[1:]:
         if value == current_value:
             count += 1
         else:
-            encoded_data.append((count, current_value))
+            encoded_data.append(count+192)
+            encoded_data.append(current_value)
             count = 1
             current_value = value
 
-    encoded_data.append((count, current_value))
+    print(encoded_data)
+    print(len(encoded_data))
 
-    # Save the compressed image
-    flattened_encoded_data = [item for sublist in encoded_data for item in sublist]
-    drawImage(self, draw_compressed_img, flattened_encoded_data)  # Replace self with the actual reference to your class or instance
-    compressed_img.save("compressed_image.bmp")  # Save the compressed image
+    # # Convert to list if it's a NumPy array
+    # data = np.array(variables.image_data).flatten().tolist()
 
-    # Decode and display the compressed image
-    decoded_img = decode_run_length_compression(encoded_data, (variables.img_height, variables.img_width))
-    decoded_img.show()
+    # encoded_data = []
+    # current_value = data[0]
+    # count = 1
 
-    return encoded_data
+    # compressed_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+    # draw_compressed_img = ImageDraw.Draw(compressed_img)
+
+    # for value in data[1:]:
+    #     if value == current_value:
+    #         count += 1
+    #     else:
+    #         encoded_data.append((count, current_value))
+    #         count = 1
+    #         current_value = value
+
+    # encoded_data.append((count, current_value))
+
+    # # Save the compressed image
+    # drawImage(self, draw_compressed_img, encoded_data)  # Replace self with the actual reference to your class or instance
+    # compressed_img.save("compressed_image.bmp")  # Save the compressed image
+
+    # # Decode and display the compressed image
+    # decoded_img = decode_run_length_compression(encoded_data)
+    # decoded_img.show()
+
+    # return encoded_data
 
 def decode_run_length_compression(compressed_data):
+    print(compressed_data)
     decoded_data = []
 
     for i in range(0, len(compressed_data), 2):
@@ -99,3 +115,5 @@ def huffman_coding(self):
     decompress_image(self, output_compressed_path, huffman_tree)
     
     open_popup(original_img_size, compress_img_size)
+    
+    self.btn_hist.config(state="disabled")
