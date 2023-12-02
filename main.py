@@ -27,6 +27,8 @@ class App(tk.Tk):
         self.configure(bg="#242424")
         self.rowconfigure(1, weight=1)
         self.columnconfigure(2, weight=1)
+        
+        self.progress_var = tk.DoubleVar()
 
         # Gets the screen width and height
         screen_width = self.winfo_screenwidth() - 10

@@ -29,12 +29,23 @@ def open_img_file(self):
     else:
         image = Image.open(filepath)
     
-    # # Create a progress bar variable
-    # self.progress_var = tk.DoubleVar()
-    # start_function(self)
-    # self.after(1000, show_image(self, image, " "))
+    # Create a progress bar window
+    self.progress_window = tk.Toplevel(self)
+    self.progress_window.title("Progress")
+
+    # Create a progress bar in the progress window
+    progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+    progress_bar.pack(pady=10)
+    
+    update_progress(self, 0)
     
     show_image(self, image, " ")
+    
+    update_progress(self, 100)
+    
+    # # Close the progress window
+    # progress_window.destroy()
+    # update_progress(self, 100)
     
     self.statusbar.destroy()
     self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
@@ -76,8 +87,6 @@ def show_image(self, image, string):
 
         self.image_label.config(image=image_tk)
         self.image_label.image = image_tk  # Keep a reference to avoid garbage collection
-        
-        # self.after(100, update_progress(self, 100))
 
 # Function that opens a PCX file
 def open_pcx_file(self):
@@ -87,6 +96,16 @@ def open_pcx_file(self):
         print("Not a PCX file")
                     
         return
+    
+     # Create a progress bar window
+    self.progress_window = tk.Toplevel(self)
+    self.progress_window.title("Progress")
+
+    # Create a progress bar in the progress window
+    progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+    progress_bar.pack(pady=10)
+    
+    update_progress(self, 0)
     
     with open(filepath, "rb") as file:
         # content = file.read()
@@ -233,6 +252,8 @@ def open_pcx_file(self):
             # Display the image on the canvas
 
             display_image_on_right_sidebar(self, image_tk_palette, 4)
+            
+    update_progress(self, 100)
 
 def img_resize_aspectRatio(self, img, available_width, available_height):
     # Calculate the aspect ratio of the image
