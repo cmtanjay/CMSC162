@@ -6,47 +6,34 @@ from huffman import *
 import tkinter as tk
 import numpy as np
 
-def run_length_coding(self, save_path="compressed_image.bmp"):
-    print("RLE ni wiiiieee")
-    if not variables.pcx_image_data:
-        print("No PCX Image Loaded")
-        self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
-        return
-
+def run_length_coding(self):
+    print("Run length skrt skrt")
+    
     data = variables.image_data
-    compressed_data = []
+    encoded_data = []
+    i = 0
+    
+    while i < len(data):
+        if data[i] >= 192:
+            run_length = data[i] - 192
+            pixel_value = data[i+1]
+            encoded_data.extend([pixel_value]*run_length)
+            i += 2
+        else:
+            encoded_data.append(data[i])
+            i += 1
 
-    for row in data:
-        run_length = 1
-        current_color = row[0]
+    # Save the compressed image
+    compressed_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+    draw_compressed_img = ImageDraw.Draw(compressed_img)
+    drawImage(None, draw_compressed_img, encoded_data)  # Replace None with the actual reference to your class or instance
+    compressed_img.save("compressed_image.bmp")  # Save the compressed image
 
-        for j in range(1, len(row)):
-            if row[j] == current_color:
-                run_length += 1
-            else:
-                compressed_data.extend([run_length, current_color])
-                run_length = 1
-                current_color = row[j]
+    # Decode and display the compressed image
+    decoded_img = decode_run_length_compression(encoded_data, (variables.img_height, variables.img_width))
+    decoded_img.show()
 
-        # Append the last run for the current row
-        compressed_data.extend([run_length, current_color])
-
-    # Save the compressed data to a file
-    with open(save_path, 'wb') as file:
-        for item in compressed_data:
-            file.write(bytes([item]))
-
-    # Display the compressed image
-    compressed_img = decode_run_length_compression(compressed_data)
-    show_image(self, compressed_img, "Compressed Image")
-
-    # Updates status
-    self.statusbar.destroy()
-    self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
-    self.statusbar.grid(row=2, columnspan=3, sticky="ew")
-    self.create_statusbar_canvas()
-    self.add_text_to_statusbar(f"Status: Compressed image saved to {save_path}", x=220, y=20, fill="white",
-                               font=("Arial", 9,))
+    return encoded_data
 
 def decode_run_length_compression(compressed_data):
     decoded_data = []
