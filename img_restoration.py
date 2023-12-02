@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageTk, ImageFilter
 import tkinter as tk
 from tkinter import ttk
+import math
 
 import variables
 from img_ops import *
@@ -163,16 +164,6 @@ def geometric_filter(self):
         # Call show histogram function after applying salt and pepper noise
         self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Geometric Filtered Histogram'))
 
-# def contraharmonic_mean(img, size, Q):
-#     """Smooth the given image with contraharmonic mean filter
-#        of given size and Q."""
-#     data = img_to_array(img, dtype=np.float64)
-#     numerator = np.power(data, Q + 1)
-#     denominator = np.power(data, Q)
-#     kernel = np.full(size, 1.0)
-#     result = filter2d(numerator, kernel) / filter2d(denominator, kernel)
-#     return array_to_img(result, img.mode)
-
 def contraharmonic_filter(self):
     print("Contraharmonic filter ni hihi")
     def open_popup():
@@ -212,9 +203,20 @@ def contraharmonic_filter(self):
 
     def get_pixel_value(neighbors, Q):
         flat_neighbors = np.array(neighbors).flatten()
-        numerator = np.sum(np.power(flat_neighbors, Q + 1))
-        denominator = np.sum(np.power(flat_neighbors, Q))
-        return int(numerator / denominator) if denominator != 0 else 0
+        
+        numerator = 0.0
+        denominator = 0.0
+        for pixel in flat_neighbors:
+            if pixel == 0 and (Q+1) < 0:
+                numerator += 0
+            else:
+                numerator += pixel**(Q+1)
+                
+            if pixel == 0 and Q < 0:
+                denominator += 0
+            else:
+                denominator += pixel**Q
+        return int(numerator // denominator) if denominator != 0 else 0
 
     if not variables.pcx_image_data:
         print("No PCX Image Loaded")

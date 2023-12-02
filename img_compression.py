@@ -20,7 +20,7 @@ def run_length_encode(data):
             count = 1
             current_value = value
 
-    return encoded_data, len(data)*3, len(encoded_data),
+    return encoded_data, len(data), len(encoded_data),
 
 def run_length_coding(self):
     print("Run length skrt skrt")
