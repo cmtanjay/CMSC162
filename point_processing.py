@@ -29,6 +29,11 @@ def grayscale_transform(self):
         self.create_statusbar_canvas()
         self.add_text_to_statusbar("Status: Image transformed to grayscale through transformation function (R+G+B)/3", x=250, y=20, fill="white", font=("Arial", 9,))
 
+        image_data = [element for row in gray for element in row]
+
+        # Call histogram function
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Grayscale Image Histogram'))
+
 # Function that transforms the RGB PCX file to Negative image
 def negative_transform(self):
     if not variables.pcx_image_data:
@@ -63,6 +68,9 @@ def negative_transform(self):
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
         self.create_statusbar_canvas()
         self.add_text_to_statusbar("Status: Image transformed to negative image through transformation function s = L - 1 - r", x=300, y=20, fill="white", font=("Arial", 9,))
+
+        # Call histogram function
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(negative, 'Negative Image Histogram'))
 
 # Function that transforms the PCX image to Black/White via Manual Thresholding      
 def BW_manual_thresholding(self):
@@ -140,6 +148,7 @@ def BW_manual_thresholding(self):
         
         # Define the size of each color block
         block_size = 1
+        BW_color=[]
 
         # Draws the resulting pixel values to an image
         for i, row in enumerate(gray):
@@ -155,6 +164,7 @@ def BW_manual_thresholding(self):
                     color = 255
 
                 draw_BW.rectangle([x1, y1, x2, y2], fill=color)
+                BW_color.append(color)
             
         show_image(self, BW_img, " ")
         variables.curr_img = BW_img
@@ -165,6 +175,9 @@ def BW_manual_thresholding(self):
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
         self.create_statusbar_canvas()
         self.add_text_to_statusbar(f"Status: Image transformed to Black&White at threshold = {threshold}", x=200, y=20, fill="white", font=("Arial", 9,))
+
+        # Call histogram function
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(BW_color, 'B&W Thresholded Image Histogram'))
 
 # Function that executes the Power-Law (Gamma) Transformation to the PCX file
 def Power_law_transform(self):
@@ -226,6 +239,7 @@ def Power_law_transform(self):
         
         # Define the size of each color block
         block_size = 1
+        PL_color=[]
 
         # Draws the resulting pixels to an image
         for i, row in enumerate(gray):
@@ -237,6 +251,7 @@ def Power_law_transform(self):
 
                 c = 1
                 color = (int)(c*(color**gamma))
+                PL_color.append(color)
                 
                 # Clips pixel values between 0 and 255
                 if color < 0:
@@ -255,3 +270,6 @@ def Power_law_transform(self):
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
         self.create_statusbar_canvas()
         self.add_text_to_statusbar(f"Status: Image transformed through transformation function s=c*r^(gamma) where c = 1 and gamma = {gamma}", x=330, y=20, fill="white", font=("Arial", 9,))
+
+        # Call histogram function
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(PL_color, 'Power-Law Transformed Image Histogram'))

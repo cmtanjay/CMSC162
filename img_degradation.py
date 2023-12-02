@@ -108,8 +108,10 @@ def salt_and_pepper_noise(self):
         variables.degraded_image_data = deg_img
         variables.isDegraded = True
 
+        image_data = [element for row in variables.degraded_image_data for element in row]
+
         # Call show histogram function after applying salt and pepper noise
-        show_histogram(variables.degraded_image_data, 'Salt and Pepper Noise Histogram')
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Salt and Pepper Noise Histogram'))
     
 # Function for applying Gaussian noise to an image
 def gaussian_noise(self):
@@ -149,9 +151,11 @@ def gaussian_noise(self):
         variables.curr_image_data = corrupted_img
         variables.isDegraded = True
         variables.degraded_image_data = corrupted_img
+        
+        image_data = [element for row in variables.degraded_image_data for element in row]
 
         # Call show histogram function after applying Gaussian noise
-        show_histogram(variables.degraded_image_data, 'Gaussian Noise Histogram')
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Gaussian Noise Histogram'))
 
 def rayleigh_noise(self):
     if not variables.pcx_image_data:
@@ -191,17 +195,8 @@ def rayleigh_noise(self):
         variables.curr_image_data = corrupted_img
         variables.isDegraded = True
         variables.degraded_image_data = corrupted_img
+        
+        image_data = [element for row in variables.degraded_image_data for element in row]
+        
         # Call histogram function
-        show_histogram(variables.degraded_image_data, 'Rayleigh Noise Histogram')
-
-# Function for showing histogram for Image degradation
-def show_histogram(image_data, title):
-    flat_image_data = [element for row in image_data for element in row]
-
-    plt.hist(flat_image_data, bins=256, range=(0, 256), density=True, color='gray', alpha=0.75)
-    plt.title(title)
-    plt.xlabel('Pixel Value')
-    plt.ylabel('Frequency')
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.show()
-
+        self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Rayleigh Noise Histogram'))

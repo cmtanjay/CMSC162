@@ -25,7 +25,7 @@ def update_progress(self, value):
         # Continue updating the progress bar until it reaches 100
         update_progress(self, value+5)
     else:
-        time.sleep(3)
+        time.sleep(1)
         close_progress(self)
 
 def close_progress(self):
