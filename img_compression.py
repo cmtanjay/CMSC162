@@ -8,25 +8,30 @@ import numpy as np
 
 def run_length_coding(self):
     print("Run length skrt skrt")
-    
-    data = variables.image_data
-    encoded_data = []
-    i = 0
-    
-    while i < len(data):
-        if data[i] >= 192:
-            run_length = data[i] - 192
-            pixel_value = data[i+1]
-            encoded_data.extend([pixel_value]*run_length)
-            i += 2
-        else:
-            encoded_data.append(data[i])
-            i += 1
 
-    # Save the compressed image
+    # Convert to list if it's a NumPy array
+    data = np.array(variables.image_data).flatten().tolist()
+
+    encoded_data = []
+    current_value = data[0]
+    count = 1
+
     compressed_img = Image.new('L', (variables.img_width, variables.img_height), 255)
     draw_compressed_img = ImageDraw.Draw(compressed_img)
-    drawImage(None, draw_compressed_img, encoded_data)  # Replace None with the actual reference to your class or instance
+
+    for value in data[1:]:
+        if value == current_value:
+            count += 1
+        else:
+            encoded_data.append((count, current_value))
+            count = 1
+            current_value = value
+
+    encoded_data.append((count, current_value))
+
+    # Save the compressed image
+    flattened_encoded_data = [item for sublist in encoded_data for item in sublist]
+    drawImage(self, draw_compressed_img, flattened_encoded_data)  # Replace self with the actual reference to your class or instance
     compressed_img.save("compressed_image.bmp")  # Save the compressed image
 
     # Decode and display the compressed image
