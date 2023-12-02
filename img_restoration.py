@@ -241,3 +241,41 @@ def contraharmonic_filter(self):
 
 def midpoint_filter(self):
     print("Midpoint filter eme")
+    def get_pixel_value(neighbors):
+        min_val = np.min(neighbors)
+        max_val = np.max(neighbors)
+        return int((min_val + max_val) / 2)
+
+    if not variables.pcx_image_data:
+        print("No PCX Image Loaded")
+        self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    else:
+        radius = variables.n // 2
+
+        if variables.isDegraded:
+            data = variables.degraded_image_data
+        else:
+            data = get_grayscale_img(self)
+
+        data_2D = [row[:] for row in data]
+        padded_img = clamp_padding(radius, data)
+
+        for i in range(variables.img_height):
+            for j in range(variables.img_width):
+                neighbors = get_neighbors(i + radius, j + radius, radius, padded_img)
+                data_2D[i][j] = get_pixel_value(neighbors)
+
+        midpoint_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+        draw_midpoint = ImageDraw.Draw(midpoint_img)
+        drawImage(self, draw_midpoint, data_2D)
+
+        show_image(self, midpoint_img, " ")
+        variables.curr_image_data = data_2D
+        variables.curr_img = midpoint_img
+
+        self.statusbar.destroy()
+        self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+        self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+        self.create_statusbar_canvas()
+        self.add_text_to_statusbar(f"Status: Midpoint filter is applied to the image on a {variables.n}x{variables.n} mask",
+                                   x=220, y=20, fill="white", font=("Arial", 9,))

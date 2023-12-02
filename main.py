@@ -466,7 +466,7 @@ class App(tk.Tk):
         icon_RLE = ImageTk.PhotoImage(img_RLE)
         
         # Configures Power-Law button
-        btn_RLE = tk.Button(self.opsbar, image=icon_RLE, command=lambda: salt_and_pepper_noise(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
+        btn_RLE = tk.Button(self.opsbar, image=icon_RLE, command=lambda: run_length_coding(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_RLE.photo = icon_RLE
         btn_RLE.grid(row=0, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_RLE, "Run-Length Coding")
