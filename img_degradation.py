@@ -71,6 +71,7 @@ def salt_and_pepper_noise(self):
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
     else:
         Ps, Pp = open_popup()
+        print(f"Ps: {Ps}, Pp: {Pp}")
         Psp = 1 - (Ps + Pp)    
         
         gray = get_grayscale_img(self) # transforms image to grayscale
@@ -102,7 +103,6 @@ def salt_and_pepper_noise(self):
         show_image(self, img_SP, " ")
         variables.curr_img = img_SP
         variables.curr_image_data = deg_img
-        variables.pcx_image_data = deg_img
         variables.degraded_image_data = deg_img
         variables.isDegraded = True
 
