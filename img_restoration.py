@@ -94,17 +94,22 @@ def minimum_filter(self):
 
 def geometric_filter(self):
     def get_pixel_value(neighbors):
-        # print("Neighbors:", neighbors)
         
-        product = np.prod(neighbors)
+        final_product = 1.00
+        count = 0
+        for row in neighbors:
+            row_prod = np.prod(row)
+            count += len(row)
+            final_product = final_product * row_prod
+        
         
         # Check if the product is non-positive
-        if product <= 0:
+        if final_product <= 0:
             # Handle non-positive values, for example, return 0 or a default value
             return 0
         
-        epsilon = 1e-10  # Small positive constant to avoid numerical instability
-        return (product + epsilon)**(1.0 / len(neighbors))
+        # epsilon = 1e-10  # Small positive constant to avoid numerical instability
+        return int((final_product)**(1.0 / count))
 
     if not variables.pcx_image_data:
         print("No PCX Image Loaded")
@@ -128,7 +133,7 @@ def geometric_filter(self):
         geo_filtered_img = Image.new('L', (variables.img_width, variables.img_height), 255)
         draw_geo_filtered = ImageDraw.Draw(geo_filtered_img)
         drawImage(self, draw_geo_filtered, data_2D)
-
+        # print(data_2D)
         show_image(self, geo_filtered_img, " ")
         variables.curr_image_data = data_2D
         variables.curr_img = geo_filtered_img
