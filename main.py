@@ -393,7 +393,7 @@ class App(tk.Tk):
     def img_restoration(self):
         self.opsbar.destroy()
         self.opsbar = tk.Frame(self, width=100, bg="#313131")
-        self.opsbar.grid(row=1, column=1, pady=(230, 90), sticky="nsew")
+        self.opsbar.grid(row=1, column=1, pady=(200, 90), sticky="nsew")
         
         # Configures Geometric filter button
         img_geometric = Image.open("assets\geometric.png")
@@ -459,7 +459,7 @@ class App(tk.Tk):
     def img_compression(self):
         self.opsbar.destroy()
         self.opsbar = tk.Frame(self, width=100, bg="#313131")
-        self.opsbar.grid(row=1, column=1, pady=(290, 260), sticky="nsew")
+        self.opsbar.grid(row=1, column=1, pady=(250, 260), sticky="nsew")
         
         img_RLE = Image.open("assets\\run_length.png")
         img_RLE = img_RLE.resize((35,35))
