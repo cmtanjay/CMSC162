@@ -17,23 +17,16 @@ def start_function(self):
 
 def update_progress(self, value):
     # Update the progress bar value
+    time.sleep(0.1)
     self.progress_var.set(value)
+    self.progress_window.update()
 
     if value < 100:
         # Continue updating the progress bar until it reaches 100
-        self.after(100, update_progress(self, value+5))
-        # print("j")
+        update_progress(self, value+5)
     else:
-        # Function is done, initiate the closing process
-        # self.root.after(100, self.update_progress, 100)
-        self.after(3000, close_progress(self))
-
-def simulated_work(self):
-    # Simulate your actual function logic here
-    # ...
-    time.sleep(5)
-    # Once the work is done, set the progress bar to its maximum value
-    self.after(100, self.update_progress, 100)
+        time.sleep(3)
+        close_progress(self)
 
 def close_progress(self):
     # Function is done, destroy the progress window

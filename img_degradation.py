@@ -87,10 +87,12 @@ def salt_and_pepper_noise(self):
         # Salt and pepper process
         for i, color in enumerate(flat_gray_orig):
             random = np.random.random()
+            # print(random)
             
             if random < Pp:
                 row.append(0)
             elif random > (1-Ps):
+                print(variables.bits_per_pixel)
                 row.append((2**variables.bits_per_pixel)-1)
             else:
                 row.append(color)

@@ -71,6 +71,7 @@ def openBMP(filepath):
 
     header_info = read_bmp_header(content)
     bmp_info = read_bmp_info(content)
+    variables.bits_per_pixel = bmp_info['bits_per_pixel']
     variables.palette = read_bmp_palette(content, 54, bmp_info['colors_used'])
     bitmap_data = read_bmp_data(content, header_info['data_offset'], bmp_info['width'], bmp_info['height'], bmp_info['bits_per_pixel'])
 
