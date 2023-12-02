@@ -51,6 +51,22 @@ def encode_data(data, codewords_mapping):
     encoded_data = ''.join(codewords_mapping[symbol] for symbol in data)
     return encoded_data
 
+def decode_data(encoded_data, huffman_tree):
+    decoded_data = []
+    current_node = huffman_tree
+
+    for bit in encoded_data:
+        if bit == '0':
+            current_node = current_node.left
+        else:
+            current_node = current_node.right
+
+        if current_node.value is not None:
+            decoded_data.append(current_node.value)
+            current_node = huffman_tree
+
+    return decoded_data
+
 def compress_image(self, output_compressed_path):
     # Load image
     # image = Image.open(input_image_path)
@@ -79,22 +95,6 @@ def compress_image(self, output_compressed_path):
         compressed_file.write(bytes(encoded_bytes))
 
     return huffman_tree, len(pixel_data), (len(encoded_data) + 7) // 8
-
-def decode_data(encoded_data, huffman_tree):
-    decoded_data = []
-    current_node = huffman_tree
-
-    for bit in encoded_data:
-        if bit == '0':
-            current_node = current_node.left
-        else:
-            current_node = current_node.right
-
-        if current_node.value is not None:
-            decoded_data.append(current_node.value)
-            current_node = huffman_tree
-
-    return decoded_data
 
 def decompress_image(self, input_compressed_path, huffman_tree):
     # Load compressed data

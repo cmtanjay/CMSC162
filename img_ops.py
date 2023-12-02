@@ -7,6 +7,7 @@ import numpy as np
 import os
 
 from bmp_extract import openBMP
+from progressBar import *
 
 # This is the function that opens the image file
 def open_img_file(self):
@@ -27,6 +28,11 @@ def open_img_file(self):
         image = openBMP(filepath)
     else:
         image = Image.open(filepath)
+    
+    # # Create a progress bar variable
+    # self.progress_var = tk.DoubleVar()
+    # start_function(self)
+    # self.after(1000, show_image(self, image, " "))
     
     show_image(self, image, " ")
     
@@ -70,6 +76,8 @@ def show_image(self, image, string):
 
         self.image_label.config(image=image_tk)
         self.image_label.image = image_tk  # Keep a reference to avoid garbage collection
+        
+        # self.after(100, update_progress(self, 100))
 
 # Function that opens a PCX file
 def open_pcx_file(self):
