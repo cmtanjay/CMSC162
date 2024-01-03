@@ -1,3 +1,4 @@
+# This is where the main UI components of the app is implemented.
 from PIL import Image, ImageTk, ImageDraw #pip install pillow
 import tkinter as tk #pip install tk
 from tkinter import ttk
@@ -14,8 +15,13 @@ from img_enhancement import *
 from img_degradation import *
 from img_restoration import *
 from img_compression import *
+from optical_flow import *
+from video_ops import *
+from img_seq_ops import *
 
 from ToolTip import CreateToolTip
+
+import cv2
 
 # This is the class constructor for the Image Processing App
 class App(tk.Tk):
@@ -23,7 +29,7 @@ class App(tk.Tk):
         super().__init__()
 
         # Configures the app window
-        self.title("Image Processor")
+        self.title("iMage and Video Processor")
         self.configure(bg="#242424")
         self.rowconfigure(1, weight=1)
         self.columnconfigure(2, weight=1)
@@ -50,6 +56,8 @@ class App(tk.Tk):
         # Configures the right side bar of the App GUI
         self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
         self.rightsidebar.grid(row=1, column=3, sticky="nsew")
+        self.rightsidebar.grid_columnconfigure(0, minsize=125)
+        self.rightsidebar.grid_columnconfigure(1, minsize=125)
         
         # Configures the status bar of the App GUI
         self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
@@ -125,6 +133,26 @@ class App(tk.Tk):
         btn_open_img.photo = icon_img
         btn_open_img.grid(row=1, column=2, sticky="ew")
         CreateToolTip(btn_open_img, "Open Image")
+        
+        img_vid = Image.open("assets\\video.png")
+        img_vid = img_vid.resize((35,35))
+        icon_vid = ImageTk.PhotoImage(img_vid)
+
+        # Configures close file button
+        btn_vid_file = tk.Button(self.topbar, image=icon_vid, command=lambda: open_vid_file(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_vid_file.photo = icon_vid
+        btn_vid_file.grid(row=1, column=3, sticky="ew")
+        CreateToolTip(btn_vid_file, "Open Video File")
+        
+        img_zip = Image.open("assets\directory.png")
+        img_zip = img_zip.resize((35,35))
+        icon_zip = ImageTk.PhotoImage(img_zip)
+
+        # Configures close file button
+        btn_zip_file = tk.Button(self.topbar, image=icon_zip, command=lambda: open_zip_file(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        btn_zip_file.photo = icon_zip
+        btn_zip_file.grid(row=1, column=4, sticky="ew")
+        CreateToolTip(btn_zip_file, "Open Image Sequence File")
 
         img_close = Image.open("assets\close.png")
         img_close = img_close.resize((35,35))
@@ -133,7 +161,7 @@ class App(tk.Tk):
         # Configures close file button
         btn_close_file = tk.Button(self.topbar, image=icon_close, command=self.close_img, background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
         btn_close_file.photo = icon_close
-        btn_close_file.grid(row=1, column=3, sticky="ew")
+        btn_close_file.grid(row=1, column=5, sticky="ew")
         CreateToolTip(btn_close_file, "Close File")
         
         img_orig_img = Image.open("assets\\revert.png")
@@ -143,7 +171,7 @@ class App(tk.Tk):
         # Configures orig image button
         btn_orig_img = tk.Button(self.topbar, image=icon_orig_img, command=lambda: show_image(self, variables.orig_img, "original"), background="#2F333A", relief="ridge", borderwidth=0)
         btn_orig_img.photo = icon_orig_img
-        btn_orig_img.grid(row=1, column=4, sticky="ew", padx=5, pady=10)
+        btn_orig_img.grid(row=1, column=6, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_orig_img, "Revert to Original Image")
         
         img_hist = Image.open("assets\histogram.png")
@@ -153,16 +181,16 @@ class App(tk.Tk):
         # Configures orig image button
         self.btn_hist = tk.Button(self.topbar, image=icon_hist, background="#2F333A", relief="ridge", borderwidth=0, state="disabled")
         self.btn_hist.photo = icon_hist
-        self.btn_hist.grid(row=1, column=5, sticky="ew", padx=5, pady=10)
+        self.btn_hist.grid(row=1, column=7, sticky="ew", padx=5, pady=10)
         CreateToolTip(self.btn_hist, "Show Histogram")
         
-        img_avg = Image.open("assets\\channel.png")
-        img_avg = img_avg.resize((30,30))
-        icon_avg = ImageTk.PhotoImage(img_avg)
+        img_channel = Image.open("assets\\channel.png")
+        img_channel = img_channel.resize((30,30))
+        icon_channel = ImageTk.PhotoImage(img_channel)
         
         # Configures averaging filter button
-        btn_channel = tk.Button(self.sidebar, image=icon_avg, command=self.channels, background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
-        btn_channel.photo = icon_avg
+        btn_channel = tk.Button(self.sidebar, image=icon_channel, command=self.channels, background="#2B2B2B", foreground="white", relief="ridge", borderwidth=2)
+        btn_channel.photo = icon_channel
         btn_channel.grid(row=0, column=1, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_channel, "Channels")
         
@@ -210,6 +238,15 @@ class App(tk.Tk):
         btn_compression.photo = icon_compression
         btn_compression.grid(row=5, column=1, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_compression, "Image Compression")
+        
+        img_opticalFlow = Image.open("assets\optical-flow.png")
+        img_opticalFlow = img_opticalFlow.resize((30,30))
+        icon_opticalFlow = ImageTk.PhotoImage(img_opticalFlow)
+        
+        btn_opticalFlow = tk.Button(self.sidebar, image=icon_opticalFlow, command=self.opticalFlow, background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
+        btn_opticalFlow.photo = icon_opticalFlow
+        btn_opticalFlow.grid(row=6, column=1, sticky="ew", padx=5, pady=10)
+        CreateToolTip(btn_opticalFlow, "Optical Flow")
 
     # Function that allows the user to save an image in the program
     def save_file_as(self, event=None):
@@ -231,6 +268,7 @@ class App(tk.Tk):
         # Use the previously created canvas
         self.canvas.create_text(x, y, text=text, fill=fill, font=font, justify="right",tags="status_text")
     
+    # Function that contains the buttons for displaying the different color channels of an image.
     def channels(self):
         self.opsbar.destroy()
         self.opsbar = tk.Frame(self, width=100, bg="#313131")
@@ -251,6 +289,7 @@ class App(tk.Tk):
         btn_blue_channel.grid(row=2, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_blue_channel, "Blue Channel")
         
+    # Function that contains the buttons for the different point processing techniques of the application
     def point_processing(self):
         self.opsbar.destroy()
         self.opsbar = tk.Frame(self, width=100, bg="#313131")
@@ -261,10 +300,10 @@ class App(tk.Tk):
         icon_grayscale = ImageTk.PhotoImage(img_grayscale)
         
         # Configures grayscale button
-        btn_grayscale = tk.Button(self.opsbar, image=icon_grayscale, command=lambda: grayscale_transform(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
-        btn_grayscale.photo = icon_grayscale
-        btn_grayscale.grid(row=0, column=0, sticky="ew", padx=5, pady=10)
-        CreateToolTip(btn_grayscale, "Grayscale Transform (R+G+B)/3")
+        self.btn_grayscale = tk.Button(self.opsbar, image=icon_grayscale, command=lambda: grayscale_transform(self), background="#2F333A", foreground="white",relief="ridge", borderwidth=0)
+        self.btn_grayscale.photo = icon_grayscale
+        self.btn_grayscale.grid(row=0, column=0, sticky="ew", padx=5, pady=10)
+        CreateToolTip(self.btn_grayscale, "Grayscale Transform (R+G+B)/3")
         
         img_negative = Image.open("assets\\negative.png")
         img_negative = img_negative.resize((35,35))
@@ -296,21 +335,23 @@ class App(tk.Tk):
         btn_gamma.grid(row=3, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_gamma, "Power-Law (Gamma) Transform")
     
+    # Function that contains the buttons for the different image enhancement techniques of the application
     def img_enhancement(self):
         self.opsbar.destroy()
         self.opsbar = tk.Frame(self, width=100, bg="#313131")
         self.opsbar.grid(row=1, column=1, pady=(120, 0), sticky="new")
         
+        # Configures averaging filter button
         img_avg = Image.open("assets\\avg.png")
         img_avg = img_avg.resize((30,30))
         icon_avg = ImageTk.PhotoImage(img_avg)
         
-        # Configures averaging filter button
         btn_avg_filter = tk.Button(self.opsbar, image=icon_avg, command=lambda: average_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_avg_filter.photo = icon_avg
         btn_avg_filter.grid(row=0, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_avg_filter, "Averaging Filter")
         
+        # Configures Median filter button
         img_mdn = Image.open("assets\median.png")
         img_mdn = img_mdn.resize((30,30))
         icon_mdn = ImageTk.PhotoImage(img_mdn)
@@ -320,6 +361,7 @@ class App(tk.Tk):
         btn_median.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_median, "Median Filter")
         
+        # Configures Laplacian filter button
         img_highpass = Image.open("assets\highpass.png")
         img_highpass = img_highpass.resize((30,30))
         icon_highpass = ImageTk.PhotoImage(img_highpass)
@@ -329,6 +371,7 @@ class App(tk.Tk):
         btn_laplacian.grid(row=2, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_laplacian, "Highpass Filter (Laplacian Operator)")
         
+        # Configures Unsharp Masking button
         img_unsharp = Image.open("assets\mask.png")
         img_unsharp = img_unsharp.resize((30,30))
         icon_unsharp = ImageTk.PhotoImage(img_unsharp)
@@ -338,6 +381,7 @@ class App(tk.Tk):
         btn_unsharp.grid(row=3, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_unsharp, "Unsharp Masking")
 
+        # Configures Highboost Filter button
         img_highboost = Image.open("assets\highboost.png")
         img_highboost = img_highboost.resize((30,30))
         icon_highboost = ImageTk.PhotoImage(img_highboost)
@@ -347,6 +391,7 @@ class App(tk.Tk):
         btn_highboost.grid(row=4, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_highboost, "Highboost Filtering")
 
+        # Configures Gradient Filter button
         img_gradient = Image.open("assets\gradient.png")
         img_gradient = img_gradient.resize((30,30))
         icon_gradient = ImageTk.PhotoImage(img_gradient)
@@ -356,6 +401,7 @@ class App(tk.Tk):
         btn_gradient.grid(row=5, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_gradient, "Gradient: Sobel Magnitude Operator")
     
+    # Function that contains the buttons for the different image degradation techniques of the application
     def img_degradation(self):
         self.opsbar.destroy()
         self.opsbar = tk.Frame(self, width=100, bg="#313131")
@@ -381,17 +427,17 @@ class App(tk.Tk):
         btn_gaussian.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_gaussian, "Gaussian Noise")
         
-        # Configures Reyleigh Noise
+        # Configures Reyleigh Noise button
         img_rayleigh = Image.open("assets\\rayleigh.png")
         img_rayleigh = img_rayleigh.resize((35,35))
         icon_rayleigh = ImageTk.PhotoImage(img_rayleigh)
         
-    
         btn_rayleigh = tk.Button(self.opsbar, image=icon_rayleigh, command=lambda: rayleigh_noise(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_rayleigh.photo = icon_rayleigh
         btn_rayleigh.grid(row=2, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_rayleigh, "Rayleigh Noise")
         
+    # Function that contains the buttons for the different image restoration techniques of the application
     def img_restoration(self):
         self.opsbar.destroy()
         self.opsbar = tk.Frame(self, width=100, bg="#313131")
@@ -452,36 +498,61 @@ class App(tk.Tk):
         mid_filter = mid_filter.resize((35,35))
         icon_mid_filter = ImageTk.PhotoImage(mid_filter)
         
-        
         btn_mid_filter = tk.Button(self.opsbar, image=icon_mid_filter, command=lambda: midpoint_filter(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_mid_filter.photo = icon_mid_filter
         btn_mid_filter.grid(row=5, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_mid_filter, "Midpoint Filter")
         
+    # Function that contains the buttons for the different image compression techniques of the application
     def img_compression(self):
         self.opsbar.destroy()
         self.opsbar = tk.Frame(self, width=100, bg="#313131")
         self.opsbar.grid(row=1, column=1, pady=(250, 260), sticky="nsew")
         
+        # Configures Run Length Encoding button
         img_RLE = Image.open("assets\\run_length.png")
         img_RLE = img_RLE.resize((35,35))
         icon_RLE = ImageTk.PhotoImage(img_RLE)
         
-        # Configures Power-Law button
         btn_RLE = tk.Button(self.opsbar, image=icon_RLE, command=lambda: run_length_coding(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_RLE.photo = icon_RLE
         btn_RLE.grid(row=0, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_RLE, "Run-Length Coding")
         
+        # Configures Huffman coding button
         img_huffman = Image.open("assets\huffman.png")
         img_huffman = img_huffman.resize((35,35))
         icon_huffman = ImageTk.PhotoImage(img_huffman)
         
-        # Configures Power-Law button
         btn_huffman = tk.Button(self.opsbar, image=icon_huffman, command=lambda: huffman_coding(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_huffman.photo = icon_huffman
         btn_huffman.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_huffman, "Huffman Coding")
+    
+    def opticalFlow(self):
+        self.opsbar.destroy()
+        self.opsbar = tk.Frame(self, width=100, bg="#313131")
+        self.opsbar.grid(row=1, column=1, pady=(350, 180), sticky="nsew")
+        
+        # Configures Run Length Encoding button
+        img_dense = Image.open("assets\\dense.png")
+        img_dense = img_dense.resize((35,35))
+        icon_dense = ImageTk.PhotoImage(img_dense)
+        
+        btn_dense = tk.Button(self.opsbar, image=icon_dense, command=lambda: dense_optical(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
+        btn_dense.photo = icon_dense
+        btn_dense.grid(row=0, column=0, sticky="ew", padx=5, pady=10)
+        CreateToolTip(btn_dense, "Dense Optical Flow")
+        
+        # Configures Huffman coding button
+        img_sparse = Image.open("assets\sparse.png")
+        img_sparse = img_sparse.resize((35,35))
+        icon_sparse = ImageTk.PhotoImage(img_sparse)
+        
+        btn_sparse = tk.Button(self.opsbar, image=icon_sparse, command=lambda: sparse_optical(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
+        btn_sparse.photo = icon_sparse
+        btn_sparse.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
+        CreateToolTip(btn_sparse, "Sparse Optical Flow")
     
     # Function that closes the image file being displayed
     # It removes all references of the image, information, and applied operations to its respective variables and widgets
@@ -513,7 +584,7 @@ class App(tk.Tk):
         self.statusbar.grid(row=2, columnspan=4, sticky="ew")
         self.create_statusbar_canvas()
         self.add_text_to_statusbar("Status: Image closed", x=120, y=20, fill="white", font=("Arial", 9,))
-                    
+
 if __name__ == "__main__":
     app = App()
     app.mainloop()

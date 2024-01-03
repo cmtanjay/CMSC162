@@ -1,3 +1,4 @@
+# This is where the noise models are added to images.
 import numpy as np
 import math
 from statistics import *
@@ -12,8 +13,9 @@ from img_ops import *
 
 import matplotlib.pyplot as plt
 
+# Function that adds salt and pepper noise to an image
 def salt_and_pepper_noise(self):
-    # Function that pops up a window that lets the user input the gamma value    
+    # Function that pops up a window that lets the user input the probability for both salt and pepper noises 
     def open_popup():
         window = tk.Toplevel()
         window.geometry("400x200+500+300")
@@ -28,8 +30,13 @@ def salt_and_pepper_noise(self):
 
         # Detects the value inside the text box
         def entry_changed(event):
-            salt_value = salt_text_box.get()  # Get the value from the entry box
+            # Get the value from the entry box
+            salt_value = salt_text_box.get()  
             pepper_value = pepper_text_box.get()
+            
+            # Makes sure that the values of the probabilities for salt and pepper noises are:
+            # 1) Within 0 to 1
+            # 2) The sum of the probabilities do not exceed 1
             if (float(salt_value) >= 0 and float(salt_value) <= 1) and (float(pepper_value) >= 0 and float(pepper_value) <= 1) and (float(salt_value) + float(pepper_value) >= 0 and float(salt_value) + float(pepper_value) <= 1): 
                 salt_prob.set(float(salt_value))  # Set the slider value to the entry value
             else:
@@ -72,7 +79,6 @@ def salt_and_pepper_noise(self):
     else:
         Ps, Pp = open_popup()
         print(f"Ps: {Ps}, Pp: {Pp}")
-        Psp = 1 - (Ps + Pp)    
         
         gray = get_grayscale_img(self) # transforms image to grayscale
         flat_gray_orig = [element for row in gray for element in row]
@@ -87,7 +93,6 @@ def salt_and_pepper_noise(self):
         # Salt and pepper process
         for i, color in enumerate(flat_gray_orig):
             random = np.random.random()
-            # print(random)
             
             if random < Pp:
                 row.append(0)
@@ -157,13 +162,13 @@ def gaussian_noise(self):
         # Call show histogram function after applying Gaussian noise
         self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Gaussian Noise Histogram'))
 
+# Function for applying Rayleigh noise to an image
 def rayleigh_noise(self):
     if not variables.pcx_image_data:
         print("No PCX Image Loaded")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
     else:
         gray = get_grayscale_img(self)  # transforms image to grayscale
-        flat_gray_orig = [element for row in gray for element in row]
 
         # Set the scale parameter/ sigma for the Rayleigh distribution
         scale_param = 20.0

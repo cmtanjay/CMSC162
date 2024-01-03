@@ -1,3 +1,4 @@
+# This is where the basic operations for images like opening, saving, and displaying is implemented.
 import variables
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from PIL import Image, ImageTk, ImageDraw #pip install pillow
@@ -5,8 +6,9 @@ import tkinter as tk #pip install tk
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import re
 
-from bmp_extract import openBMP
+from bmp_extract import *
 from progressBar import *
 
 # This is the function that opens the image file
@@ -24,10 +26,14 @@ def open_img_file(self):
     variables.palette = []
     variables.isDegraded = False
     
-    if os.path.basename(filepath).split('.')[-1] == "bmp":
-        image = openBMP(filepath)
-    else:
+    if os.path.basename(filepath).split('.')[-1] == "bmp": # if a bmp file is opened
+        image, bmp_info = openBMP(self,filepath)
+    else: # if other image types (jpg, png, tiff, etc) are opened
         image = Image.open(filepath)
+    
+    self.rightsidebar.destroy()
+    self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
+    self.rightsidebar.grid(row=1, column=3, sticky="nsew")
     
     # Create a progress bar window
     self.progress_window = tk.Toplevel(self)
@@ -43,22 +49,127 @@ def open_img_file(self):
     
     update_progress(self, 100)
     
-    # # Close the progress window
-    # progress_window.destroy()
-    # update_progress(self, 100)
+    # Create the canvas in the right sidebar
+    create_right_sidebar_canvas(self, 1,300)
     
+    if os.path.basename(filepath).split('.')[-1] == "bmp": # if a bmp file is opened:
+        # Add text to the canvas in the right side bar
+        add_text_to_right_sidebar(self,"Image Information", x=76,y=30,fill="white",font=("Arial", 11, "bold"))
+        add_text_to_right_sidebar(self, f"Width: {bmp_info['width']}", x=68, y=70, fill="white", font=("Arial", 11))
+        add_text_to_right_sidebar(self, f"Height: {bmp_info['height']}", x=69, y=90, fill="white", font=("Arial", 11))
+        add_text_to_right_sidebar(self, f"Color Planes: {bmp_info['color_planes']}", x=80, y=110, fill="white", font=("Arial", 11))
+        add_text_to_right_sidebar(self, f"Bits per pixel: {bmp_info['bits_per_pixel']}", x=85, y=130, fill="white", font=("Arial", 11))
+    
+    # Destroys the status bar
     self.statusbar.destroy()
     self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
     self.statusbar.grid(row=2, columnspan=4, sticky="ew")
     self.create_statusbar_canvas()
 
-    self.rightsidebar.destroy()
-    self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
-    self.rightsidebar.grid(row=1, column=3, sticky="nsew")
-
     # Extract the filename from the full filepath
     filename = os.path.basename(filepath)
     self.add_text_to_statusbar(f"Status: {filename} loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+
+def openBMP(self,filepath):
+    with open(filepath, "rb") as file:
+        content = file.read()
+
+    header_info = read_bmp_header(content)
+    bmp_info = read_bmp_info(content)
+    variables.bits_per_pixel = bmp_info['bits_per_pixel']
+    variables.palette = read_bmp_palette(content, 54, bmp_info['colors_used'])
+    bitmap_data = read_bmp_data(content, header_info['data_offset'], bmp_info['width'], bmp_info['height'], bmp_info['bits_per_pixel'])
+
+    # print("Header:", header_info)
+    # print("BMP Info:", bmp_info)
+
+    colors = []
+    i=0        
+
+    while(i < len(bitmap_data)):
+        colors.append((bitmap_data[i+2], bitmap_data[i+1], bitmap_data[i]))
+        i += 3
+        
+    arranged_color = []
+
+    row = []
+    for i, color in enumerate(colors):
+        row.append(color)
+        
+        if len(row) == bmp_info["width"]:
+            arranged_color = row + arranged_color
+            row = []
+
+    variables.pcx_image_data = arranged_color
+    variables.image_data = arranged_color
+    variables.img_width = bmp_info["width"]
+    variables.img_height = bmp_info["height"]
+
+    # Create a blank image with a white background for the opened image
+    img_bmp = Image.new('RGB', (bmp_info["width"], bmp_info["height"]), (255, 255, 255))
+
+    draw = ImageDraw.Draw(img_bmp)
+
+    block_size = 1
+            
+    # Draw the colored blocks on the image
+    for i, color in enumerate(arranged_color):
+        if i % bmp_info["width"] == 0:
+            x1 = 0
+            y1 = (i // bmp_info["width"])
+            x2 = x1 + block_size
+            y2 = y1 + block_size
+        else:
+            x1 = (i % bmp_info["width"]) * block_size
+            y1 = (i // bmp_info["width"]) * block_size
+            x2 = x1 + block_size
+            y2 = y1 + block_size
+        
+        draw.rectangle([x1, y1, x2, y2], fill=color)
+        
+    variables.orig_img = img_bmp
+
+    # Print or use the extracted information as needed
+   
+    # print("Color Palette:", color_palette)
+    # print("Bitmap Data:", len(bitmap_data))
+    
+    # Draw the colored blocks on the image
+    for i, color in enumerate(variables.pcx_image_data):
+        rgb = list(color)
+        variables.red_channel.append(rgb[0])
+        variables.green_channel.append(rgb[1])
+        variables.blue_channel.append(rgb[2])
+
+    return img_bmp, bmp_info
+
+def extract_bmp(self, filepath):
+    with open(filepath, "rb") as file:
+        content = file.read()
+
+    header_info = read_bmp_header(content)
+    bmp_info = read_bmp_info(content)
+    bitmap_data = read_bmp_data(content, header_info['data_offset'], bmp_info['width'], bmp_info['height'], bmp_info['bits_per_pixel'])
+    
+    colors = [(bitmap_data[i+2], bitmap_data[i+1], bitmap_data[i]) for i in range(0, len(bitmap_data), 3)]
+
+    arranged_color = [colors[i:i + bmp_info["width"]] for i in range(0, len(colors), bmp_info["width"])]
+    arranged_color = [color for row in arranged_color[::-1] for color in row]
+
+    variables.pcx_image_data = arranged_color
+    variables.image_data = arranged_color
+    variables.img_width = bmp_info["width"]
+    variables.img_height = bmp_info["height"]
+
+    # # Create a blank image with a white background for the opened image
+    # img_bmp = Image.new('RGB', (bmp_info["width"], bmp_info["height"]), (255, 255, 255))
+    # draw = ImageDraw.Draw(img_bmp)
+
+    # drawImage1DArray(self, variables.image_data, draw, variables.palette)
+        
+    # variables.orig_img = img_bmp
+
+    # return img_bmp
 
 # Function that displays an image to the UI    
 def show_image(self, image, string):
@@ -97,7 +208,7 @@ def open_pcx_file(self):
                     
         return
     
-     # Create a progress bar window
+    # Create a progress bar window
     self.progress_window = tk.Toplevel(self)
     self.progress_window.title("Progress")
 
@@ -255,6 +366,7 @@ def open_pcx_file(self):
             
     update_progress(self, 100)
 
+# Function that resizes an image based on aspect ratio
 def img_resize_aspectRatio(self, img, available_width, available_height):
     # Calculate the aspect ratio of the image
     aspect_ratio = img.width / img.height
@@ -341,7 +453,7 @@ def show_hist(self, channel, string):
     # Show the histogram
     plt.show()
 
-# Function for showing histogram for Image degradation
+# Function for showing histogram after applying different image processing techniques
 def show_histogram(image_data, title):
     plt.hist(image_data, bins=256, range=(0, 256), density=True, color='gray', alpha=0.75)
     plt.title(title)
@@ -352,8 +464,58 @@ def show_histogram(image_data, title):
 
 # Function that displays the color channel in the UI    
 def show_channel(self, channel, string):
-    if not channel:
+    if not channel and variables.file_type == 1:
         print("WALAAAAA")
+        
+    elif variables.file_type == 2:
+        variables.is_filtered = True
+        variables.img_seq = []
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        for path in variables.image_paths:
+            extract_bmp(self, path)
+            
+            color_channel = []
+            
+            if(string == "red"):
+                for pixel in variables.pcx_image_data:
+                    color_channel.append((pixel[0], 0, 0))
+            elif(string == "green"):
+                for pixel in variables.pcx_image_data:
+                    color_channel.append((0, pixel[1], 0))
+            elif(string == "blue"):
+                for pixel in variables.pcx_image_data:
+                    color_channel.append((0, 0, pixel[2]))
+            
+            # Creates output image
+            channel_img = Image.new('RGB', (variables.img_width, variables.img_height), (255, 255, 255))
+            draw_channel_img = ImageDraw.Draw(channel_img)
+            
+            drawImage1DArray(self, color_channel, draw_channel_img, [])
+            variables.img_seq.append(channel_img)
+            
+            value += (1/len(variables.image_paths))*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+            print(num)
+        
+        self.progress_window.destroy()
+        show_image(self, variables.img_seq[0], " ")
+            
     else:
         # Creates output image
         channel_img = Image.new('RGB', (variables.img_width, variables.img_height), (255, 255, 255))
@@ -374,18 +536,13 @@ def show_channel(self, channel, string):
                 y1 = (i // variables.img_width) * block_size
                 x2 = x1 + block_size
                 y2 = y1 + block_size
-            
-            if variables.palette == []:
-                rgb = list(color)
-            else:
-                rgb = list(variables.palette[color])
         
             if(string == "red"):
-                draw_channel_img.rectangle([x1, y1, x2, y2], fill=(rgb[0], 0, 0))    
+                draw_channel_img.rectangle([x1, y1, x2, y2], fill=(channel[i], 0, 0))    
             elif(string == "green"):
-                draw_channel_img.rectangle([x1, y1, x2, y2], fill=(0, rgb[1], 0))
+                draw_channel_img.rectangle([x1, y1, x2, y2], fill=(0, channel[i], 0))
             elif(string == "blue"):
-                draw_channel_img.rectangle([x1, y1, x2, y2], fill=(0, 0, rgb[2]))
+                draw_channel_img.rectangle([x1, y1, x2, y2], fill=(0, 0, channel[i]))
 
         # Updates status
         self.statusbar.destroy()
@@ -402,6 +559,8 @@ def show_channel(self, channel, string):
             
         show_image(self, channel_img, " ")
         show_hist(self, channel, string)
+    
+    
 
 # Function for transforming the colored (RGB) image to grayscale
 def get_grayscale_img(self):
@@ -458,3 +617,7 @@ def drawImage1DArray(self, array, draw, palette):
             draw.rectangle([x1, y1, x2, y2], fill=color)
         else:
             draw.rectangle([x1, y1, x2, y2], fill=palette[color])
+            
+def natural_sort_key(s):
+    # Custom sorting key for natural sorting
+    return [int(text) if text.isdigit() else text.lower() for text in re.split('([0-9]+)', s)]
