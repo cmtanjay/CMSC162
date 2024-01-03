@@ -1,3 +1,4 @@
+# This is where the variables necessary for the functioning of all image processing techniques are stored.
 orig_img = None
 curr_img = None
 red_channel = []
@@ -22,3 +23,17 @@ vdpi = 0
 nplanes = 0
 bytesperline = 0
 paletteinfo = 0
+
+video_filepath = None
+
+file_type = None #1 for image, 2 for image sequence, 3 for video
+image_paths = None
+
+is_filtered = None
+
+# Image sequences
+prev_btn = None
+next_btn = None
+play_imgs_button = None
+reset_button = None
+img_seq = []

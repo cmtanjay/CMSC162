@@ -1,3 +1,4 @@
+# This is where the Huffman coding implementation takes place.
 import heapq
 import os
 from PIL import Image
@@ -5,7 +6,9 @@ import variables
 from PIL import Image, ImageDraw
 from img_ops import *
 
+# A class that implememnts the Huffman coding
 class HuffmanNode:
+    # Initializes the format of a node in a Huffman tree
     def __init__(self, value, freq):
         self.value = value
         self.freq = freq
@@ -15,6 +18,7 @@ class HuffmanNode:
     def __lt__(self, other):
         return self.freq < other.freq
 
+# Function that builds the huffman tree
 def build_huffman_tree(freq_dict):
     heap = [HuffmanNode(value, freq) for value, freq in freq_dict.items()]
     heapq.heapify(heap)
@@ -29,12 +33,14 @@ def build_huffman_tree(freq_dict):
 
     return heap[0]
 
+# Function that collects the unique colors in the image and counts its frequency
 def build_freq_dict(data):
     freq_dict = {}
     for symbol in data:
         freq_dict[symbol] = freq_dict.get(symbol, 0) + 1
     return freq_dict
 
+# Function that creates the huffman code for each unique color in the image
 def build_codewords_mapping(node, current_code="", mapping=None):
     if mapping is None:
         mapping = {}
@@ -47,10 +53,12 @@ def build_codewords_mapping(node, current_code="", mapping=None):
 
     return mapping
 
+# Function that encodes an image data to Huffman code
 def encode_data(data, codewords_mapping):
     encoded_data = ''.join(codewords_mapping[symbol] for symbol in data)
     return encoded_data
 
+# Function that decodes an image data in Huffman code to a sequence of a tuple of RGB values
 def decode_data(encoded_data, huffman_tree):
     decoded_data = []
     current_node = huffman_tree
@@ -67,6 +75,7 @@ def decode_data(encoded_data, huffman_tree):
 
     return decoded_data
 
+# Function that compresses the image using Huffman Coding
 def compress_image(self, output_compressed_path):
     # Load image
     # image = Image.open(input_image_path)
@@ -96,6 +105,7 @@ def compress_image(self, output_compressed_path):
 
     return huffman_tree, len(pixel_data), (len(encoded_data) + 7) // 8
 
+# Function that decompresses a compressed image in Huffman coding
 def decompress_image(self, input_compressed_path, huffman_tree):
     # Load compressed data
     with open(input_compressed_path, 'rb') as compressed_file:

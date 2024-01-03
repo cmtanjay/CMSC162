@@ -1,3 +1,6 @@
+# This is where the image restoration process is implemented.
+# When an image is degraded by the functions in img_degradation, the functions in this file restores it.
+# Otherwise, it applies the same techniques as an enhancement filter.
 import numpy as np
 from PIL import Image, ImageDraw, ImageTk, ImageFilter
 import tkinter as tk
@@ -7,7 +10,8 @@ import math
 import variables
 from img_ops import *
 from img_enhancement import *
-    
+
+# Function that implements the maximum filter by getting the highest pixel value within a mask.    
 def maximum_filter(self):
     # Function that gets the average pixel value encompassed by an n x n mask
     def get_pixel_value(neighbors):        
@@ -19,7 +23,6 @@ def maximum_filter(self):
     else:
         # Initializes the n x n mask
         radius = variables.n//2
-        # mask = [[1/(variables.n*variables.n) for i in range(variables.n)] for j in range(variables.n)]
         
         if variables.isDegraded:
             data = variables.degraded_image_data
@@ -57,6 +60,7 @@ def maximum_filter(self):
         # Call show histogram function after applying salt and pepper noise
         self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Maximum Filtered Histogram'))
 
+# Function that implements the minimum filter by getting the lowest pixel value within a mask.    
 def minimum_filter(self):
     # Function that gets the average pixel value encompassed by an n x n mask
     def get_pixel_value(neighbors):        
@@ -68,7 +72,6 @@ def minimum_filter(self):
     else:
         # Initializes the n x n mask
         radius = variables.n//2
-        # mask = [[1/(variables.n*variables.n) for i in range(variables.n)] for j in range(variables.n)]
         
         if variables.isDegraded:
             data = variables.degraded_image_data
@@ -107,6 +110,8 @@ def minimum_filter(self):
         # Call show histogram function after applying salt and pepper noise
         self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Minimum Filtered Histogram'))
 
+# Function that implements the geometric filter by getting the product of all pixels inside a mask then exponentiating
+# it to 1/n.  
 def geometric_filter(self):
     def get_pixel_value(neighbors):
         
@@ -132,9 +137,9 @@ def geometric_filter(self):
     else:
         radius = variables.n // 2
 
-        if variables.isDegraded:
+        if variables.isDegraded: # If image is degraded
             data = variables.degraded_image_data
-        else:
+        else: # if image is not degraded (no noises are applied by the user)
             data = get_grayscale_img(self)
 
         data_2D = [row[:] for row in data]
@@ -148,11 +153,12 @@ def geometric_filter(self):
         geo_filtered_img = Image.new('L', (variables.img_width, variables.img_height), 255)
         draw_geo_filtered = ImageDraw.Draw(geo_filtered_img)
         drawImage(self, draw_geo_filtered, data_2D)
-        # print(data_2D)
         show_image(self, geo_filtered_img, " ")
+        
         variables.curr_image_data = data_2D
         variables.curr_img = geo_filtered_img
 
+        # Updates the status bar
         self.statusbar.destroy()
         self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")
@@ -164,8 +170,8 @@ def geometric_filter(self):
         # Call show histogram function after applying salt and pepper noise
         self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Geometric Filtered Histogram'))
 
+# Function that implements the contraharmonic filter
 def contraharmonic_filter(self):
-    print("Contraharmonic filter ni hihi")
     def open_popup():
         window = tk.Toplevel()
         window.geometry("400x200+500+300")
@@ -201,6 +207,7 @@ def contraharmonic_filter(self):
         window.wait_window(window)
         return Q_var.get()
 
+    # Function that gets the pixel value of a resulting image by using the contraharmonic filter equation
     def get_pixel_value(neighbors, Q):
         flat_neighbors = np.array(neighbors).flatten()
         
@@ -216,6 +223,7 @@ def contraharmonic_filter(self):
                 denominator += 0
             else:
                 denominator += pixel**Q
+                
         return int(numerator // denominator) if denominator != 0 else 0
 
     if not variables.pcx_image_data:
@@ -258,9 +266,9 @@ def contraharmonic_filter(self):
         # Call show histogram function after applying salt and pepper noise
         self.btn_hist.config(state="normal", command=lambda: show_histogram(image_data, 'Contraharmonic Filtered Histogram'))
         
-
+# Function that applies the midpoint filter by getting the average of the maximum and minimum pixel value of an nxn mask
 def midpoint_filter(self):
-    print("Midpoint filter eme")
+    # Function that gets the pixel value of a resulting image
     def get_pixel_value(neighbors):
         min_val = np.min(neighbors)
         max_val = np.max(neighbors)
@@ -293,6 +301,7 @@ def midpoint_filter(self):
         variables.curr_image_data = data_2D
         variables.curr_img = midpoint_img
 
+        # Updates status bar
         self.statusbar.destroy()
         self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
         self.statusbar.grid(row=2, columnspan=3, sticky="ew")

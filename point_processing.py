@@ -1,3 +1,4 @@
+# This is where the point processing techniques are implemented.
 from PIL import Image, ImageTk, ImageDraw #pip install pillow
 import tkinter as tk #pip install tk
 from tkinter import ttk
@@ -7,9 +8,47 @@ from img_ops import *
 
 # Function that transforms the RGB PCX file to Grayscale
 def grayscale_transform(self):
-    if not variables.pcx_image_data:
+    if not variables.pcx_image_data and variables.file_type == 1:
         print("No PCX Image Loaded")
         # self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    elif variables.file_type == 2:
+        variables.is_filtered = True
+        variables.img_seq = []
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        for path in variables.image_paths:
+            extract_bmp(self, path)
+            # Creates the output image
+            grayscale_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+            draw_grayscale = ImageDraw.Draw(grayscale_img)
+            
+            gray = get_grayscale_img(self) # transforms image to grayscale
+            
+            drawImage(self, draw_grayscale, gray) # draws resulting pixel values to image
+            variables.img_seq.append(grayscale_img)
+            
+            value += (1/len(variables.image_paths))*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+            print(num)
+        
+        self.progress_window.destroy()
+        show_image(self, variables.img_seq[0], " ")
+             
     else:
         # Creates the output image
         grayscale_img = Image.new('L', (variables.img_width, variables.img_height), 255)
@@ -18,7 +57,7 @@ def grayscale_transform(self):
         gray = get_grayscale_img(self) # transforms image to grayscale
         
         drawImage(self, draw_grayscale, gray) # draws resulting pixel values to image
-            
+        
         show_image(self, grayscale_img, " ") # shows image to GUI
         variables.curr_img = grayscale_img
         
@@ -36,9 +75,48 @@ def grayscale_transform(self):
 
 # Function that transforms the RGB PCX file to Negative image
 def negative_transform(self):
-    if not variables.pcx_image_data:
+    if not variables.pcx_image_data and variables.file_type == 1:
         print("No PCX Image Loaded")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    elif variables.file_type == 2:
+        variables.is_filtered = True
+        variables.img_seq = []
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        for path in variables.image_paths:
+            extract_bmp(self, path)
+            
+            # Creates the output image
+            negative_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+            draw_negative = ImageDraw.Draw(negative_img)
+            
+            gray = get_grayscale_img(self)
+            negative_pixels = [[255 - pixel for pixel in row] for row in gray]
+            drawImage(self, draw_negative, negative_pixels) # draws resulting pixel values to image
+            variables.img_seq.append(negative_img)
+            
+            value += (1/len(variables.image_paths))*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+            print(num)
+        
+        self.progress_window.destroy()
+        show_image(self, variables.img_seq[0], " ")
+            
     else:
         # Creates the output image
         negative_img = Image.new('L', (variables.img_width, variables.img_height), 255)
@@ -46,18 +124,9 @@ def negative_transform(self):
         
         gray = get_grayscale_img(self)
         
-        negative = []
-
-        # Draws resulting pixel values to an image
-        for i, row in enumerate(gray):
-            for j, color in enumerate(row):
-                x1 = j
-                y1 = i
-                x2 = x1 + 1
-                y2 = y1 + 1
-
-                draw_negative.rectangle([x1, y1, x2, y2], fill=(255-color))
-                negative.append(255-color)
+        negative_pixels = [[255 - pixel for pixel in row] for row in gray]
+        negative = [element for row in negative_pixels for element in row]
+        drawImage(self, draw_negative, negative_pixels)
             
         show_image(self, negative_img, " ")
         variables.curr_img = negative_img
@@ -135,9 +204,50 @@ def BW_manual_thresholding(self):
         window.wait_window(window)  # Wait for the window to be destroyed
         return threshold.get()
     
-    if not variables.pcx_image_data:
+    if not variables.pcx_image_data and variables.file_type == 1:
         print("No PCX Image Loaded")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    
+    elif variables.file_type == 2:
+        variables.is_filtered = True
+        variables.img_seq = []
+        
+        threshold = open_popup()
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        for path in variables.image_paths:
+            extract_bmp(self, path)
+            # Creates the output image
+            BW_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+            draw_BW = ImageDraw.Draw(BW_img)
+            
+            gray = get_grayscale_img(self)
+            BW_pixels = [[0 if color <= threshold else 255 for color in row] for row in gray]
+            drawImage(self, draw_BW, BW_pixels) # draws resulting pixel values to image
+            variables.img_seq.append(BW_img)
+            
+            value += (1/len(variables.image_paths))*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+            print(num)
+        
+        self.progress_window.destroy()
+        show_image(self, variables.img_seq[0], " ")
+            
     else:
         threshold = open_popup()
         # Creates the output image
@@ -145,26 +255,10 @@ def BW_manual_thresholding(self):
         draw_BW = ImageDraw.Draw(BW_img)
         
         gray = get_grayscale_img(self) # transforms image to grayscale
-        
-        # Define the size of each color block
-        block_size = 1
-        BW_color=[]
+        BW_pixels = [[0 if color <= threshold else 255 for color in row] for row in gray]
+        BW_color = [element for row in BW_pixels for element in row]
 
-        # Draws the resulting pixel values to an image
-        for i, row in enumerate(gray):
-            for j, color in enumerate(row):
-                x1 = j
-                y1 = i
-                x2 = x1 + 1
-                y2 = y1 + 1
-
-                if(color <= threshold):
-                    color = 0
-                else:
-                    color = 255
-
-                draw_BW.rectangle([x1, y1, x2, y2], fill=color)
-                BW_color.append(color)
+        drawImage(self, draw_BW, BW_pixels)
             
         show_image(self, BW_img, " ")
         variables.curr_img = BW_img
@@ -226,9 +320,68 @@ def Power_law_transform(self):
         
         return current_value.get()
     
-    if not variables.pcx_image_data:
+    if not variables.pcx_image_data and variables.file_type == 1:
         print("No PCX Image Loaded")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    
+    elif variables.file_type == 2:
+        variables.is_filtered = True
+        variables.img_seq = []
+        
+        gamma = open_popup()
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        for path in variables.image_paths:
+            extract_bmp(self, path)
+            
+            # Creates the output image
+            PL_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+            draw_PL = ImageDraw.Draw(PL_img)
+            
+            gray = get_grayscale_img(self)
+            # Draws the resulting pixels to an image
+            for i, row in enumerate(gray):
+                for j, color in enumerate(row):
+                    x1 = j
+                    y1 = i
+                    x2 = x1 + 1
+                    y2 = y1 + 1
+
+                    c = 1
+                    color = (int)(c*(color**gamma))
+                    
+                    # Clips pixel values between 0 and 255
+                    if color < 0:
+                        color = 0
+                    elif color > 255:
+                        color = 255
+
+                    draw_PL.rectangle([x1, y1, x2, y2], fill=color)
+                    
+            variables.img_seq.append(PL_img)
+            
+            value += (1/len(variables.image_paths))*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+            print(num)
+        
+        self.progress_window.destroy()
+        show_image(self, variables.img_seq[0], " ")
+        
     else:
         gamma = open_popup()
         # Creates the output image
@@ -238,7 +391,6 @@ def Power_law_transform(self):
         gray = get_grayscale_img(self) # transforms image to grayscale
         
         # Define the size of each color block
-        block_size = 1
         PL_color=[]
 
         # Draws the resulting pixels to an image
