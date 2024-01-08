@@ -114,28 +114,16 @@ def dense_optical(self):
             # Converts HSV to RGB (BGR) color representation
             rgb = cv2.cvtColor(mask, cv2.COLOR_HSV2BGR)
 
-        
-            cv2.imshow("dense optical flow", rgb)
-            video = cv2.VideoCapture(rgb) 
-
-            fourcc = cv2.VideoWriter_fourcc(*"XVID")
-            variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
-            variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        
-
             # Write the frame to the output video
             output_video.write(rgb)
 
             # Updates previous frame
             prev_gray = gray
 
-            # Frames are read by intervals of 1 millisecond. The program breaks out of the while loop when the user presses the 'q' key
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-
         # The following frees up resources and closes all windows
         cap.release()
-        cv2.destroyAllWindows()
+        output_video.release()
+            
 
 
 
