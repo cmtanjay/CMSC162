@@ -7,28 +7,28 @@ from tkinter import filedialog as ff
 import glob
 import re
 
-from img_seq_ops import open_zip_file
-
-
+from img_seq_ops import show_frame
 
 def dense_optical(self):
     print("dense")
     
-    # Load all images in the sequence
-     
-    image_sequence = variables.image_paths
+    variables.is_filtered = True
+    variables.img_seq = []
+    
     # Create a VideoWriter object for output video
-    height, width, _ = cv2.imread(image_sequence[0]).shape
+    height, width, _ = cv2.imread(variables.image_paths[0]).shape
     fourcc = cv2.VideoWriter_fourcc(*"XVID")
     output_video = cv2.VideoWriter("output.avi", fourcc, 10, (width, height))
 
     # Read the first frame
-    frame1 = cv2.imread(image_sequence[0])
+    frame1 = cv2.imread(variables.image_paths[0])
     prvs = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
     hsv = np.zeros_like(frame1)
     hsv[..., 1] = 255
     
-    for image_path in image_sequence[1:]:
+    processed_frames = []  # Collect processed frames
+    
+    for image_path in variables.image_paths[1:]:
         frame2 = cv2.imread(image_path)
         next = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
 
@@ -46,13 +46,16 @@ def dense_optical(self):
 
         # Convert HSV to BGR color representation
         rgb = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+    
 
         # Overlay the RGB image onto the optical flow visualization
-        result = cv2.addWeighted(rgb, 0.5, frame2, 0.5, 0)
+        # result = cv2.addWeighted(rgb, 0.5, frame2, 0.5, 0)
 
-        # Display the result
-        cv2.imshow('Optical Flow with Overlay', rgb)
-        output_video.write(result)
+        # Collect processed frame
+        variables.img_seq.append(rgb)
+
+        # Write the frame to the output video
+        output_video.write(rgb)
 
         # Check for 'q' key to set exit_flag
         key = cv2.waitKeyEx(1)
@@ -61,7 +64,11 @@ def dense_optical(self):
             break
 
         prvs = next
+
     output_video.release()
+
+    # Pass the entire sequence of processed frames to show_frame
+    show_frame(self)
     
 def sparse_optical(self):
     print("sparse")

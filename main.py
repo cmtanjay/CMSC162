@@ -15,7 +15,7 @@ from img_enhancement import *
 from img_degradation import *
 from img_restoration import *
 from img_compression import *
-from optical_flow import *
+from optical_flow2 import *
 from video_ops import *
 from img_seq_ops import *
 
@@ -533,11 +533,14 @@ class App(tk.Tk):
         self.opsbar.destroy()
         self.opsbar = tk.Frame(self, width=100, bg="#313131")
         self.opsbar.grid(row=1, column=1, pady=(350, 180), sticky="nsew")
-        
+        # image_sequence = open_zip_file(self)
+        # dense_optical(image_sequence)
         # Configures Run Length Encoding button
         img_dense = Image.open("assets\\dense.png")
         img_dense = img_dense.resize((35,35))
         icon_dense = ImageTk.PhotoImage(img_dense)
+        
+        # img_sequence = variables.image_paths
         
         btn_dense = tk.Button(self.opsbar, image=icon_dense, command=lambda: dense_optical(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
         btn_dense.photo = icon_dense
