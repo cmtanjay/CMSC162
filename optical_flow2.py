@@ -7,7 +7,7 @@ from tkinter import filedialog as ff
 import glob
 import re
 
-from img_seq_ops import show_frame
+from img_seq_ops import *
 
 def dense_optical(self):
     print("dense")
@@ -47,12 +47,14 @@ def dense_optical(self):
         # Convert HSV to BGR color representation
         rgb = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
     
-
+        image = Image.fromarray(cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
         # Overlay the RGB image onto the optical flow visualization
         # result = cv2.addWeighted(rgb, 0.5, frame2, 0.5, 0)
 
+        print(image)
+
         # Collect processed frame
-        variables.img_seq.append(rgb)
+        variables.img_seq.append(image)
 
         # Write the frame to the output video
         output_video.write(rgb)
@@ -68,7 +70,7 @@ def dense_optical(self):
     output_video.release()
 
     # Pass the entire sequence of processed frames to show_frame
-    show_frame(self)
+    show_image(self, variables.img_seq[0], " ")
     
 def sparse_optical(self):
     print("sparse")

@@ -19,7 +19,7 @@ def open_vid_file(self):
         self.stop_button = tk.Button(self.rightsidebar, text="Stop", command=lambda: stop_video(self), state="disabled")
         self.stop_button.grid(row=0, column=1, pady=5,  padx=10, sticky="ew")
 
-        self.restart_button = tk.Button(self.rightsidebar, text="Restart", command=lambda: restart_video(self), state="disabled")
+        self.restart_button = tk.Button(self.rightsidebar, text="Restart", command=lambda: res_video(self), state="disabled")
         self.restart_button.grid(row=1, column=0, padx=10, sticky="ew")
 
         self.close_button = tk.Button(self.rightsidebar, text="Close", command=lambda: close_video(self))
@@ -89,11 +89,11 @@ def update_video(self):
         print(f"Elapsed Time: {self.elapsed_time} seconds / Total Time: {total_time} seconds", end='\r')
         
 
-    if self.cap.get(cv2.CAP_PROP_POS_FRAMES) == self.total_frames - 1:
-        # Video has reached the end, restart it
-        restart_video(self)
-    else:
-        self.after(25, lambda: update_video(self))  # Update every 25 milliseconds
+        if self.cap.get(cv2.CAP_PROP_POS_FRAMES) == self.total_frames - 1:
+            # Video has reached the end, restart it
+            restart_video(self)
+        else:
+            self.after(25, lambda: update_video(self))  # Update every 25 milliseconds
 
 def get_frame(self, frame):
     # Opens the image using PIL
@@ -159,6 +159,10 @@ def restart_video(self):
         self.image_label.img = img_tk
         self.image_label.config(image=img_tk)
         update_video(self)
+        
+def res_video(self):
+    if self.cap:
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
         
 def stop_video(self):
     if self.cap:

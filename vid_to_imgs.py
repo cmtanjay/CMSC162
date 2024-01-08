@@ -21,6 +21,8 @@ except OSError:
 # frame 
 currentframe = 0
 
+f = []
+
 while(True): 
 	
 	# reading from frame 
@@ -30,15 +32,19 @@ while(True):
 		# if video is still left continue creating images 
 		name = './data/frame' + str(currentframe) + '.bmp'
 		print ('Creating...' + name) 
+  
+		f.append(frame)
 
 		# writing the extracted images 
-		cv2.imwrite(name, frame) 
+		# cv2.imwrite(name, frame) 
 
 		# increasing counter so that it will 
 		# show how many frames are created 
 		currentframe += 1
 	else: 
 		break
+
+print(f)
 
 # Release all space and windows once done 
 cam.release() 
