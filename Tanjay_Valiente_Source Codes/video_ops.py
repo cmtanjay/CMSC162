@@ -8,39 +8,13 @@ from img_ops import *
 from variables import *
 
 def open_vid_file(self):
-    variables.orig_img = None
-    variables.curr_img = None
-    variables.red_channel = []
-    variables.green_channel = []
-    variables.blue_channel = []
-    variables.pcx_image_data = []
-    variables.palette = []
-    variables.isDegraded = False
-    
-    variables.img_seq = []
-    
-    variables.video_filepath = None
-    variables.orig_video_filepath = None
-
-    variables.file_type = None 
-    variables.image_paths = None
-
-    variables.is_filtered = None
-    
-    # Reverts right sidebar to its original form
-    self.rightsidebar.destroy()
-    self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
-    self.rightsidebar.grid(row=1, column=3, sticky="nsew")
-    self.rightsidebar.grid_columnconfigure(0, minsize=125)
-    self.rightsidebar.grid_columnconfigure(1, minsize=125)
-    
     variables.video_filepath = askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi")])
     variables.orig_video_filepath = variables.video_filepath
     
     # Extract the filename from the full path
     filename = os.path.basename(variables.video_filepath)
     
-    self.add_text_to_statusbar(f"Status: Video file {filename} is loaded", x=330, y=20, fill="white", font=("Arial", 9,))
+    self.add_text_to_statusbar(f"Status: Vide file {filename} is loaded", x=330, y=20, fill="white", font=("Arial", 9,))
     
     if variables.video_filepath:
         variables.file_type = 3
@@ -62,7 +36,7 @@ def open_vid_file(self):
         self.fps = int(self.cap.get(cv2.CAP_PROP_FPS))
         self.elapsed_time = 0
         self.start_time = time.time()
-        self.paused = True
+        self.paused = False
         
         self.current_frame_index = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
         
@@ -181,7 +155,6 @@ def pause_video(self):
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_frame_index)
         self.pause_button.config(text="Pause", command=lambda: pause_video(self))
         self.stop_button.config(state="normal")
-        update_video(self)
 
 def restart_video(self):
     if self.cap:

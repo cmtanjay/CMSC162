@@ -573,8 +573,6 @@ class App(tk.Tk):
         self.rightsidebar.destroy()
         self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
         self.rightsidebar.grid(row=1, column=3, sticky="nsew")
-        self.rightsidebar.grid_columnconfigure(0, minsize=125)
-        self.rightsidebar.grid_columnconfigure(1, minsize=125)
         
         self.opsbar.grid_forget()
         
