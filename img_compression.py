@@ -55,6 +55,28 @@ def huffman_coding(self):
         open_popup(original_img_size, compress_img_size)
         
         self.btn_hist.config(state="disabled")
+        
+        # Updates status
+        self.statusbar.destroy()
+        self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+        self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+        self.create_statusbar_canvas()
+        self.add_text_to_statusbar(f"Status: Image compressed through Huffman coding.", x=330, y=20, fill="white", font=("Arial", 9,))
+        
+    elif variables.file_type == 2:
+        # Updates status
+        self.statusbar.destroy()
+        self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+        self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+        self.create_statusbar_canvas()
+        self.add_text_to_statusbar(f"Status: Image compression not allowed for image sequence.", x=330, y=20, fill="white", font=("Arial", 9,))
+    else:
+        # Updates status
+        self.statusbar.destroy()
+        self.statusbar = tk.Frame(self, height=30, bg="#2F333A", borderwidth=0.5, relief="groove")
+        self.statusbar.grid(row=2, columnspan=3, sticky="ew")
+        self.create_statusbar_canvas()
+        self.add_text_to_statusbar(f"Status: Image compression not allowed for video.", x=330, y=20, fill="white", font=("Arial", 9,))
     
 # Function that pops up a window that lets the user see the previous and resulting image size and its compression rate   
 def open_popup(orig_size, compress_size):

@@ -486,7 +486,16 @@ def show_channel(self, channel, string):
         self.progress_window.update()
         
         for path in variables.image_paths:
-            extract_bmp(self, path)
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
             
             color_channel = []
             

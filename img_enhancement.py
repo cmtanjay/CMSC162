@@ -35,7 +35,16 @@ def average_filter(self):
         self.progress_window.update()
         
         for path in variables.image_paths:
-            extract_bmp(self, path)
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
             
             avg_filtered_img = average(self)[0]
             variables.img_seq.append(avg_filtered_img)
@@ -211,7 +220,16 @@ def unsharp_masking(self):
         self.progress_window.update()
         
         for path in variables.image_paths:
-            extract_bmp(self, path)
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
             
             unsharp_masked_img = unsharp(self)[0]
             variables.img_seq.append(unsharp_masked_img)
@@ -401,7 +419,16 @@ def highboost_filter(self):
         self.progress_window.update()
         
         for path in variables.image_paths:
-            extract_bmp(self, path)
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
             
             highpass_filtered_img = highboost(self)[0]
             variables.img_seq.append(highpass_filtered_img)
@@ -628,7 +655,16 @@ def median_filter(self):
         self.progress_window.update()
         
         for path in variables.image_paths:
-            extract_bmp(self, path)
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
             
             mdn_filtered_img = median(self)[0]
             variables.img_seq.append(mdn_filtered_img)
@@ -825,7 +861,16 @@ def laplacian_filter(self):
         self.progress_window.update()
         
         for path in variables.image_paths:
-            extract_bmp(self, path)
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
             
             lapla_filtered_img = laplacian(self)[0]
             variables.img_seq.append(lapla_filtered_img)
@@ -1001,7 +1046,16 @@ def gradient_filter(self):
         self.progress_window.update()
         
         for path in variables.image_paths:
-            extract_bmp(self, path)
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
             
             grdn_filtered_img = gradient(self)[0]
             variables.img_seq.append(grdn_filtered_img)

@@ -29,7 +29,16 @@ def grayscale_transform(self):
         self.progress_window.update()
         
         for path in variables.image_paths:
-            extract_bmp(self, path)
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
             # Creates the output image
             grayscale_img = Image.new('L', (variables.img_width, variables.img_height), 255)
             draw_grayscale = ImageDraw.Draw(grayscale_img)
@@ -195,7 +204,16 @@ def negative_transform(self):
         self.progress_window.update()
         
         for path in variables.image_paths:
-            extract_bmp(self, path)
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
             
             # Creates the output image
             negative_img = Image.new('L', (variables.img_width, variables.img_height), 255)
@@ -428,7 +446,16 @@ def BW_manual_thresholding(self):
         self.progress_window.update()
         
         for path in variables.image_paths:
-            extract_bmp(self, path)
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
             # Creates the output image
             BW_img = Image.new('L', (variables.img_width, variables.img_height), 255)
             draw_BW = ImageDraw.Draw(BW_img)
@@ -645,7 +672,16 @@ def Power_law_transform(self):
         self.progress_window.update()
         
         for path in variables.image_paths:
-            extract_bmp(self, path)
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
             
             # Creates the output image
             PL_img = Image.new('L', (variables.img_width, variables.img_height), 255)
