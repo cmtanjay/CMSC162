@@ -20,6 +20,11 @@ def open_zip_file(self):
         images.sort(key=natural_sort_key)
         variables.image_paths = [os.path.join(directory, item) for item in images]
         
+        # Extract the folder name from the first image path (assuming all images are in the same folder)
+        folder_name = os.path.basename(os.path.dirname(variables.image_paths[0]))
+        
+        self.add_text_to_statusbar(f"Status: Folder {folder_name} is loaded", x=200, y=20, fill="white", font=("Arial", 9,))
+        
         self.paused = True
         self.current_frame = 0
         variables.is_filtered = False

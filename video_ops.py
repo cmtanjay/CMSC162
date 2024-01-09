@@ -11,6 +11,11 @@ def open_vid_file(self):
     variables.video_filepath = askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi")])
     variables.orig_video_filepath = variables.video_filepath
     
+    # Extract the filename from the full path
+    filename = os.path.basename(variables.video_filepath)
+    
+    self.add_text_to_statusbar(f"Status: Vide file {filename} is loaded", x=330, y=20, fill="white", font=("Arial", 9,))
+    
     if variables.video_filepath:
         variables.file_type = 3
         
