@@ -49,6 +49,101 @@ def average_filter(self):
         
         self.progress_window.destroy()
         show_image(self, variables.img_seq[0], " ")
+        
+    elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        print(output_video_filepath)
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        while True:
+            status, frame = video.read() 
+            
+            print(current_frame)
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+                
+                avg_filtered_img, blur_pixels = average(self)  
+                
+                new_frame = cv2.cvtColor(np.array(avg_filtered_img), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
+        
     else:
         avg_filtered_img, blur_pixels = average(self)  
             
@@ -130,6 +225,100 @@ def unsharp_masking(self):
         
         self.progress_window.destroy()
         show_image(self, variables.img_seq[0], " ")
+    
+    elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        print(output_video_filepath)
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        while True:
+            status, frame = video.read() 
+            
+            print(current_frame)
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+                
+                unsharp_masked_img = unsharp(self)[0]
+                
+                new_frame = cv2.cvtColor(np.array(unsharp_masked_img), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
     
     else:
         unsharp_masked_img, img_result = unsharp(self)
@@ -226,6 +415,100 @@ def highboost_filter(self):
         
         self.progress_window.destroy()
         show_image(self, variables.img_seq[0], " ")
+            
+    elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        print(output_video_filepath)
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        while True:
+            status, frame = video.read() 
+            
+            print(current_frame)
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+                
+                highpass_filtered_img = highboost(self)[0]
+                
+                new_frame = cv2.cvtColor(np.array(highpass_filtered_img), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
             
     else:
         highpass_filtered_img, img_result = highboost(self)
@@ -359,6 +642,100 @@ def median_filter(self):
         
         self.progress_window.destroy()
         show_image(self, variables.img_seq[0], " ")
+        
+    elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        print(output_video_filepath)
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        while True:
+            status, frame = video.read() 
+            
+            print(current_frame)
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+                
+                mdn_filtered_img = median(self)[0]
+                
+                new_frame = cv2.cvtColor(np.array(mdn_filtered_img), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
     
     else:
         mdn_filtered_img, blur_pixels = median(self)
@@ -463,6 +840,100 @@ def laplacian_filter(self):
         self.progress_window.destroy()
         show_image(self, variables.img_seq[0], " ")
         
+    elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        print(output_video_filepath)
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        while True:
+            status, frame = video.read() 
+            
+            print(current_frame)
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+                
+                lapla_filtered_img = laplacian(self)[0]
+                
+                new_frame = cv2.cvtColor(np.array(lapla_filtered_img), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
+        
     else:
         lapla_filtered_img, mask, copy = laplacian(self)
             
@@ -544,6 +1015,100 @@ def gradient_filter(self):
         
         self.progress_window.destroy()
         show_image(self, variables.img_seq[0], " ")
+        
+    elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        print(output_video_filepath)
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        while True:
+            status, frame = video.read() 
+            
+            print(current_frame)
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+                
+                grdn_filtered_img = gradient(self)[0]
+                
+                new_frame = cv2.cvtColor(np.array(grdn_filtered_img), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
         
     else:
         grdn_filtered_img, sobel_result = gradient(self) 

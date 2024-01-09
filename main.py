@@ -15,7 +15,7 @@ from img_enhancement import *
 from img_degradation import *
 from img_restoration import *
 from img_compression import *
-from optical_flow2 import *
+from optical_flow import *
 from video_ops import *
 from img_seq_ops import *
 
@@ -532,7 +532,7 @@ class App(tk.Tk):
     def opticalFlow(self):
         self.opsbar.destroy()
         self.opsbar = tk.Frame(self, width=100, bg="#313131")
-        self.opsbar.grid(row=1, column=1, pady=(350, 180), sticky="nsew")
+        self.opsbar.grid(row=1, column=1, pady=(350, 250), sticky="nsew")
         # image_sequence = open_zip_file(self)
         # dense_optical(image_sequence)
         # Configures Run Length Encoding button
@@ -547,15 +547,15 @@ class App(tk.Tk):
         btn_dense.grid(row=0, column=0, sticky="ew", padx=5, pady=10)
         CreateToolTip(btn_dense, "Dense Optical Flow")
         
-        # Configures Huffman coding button
-        img_sparse = Image.open("assets\sparse.png")
-        img_sparse = img_sparse.resize((35,35))
-        icon_sparse = ImageTk.PhotoImage(img_sparse)
+        # # Configures Huffman coding button
+        # img_sparse = Image.open("assets\sparse.png")
+        # img_sparse = img_sparse.resize((35,35))
+        # icon_sparse = ImageTk.PhotoImage(img_sparse)
         
-        btn_sparse = tk.Button(self.opsbar, image=icon_sparse, command=lambda: sparse_optical(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
-        btn_sparse.photo = icon_sparse
-        btn_sparse.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
-        CreateToolTip(btn_sparse, "Sparse Optical Flow")
+        # btn_sparse = tk.Button(self.opsbar, image=icon_sparse, command=lambda: sparse_optical(self), background="#2B2B2B", foreground="white",relief="ridge", borderwidth=2)
+        # btn_sparse.photo = icon_sparse
+        # btn_sparse.grid(row=1, column=0, sticky="ew", padx=5, pady=10)
+        # CreateToolTip(btn_sparse, "Sparse Optical Flow")
     
     # Function that closes the image file being displayed
     # It removes all references of the image, information, and applied operations to its respective variables and widgets

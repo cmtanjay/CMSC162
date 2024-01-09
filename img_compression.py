@@ -27,32 +27,34 @@ def run_length_encode(data):
 
 # Function that starts the Run-Length Encoding process
 def run_length_coding(self):
-    encoded_data, original_img_size, compress_img_size = run_length_encode(variables.image_data)
+    if variables.file_type == 1:
+        encoded_data, original_img_size, compress_img_size = run_length_encode(variables.image_data)
 
-    # Decode and display the compressed image
-    decoded_data = decode(self, encoded_data)
-    decoded_img = Image.new('RGB', (variables.img_width, variables.img_height))
-    draw = ImageDraw.Draw(decoded_img)
-    drawImage1DArray(self,decoded_data, draw, variables.palette)
-    show_image(self, decoded_img, " ")
-    
-    # Shows the previous and resulting image size after compression and the compression rate
-    open_popup(original_img_size, compress_img_size)
+        # Decode and display the compressed image
+        decoded_data = decode(self, encoded_data)
+        decoded_img = Image.new('RGB', (variables.img_width, variables.img_height))
+        draw = ImageDraw.Draw(decoded_img)
+        drawImage1DArray(self,decoded_data, draw, variables.palette)
+        show_image(self, decoded_img, " ")
+        
+        # Shows the previous and resulting image size after compression and the compression rate
+        open_popup(original_img_size, compress_img_size)
 
 # Function that starts the Huffman coding process
 def huffman_coding(self):
-    output_compressed_path = 'huffman_compressed_image.bmp'
+    if variables.file_type == 1:
+        output_compressed_path = 'huffman_compressed_image.bmp'
 
-    # Compress image
-    huffman_tree, original_img_size, compress_img_size = compress_image(self, output_compressed_path)
-    print(f"orig: {original_img_size}, comp: {compress_img_size}")
+        # Compress image
+        huffman_tree, original_img_size, compress_img_size = compress_image(self, output_compressed_path)
+        print(f"orig: {original_img_size}, comp: {compress_img_size}")
 
-    # Decompress image
-    decompress_image(self, output_compressed_path, huffman_tree)
-    
-    open_popup(original_img_size, compress_img_size)
-    
-    self.btn_hist.config(state="disabled")
+        # Decompress image
+        decompress_image(self, output_compressed_path, huffman_tree)
+        
+        open_popup(original_img_size, compress_img_size)
+        
+        self.btn_hist.config(state="disabled")
     
 # Function that pops up a window that lets the user see the previous and resulting image size and its compression rate   
 def open_popup(orig_size, compress_size):

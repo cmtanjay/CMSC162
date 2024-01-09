@@ -73,12 +73,203 @@ def salt_and_pepper_noise(self):
         
         return salt_prob.get(), pepper_prob.get()
     
-    if not variables.pcx_image_data:
+    if not variables.pcx_image_data and variables.file_type == 1:
         print("No PCX Image Loaded Damn")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    
+    elif variables.file_type == 2:
+        variables.is_filtered = True
+        variables.img_seq = []
+        
+        Ps, Pp = open_popup()
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        for path in variables.image_paths:
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
+            
+            
+            gray = get_grayscale_img(self) # transforms image to grayscale
+            flat_gray_orig = [element for row in gray for element in row]
+            
+            # Create a blank image with a white background
+            img_SP = Image.new('L', (variables.img_width, variables.img_height), 255)
+            draw_SP = ImageDraw.Draw(img_SP)
+            
+            deg_img = []
+            row = []
+            
+            # Salt and pepper process
+            for i, color in enumerate(flat_gray_orig):
+                random = np.random.random()
+                
+                if random < Pp:
+                    row.append(0)
+                elif random > (1-Ps):
+                    row.append((2**variables.bits_per_pixel)-1)
+                else:
+                    row.append(color)
+                    
+                if len(row) == variables.img_width:
+                    deg_img.append(row)
+                    row = []
+            
+            drawImage(self, draw_SP, deg_img)
+                    
+            variables.img_seq.append(img_SP)
+            
+            value += (1/len(variables.image_paths))*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+            print(num)
+        
+        self.progress_window.destroy()
+        show_image(self, variables.img_seq[0], " ")
+        
+    elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        print(output_video_filepath)
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        
+        Ps, Pp = open_popup()
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        while True:
+            status, frame = video.read() 
+            
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+        
+                gray = get_grayscale_img(self) # transforms image to grayscale
+                flat_gray_orig = [element for row in gray for element in row]
+                
+                # Create a blank image with a white background
+                img_SP = Image.new('L', (variables.img_width, variables.img_height), 255)
+                draw_SP = ImageDraw.Draw(img_SP)
+                
+                deg_img = []
+                row = []
+                
+                # Salt and pepper process
+                for i, color in enumerate(flat_gray_orig):
+                    random = np.random.random()
+                    
+                    if random < Pp:
+                        row.append(0)
+                    elif random > (1-Ps):
+                        row.append((2**variables.bits_per_pixel)-1)
+                    else:
+                        row.append(color)
+                        
+                    if len(row) == variables.img_width:
+                        deg_img.append(row)
+                        row = []
+                
+                drawImage(self, draw_SP, deg_img)
+                
+                new_frame = cv2.cvtColor(np.array(img_SP), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
+    
     else:
         Ps, Pp = open_popup()
-        print(f"Ps: {Ps}, Pp: {Pp}")
         
         gray = get_grayscale_img(self) # transforms image to grayscale
         flat_gray_orig = [element for row in gray for element in row]
@@ -120,9 +311,191 @@ def salt_and_pepper_noise(self):
     
 # Function for applying Gaussian noise to an image
 def gaussian_noise(self):
-    if not variables.pcx_image_data:
+    if not variables.pcx_image_data and variables.file_type == 1:
         print("No PCX Image Loaded")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    
+    elif variables.file_type == 2:
+        variables.is_filtered = True
+        variables.img_seq = []
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        for path in variables.image_paths:
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
+            
+            gray = get_grayscale_img(self)  # transforms image to grayscale
+            flat_gray_orig = [element for row in gray for element in row]
+
+            avg = mean(flat_gray_orig)
+            sigma = pstdev(flat_gray_orig)
+
+            # Create a blank image with a white background
+            img_Gaussian = Image.new('L', (variables.img_width, variables.img_height), 255)
+            draw_Gaussian = ImageDraw.Draw(img_Gaussian)
+
+            corrupted_img = []
+
+            # Apply Gaussian noise to each pixel
+            for x in range(variables.img_height):
+                row = []
+                for y in range(variables.img_width):
+                    pixel_value = gray[x][y]
+                    noise = int(np.random.randn() * sigma)
+                    noisy_value = max(0, min(255, pixel_value + noise))
+                    row.append(noisy_value)
+                corrupted_img.append(row)
+
+            # Draw the corrupted image
+            drawImage(self, draw_Gaussian, corrupted_img)
+                    
+            variables.img_seq.append(img_Gaussian)
+            
+            value += (1/len(variables.image_paths))*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+            print(num)
+        
+        self.progress_window.destroy()
+        show_image(self, variables.img_seq[0], " ")
+    
+    elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        while True:
+            status, frame = video.read() 
+            
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+        
+                gray = get_grayscale_img(self)  # transforms image to grayscale
+                flat_gray_orig = [element for row in gray for element in row]
+
+                avg = mean(flat_gray_orig)
+                sigma = pstdev(flat_gray_orig)
+
+                # Create a blank image with a white background
+                img_Gaussian = Image.new('L', (variables.img_width, variables.img_height), 255)
+                draw_Gaussian = ImageDraw.Draw(img_Gaussian)
+
+                corrupted_img = []
+
+                # Apply Gaussian noise to each pixel
+                for x in range(variables.img_height):
+                    row = []
+                    for y in range(variables.img_width):
+                        pixel_value = gray[x][y]
+                        noise = int(np.random.randn() * sigma)
+                        noisy_value = max(0, min(255, pixel_value + noise))
+                        row.append(noisy_value)
+                    corrupted_img.append(row)
+
+                # Draw the corrupted image
+                drawImage(self, draw_Gaussian, corrupted_img)
+                
+                new_frame = cv2.cvtColor(np.array(img_Gaussian), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
+    
     else:
         gray = get_grayscale_img(self)  # transforms image to grayscale
         flat_gray_orig = [element for row in gray for element in row]
@@ -164,9 +537,196 @@ def gaussian_noise(self):
 
 # Function for applying Rayleigh noise to an image
 def rayleigh_noise(self):
-    if not variables.pcx_image_data:
+    if not variables.pcx_image_data and variables.file_type == 1:
         print("No PCX Image Loaded")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    
+    elif variables.file_type == 2:
+        variables.is_filtered = True
+        variables.img_seq = []
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        for path in variables.image_paths:
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
+            
+            gray = get_grayscale_img(self)  # transforms image to grayscale
+
+            # Set the scale parameter/ sigma for the Rayleigh distribution
+            scale_param = 20.0
+
+            # Create a blank image with a white background
+            img_Rayleigh = Image.new('L', (variables.img_width, variables.img_height), 255)
+            draw_Rayleigh = ImageDraw.Draw(img_Rayleigh)
+
+            corrupted_img = []
+
+            # Apply Rayleigh noise to each pixel
+            for x in range(variables.img_height):
+                row = []
+                for y in range(variables.img_width):
+                    pixel_value = gray[x][y]
+                    
+                    # Using the random module to generate Rayleigh-distributed noise
+                    noise = int(np.random.rayleigh(scale=scale_param))
+                    
+                    noisy_value = max(0, min(255, pixel_value + noise))
+                    row.append(noisy_value)
+                corrupted_img.append(row)
+
+            # Draw the corrupted image
+            drawImage(self, draw_Rayleigh, corrupted_img)
+                    
+            variables.img_seq.append(img_Rayleigh)
+            
+            value += (1/len(variables.image_paths))*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+            print(num)
+        
+        self.progress_window.destroy()
+        show_image(self, variables.img_seq[0], " ")
+    
+    elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        print(output_video_filepath)
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        while True:
+            status, frame = video.read() 
+            
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+        
+                gray = get_grayscale_img(self)  # transforms image to grayscale
+
+                # Set the scale parameter/ sigma for the Rayleigh distribution
+                scale_param = 20.0
+
+                # Create a blank image with a white background
+                img_Rayleigh = Image.new('L', (variables.img_width, variables.img_height), 255)
+                draw_Rayleigh = ImageDraw.Draw(img_Rayleigh)
+
+                corrupted_img = []
+
+                # Apply Rayleigh noise to each pixel
+                for x in range(variables.img_height):
+                    row = []
+                    for y in range(variables.img_width):
+                        pixel_value = gray[x][y]
+                        
+                        # Using the random module to generate Rayleigh-distributed noise
+                        noise = int(np.random.rayleigh(scale=scale_param))
+                        
+                        noisy_value = max(0, min(255, pixel_value + noise))
+                        row.append(noisy_value)
+                    corrupted_img.append(row)
+
+                # Draw the corrupted image
+                drawImage(self, draw_Rayleigh, corrupted_img)
+                
+                new_frame = cv2.cvtColor(np.array(img_Rayleigh), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
+    
     else:
         gray = get_grayscale_img(self)  # transforms image to grayscale
 

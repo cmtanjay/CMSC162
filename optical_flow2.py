@@ -69,68 +69,118 @@ def dense_optical(self):
 
             prvs = next
             
+        # Pass the entire sequence of processed frames to show_frame
+        show_image(self, variables.img_seq[0], " ")
+            
     elif variables.file_type == 3:
         print("dense video")
-        variables.is_filtered = True
 
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
         # Use the current working directory as the output directory
         output_directory = os.getcwd()
 
         # Join the directory and file name to get the full file path
-        output_video_filepath = os.path.join(output_directory, "output_video.avi")
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, int(video.get(cv2.CAP_PROP_FPS)), (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
 
-        # Create a VideoWriter object for the output video
-        fourcc = cv2.VideoWriter_fourcc(*"XVID")
-        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        # Read the first frame
+        status, frame1 = video.read()
+        prvs = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
+        hsv = np.zeros_like(frame1)
+        hsv[..., 1] = 255
 
-        # The video feed is read in as a VideoCapture object
-        cap = cv2.VideoCapture(variables.video_filepath)
-
-        # ret = a boolean return value from getting the frame, first_frame = the first frame in the entire video sequence
-        ret, first_frame = cap.read()
-        # Converts frame to grayscale because we only need the luminance channel for detecting edges - less computationally expensive
-        prev_gray = cv2.cvtColor(first_frame, cv2.COLOR_BGR2GRAY)
-        # Creates an image filled with zero intensities with the same dimensions as the frame
-        mask = np.zeros_like(first_frame)
-        # Sets image saturation to maximum
-        mask[..., 1] = 255
-
-        while cap.isOpened():
-            # ret = a boolean return value from getting the frame, frame = the current frame being projected in the video
-            ret, frame = cap.read()
-            if not ret:
+        exit_flag = False
+        
+        while not exit_flag:
+            status, frame2 = video.read() 
+            
+            if not status:
                 break
+            
+            next = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
 
-            # Converts each frame to grayscale - we previously only converted the first frame to grayscale
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            # Calculates dense optical flow by Farneback method
-            flow = cv2.calcOpticalFlowFarneback(prev_gray, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
-            # Computes the magnitude and angle of the 2D vectors
-            magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1])
-            # Sets image hue according to the optical flow direction
-            mask[..., 0] = angle * 180 / np.pi / 2
-            # Sets image value according to the optical flow magnitude (normalized)
-            mask[..., 2] = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX)
-            # Converts HSV to RGB (BGR) color representation
-            rgb = cv2.cvtColor(mask, cv2.COLOR_HSV2BGR)
+            # Calculate optical flow
+            flow = cv2.calcOpticalFlowFarneback(prvs, next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
 
+            # Compute magnitude and angle of 2D vectors
+            mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+
+            # Set image hue according to the optical flow direction
+            hsv[..., 0] = ang * 180 / np.pi / 2
+
+            # Set image value according to the optical flow magnitude (normalized)
+            hsv[..., 2] = cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX)
+
+            # Convert HSV to BGR color representation
+            rgb = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+            
+            
             # Write the frame to the output video
             output_video.write(rgb)
-
-            # Updates previous frame
-            prev_gray = gray
-
-        # The following frees up resources and closes all windows
-        cap.release()
-        output_video.release()
             
+            if current_frame == 0:
+                # Convert frame to RGB format
+                frame1 = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
+                
+                # Convert frame to PhotoImage
+                img = Image.fromarray(frame1)
+                
+                # Opens the image using PIL
+                label_width = self.image_label.winfo_width()
+                label_height = self.image_label.winfo_height()
+                
+                # Define the padding size
+                padding_x = 20  # Horizontal padding
+                padding_y = 50  # Vertical padding
 
-
-
-    output_video.release()
-
-    # Pass the entire sequence of processed frames to show_frame
-    show_image(self, variables.img_seq[0], " ")
+                # Calculate the available space for the image within the label
+                available_width = label_width - (2 * padding_x)
+                available_height = label_height - (2 * padding_y)
+                
+                thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                
+            value += (1/total_frames)*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+                
+            current_frame += 1
+            
+            prvs = next
+        
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
     
 def sparse_optical(self):
     print("sparse")

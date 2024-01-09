@@ -518,6 +518,7 @@ def show_channel(self, channel, string):
         show_image(self, variables.img_seq[0], " ")
         
     elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
         video = cv2.VideoCapture(variables.video_filepath) 
         
         total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
