@@ -25,6 +25,7 @@ bytesperline = 0
 paletteinfo = 0
 
 video_filepath = None
+orig_video_filepath = None
 
 file_type = None #1 for image, 2 for image sequence, 3 for video
 image_paths = None

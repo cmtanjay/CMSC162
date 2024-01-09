@@ -17,9 +17,183 @@ def maximum_filter(self):
     def get_pixel_value(neighbors):        
         return max([element for row in neighbors for element in row])
     
-    if not variables.pcx_image_data:
+    if not variables.pcx_image_data and variables.file_type == 1:
         print("No PCX Image Loaded")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+        
+    elif variables.file_type == 2:
+        variables.is_filtered = True
+        variables.img_seq = []
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        for path in variables.image_paths:
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
+            
+            # Initializes the n x n mask
+            radius = variables.n//2
+            
+            data = get_grayscale_img(self) # transforms image to grayscale
+                            
+            data_2D = [row[:] for row in data]
+            
+            padded_img = clamp_padding(radius, data) # executes clamp padding
+            
+            # Updates current pixel value with the average of the sum of it and its neighbors in an nxn mask
+            neighbors = []
+            for i in range(variables.img_height):
+                for j in range(variables.img_width):
+                    neighbors = get_neighbors(i+radius, j+radius, radius, padded_img)
+                    data_2D[i][j] = get_pixel_value(neighbors)
+            
+            # Creates the output image
+            max_filtered_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+            draw_max_filtered = ImageDraw.Draw(max_filtered_img)        
+            drawImage(self, draw_max_filtered, data_2D)
+                    
+            variables.img_seq.append(max_filtered_img)
+            
+            value += (1/len(variables.image_paths))*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+            print(num)
+        
+        self.progress_window.destroy()
+        show_image(self, variables.img_seq[0], " ")
+        
+    elif variables.file_type == 3:        
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 80, (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        while True:
+            status, frame = video.read() 
+            
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+        
+                # Initializes the n x n mask
+                radius = variables.n//2
+                
+                data = get_grayscale_img(self) # transforms image to grayscale
+                                
+                data_2D = [row[:] for row in data]
+                
+                padded_img = clamp_padding(radius, data) # executes clamp padding
+                
+                # Updates current pixel value with the average of the sum of it and its neighbors in an nxn mask
+                neighbors = []
+                for i in range(variables.img_height):
+                    for j in range(variables.img_width):
+                        neighbors = get_neighbors(i+radius, j+radius, radius, padded_img)
+                        data_2D[i][j] = get_pixel_value(neighbors)
+                
+                # Creates the output image
+                max_filtered_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+                draw_max_filtered = ImageDraw.Draw(max_filtered_img)        
+                drawImage(self, draw_max_filtered, data_2D)
+                
+                new_frame = cv2.cvtColor(np.array(max_filtered_img), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
+        
     else:
         # Initializes the n x n mask
         radius = variables.n//2
@@ -66,9 +240,186 @@ def minimum_filter(self):
     def get_pixel_value(neighbors):        
         return min([element for row in neighbors for element in row])
     
-    if not variables.pcx_image_data:
+    if not variables.pcx_image_data and variables.file_type == 1:
         print("No PCX Image Loaded")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    
+    elif variables.file_type == 2:
+        variables.is_filtered = True
+        variables.img_seq = []
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        for path in variables.image_paths:
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
+            
+            # Initializes the n x n mask
+            radius = variables.n//2
+                            
+            data = get_grayscale_img(self)
+                            
+            data_2D = [row[:] for row in data]
+            
+            padded_img = clamp_padding(radius, data) # executes clamp padding
+            
+            # Updates current pixel value with the average of the sum of it and its neighbors in an nxn mask
+            neighbors = []
+            for i in range(variables.img_height):
+                for j in range(variables.img_width):
+                    neighbors = get_neighbors(i+radius, j+radius, radius, padded_img)
+                    data_2D[i][j] = get_pixel_value(neighbors)
+            
+            # Creates the output image
+            min_filtered_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+            draw_min_filtered = ImageDraw.Draw(min_filtered_img)        
+            drawImage(self, draw_min_filtered, data_2D)
+                    
+            variables.img_seq.append(min_filtered_img)
+            
+            value += (1/len(variables.image_paths))*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+            print(num)
+        
+        self.progress_window.destroy()
+        show_image(self, variables.img_seq[0], " ")
+    
+    elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        print(output_video_filepath)
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        while True:
+            status, frame = video.read() 
+            
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+        
+                # Initializes the n x n mask
+                radius = variables.n//2
+                                
+                data = get_grayscale_img(self)
+                                
+                data_2D = [row[:] for row in data]
+                
+                padded_img = clamp_padding(radius, data) # executes clamp padding
+                
+                # Updates current pixel value with the average of the sum of it and its neighbors in an nxn mask
+                neighbors = []
+                for i in range(variables.img_height):
+                    for j in range(variables.img_width):
+                        neighbors = get_neighbors(i+radius, j+radius, radius, padded_img)
+                        data_2D[i][j] = get_pixel_value(neighbors)
+                
+                # Creates the output image
+                min_filtered_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+                draw_min_filtered = ImageDraw.Draw(min_filtered_img)        
+                drawImage(self, draw_min_filtered, data_2D)
+                
+                new_frame = cv2.cvtColor(np.array(min_filtered_img), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
+    
     else:
         # Initializes the n x n mask
         radius = variables.n//2
@@ -131,9 +482,178 @@ def geometric_filter(self):
         # epsilon = 1e-10  # Small positive constant to avoid numerical instability
         return int((final_product)**(1.0 / count))
 
-    if not variables.pcx_image_data:
+    if not variables.pcx_image_data and variables.file_type == 1:
         print("No PCX Image Loaded")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    
+    elif variables.file_type == 2:
+        variables.is_filtered = True
+        variables.img_seq = []
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        for path in variables.image_paths:
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
+            
+            # Initializes the n x n mask
+            radius = variables.n//2
+                            
+            data = get_grayscale_img(self)
+
+            data_2D = [row[:] for row in data]
+            padded_img = clamp_padding(radius, data)
+
+            for i in range(variables.img_height):
+                for j in range(variables.img_width):
+                    neighbors = get_neighbors(i + radius, j + radius, radius, padded_img)
+                    data_2D[i][j] = get_pixel_value(neighbors)
+
+            geo_filtered_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+            draw_geo_filtered = ImageDraw.Draw(geo_filtered_img)
+            drawImage(self, draw_geo_filtered, data_2D)
+                    
+            variables.img_seq.append(geo_filtered_img)
+            
+            value += (1/len(variables.image_paths))*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+            print(num)
+        
+        self.progress_window.destroy()
+        show_image(self, variables.img_seq[0], " ")
+    
+    elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath)   
+        
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        print(output_video_filepath)
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        while True:
+            status, frame = video.read() 
+            
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+        
+                # Initializes the n x n mask
+                radius = variables.n//2
+                                
+                data = get_grayscale_img(self)
+
+                data_2D = [row[:] for row in data]
+                padded_img = clamp_padding(radius, data)
+
+                for i in range(variables.img_height):
+                    for j in range(variables.img_width):
+                        neighbors = get_neighbors(i + radius, j + radius, radius, padded_img)
+                        data_2D[i][j] = get_pixel_value(neighbors)
+
+                geo_filtered_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+                draw_geo_filtered = ImageDraw.Draw(geo_filtered_img)
+                drawImage(self, draw_geo_filtered, data_2D)
+                
+                new_frame = cv2.cvtColor(np.array(geo_filtered_img), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
+    
     else:
         radius = variables.n // 2
 
@@ -226,9 +746,181 @@ def contraharmonic_filter(self):
                 
         return int(numerator // denominator) if denominator != 0 else 0
 
-    if not variables.pcx_image_data:
+    if not variables.pcx_image_data and variables.file_type == 1:
         print("No PCX Image Loaded")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    
+    elif variables.file_type == 2:
+        variables.is_filtered = True
+        variables.img_seq = []
+        
+        Q = open_popup()
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        for path in variables.image_paths:
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
+            
+            radius = variables.n // 2
+
+            data = get_grayscale_img(self)
+
+            data_2D = [row[:] for row in data]
+            padded_img = clamp_padding(radius, data)
+
+            for i in range(variables.img_height):
+                for j in range(variables.img_width):
+                    neighbors = get_neighbors(i + radius, j + radius, radius, padded_img)
+                    data_2D[i][j] = get_pixel_value(neighbors, Q)
+
+            contraharmonic_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+            draw_contraharmonic = ImageDraw.Draw(contraharmonic_img)
+            drawImage(self, draw_contraharmonic, data_2D)
+                    
+            variables.img_seq.append(contraharmonic_img)
+            
+            value += (1/len(variables.image_paths))*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+            print(num)
+        
+        self.progress_window.destroy()
+        show_image(self, variables.img_seq[0], " ")
+    
+    elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        print(output_video_filepath)
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        Q = open_popup()
+        
+        while True:
+            status, frame = video.read() 
+            
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+        
+                radius = variables.n // 2
+
+
+                data = get_grayscale_img(self)
+
+                data_2D = [row[:] for row in data]
+                padded_img = clamp_padding(radius, data)
+
+                for i in range(variables.img_height):
+                    for j in range(variables.img_width):
+                        neighbors = get_neighbors(i + radius, j + radius, radius, padded_img)
+                        data_2D[i][j] = get_pixel_value(neighbors, Q)
+
+                contraharmonic_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+                draw_contraharmonic = ImageDraw.Draw(contraharmonic_img)
+                drawImage(self, draw_contraharmonic, data_2D)
+                
+                new_frame = cv2.cvtColor(np.array(contraharmonic_img), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
+    
     else:
         Q = open_popup()
 
@@ -274,9 +966,173 @@ def midpoint_filter(self):
         max_val = np.max(neighbors)
         return int((min_val + max_val) / 2)
 
-    if not variables.pcx_image_data:
+    if not variables.pcx_image_data and variables.file_type == 1:
         print("No PCX Image Loaded")
         self.add_text_to_statusbar("Status: No PCX image loaded", x=120, y=20, fill="white", font=("Arial", 9,))
+    
+    elif variables.file_type == 2:
+        variables.is_filtered = True
+        variables.img_seq = []
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        for path in variables.image_paths:
+            if os.path.basename(path).split('.')[-1] == "bmp": # if a bmp file is opened
+                extract_bmp(self, path)
+            else: # if other image types (jpg, png, tiff, etc) are opened
+                other_image = Image.open(path)
+
+                # Convert the image to BMP format
+                bmp_image = other_image.convert('RGB')
+                variables.pcx_image_data = list(bmp_image.getdata())
+                variables.img_height = bmp_image.height
+                variables.img_width = bmp_image.width
+            
+            radius = variables.n // 2
+
+            data = get_grayscale_img(self)
+
+            data_2D = [row[:] for row in data]
+            padded_img = clamp_padding(radius, data)
+
+            for i in range(variables.img_height):
+                for j in range(variables.img_width):
+                    neighbors = get_neighbors(i + radius, j + radius, radius, padded_img)
+                    data_2D[i][j] = get_pixel_value(neighbors)
+
+            midpoint_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+            draw_midpoint = ImageDraw.Draw(midpoint_img)
+            drawImage(self, draw_midpoint, data_2D)
+                    
+            variables.img_seq.append(midpoint_img)
+            
+            value += (1/len(variables.image_paths))*100
+            self.progress_var.set(value)
+            self.progress_window.update()
+            
+            num += 1
+            print(num)
+        
+        self.progress_window.destroy()
+        show_image(self, variables.img_seq[0], " ")
+    
+    elif variables.file_type == 3:
+        variables.video_filepath = variables.orig_video_filepath
+        video = cv2.VideoCapture(variables.video_filepath) 
+        
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        variables.img_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        variables.img_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Use the current working directory as the output directory
+        output_directory = os.getcwd()
+
+        # Join the directory and file name to get the full file path
+        output_video_filepath = os.path.join(output_directory, "video_output.avi")
+        
+        output_video = cv2.VideoWriter(output_video_filepath, fourcc, 10, (variables.img_width, variables.img_height))
+        
+        # Create a progress bar window
+        self.progress_window = tk.Toplevel(self)
+        self.progress_window.title("Progress")
+
+        # Create a progress bar in the progress window
+        progress_bar = ttk.Progressbar(self.progress_window, variable=self.progress_var, maximum=100)
+        progress_bar.pack(pady=10)
+        
+        value = 0
+        num = 0
+        self.progress_var.set(value)
+        self.progress_window.update()
+        
+        current_frame = 0
+        thumbnail = None
+        
+        while True:
+            status, frame = video.read() 
+            
+            if status:
+                
+                # Convert the frame to BMP format
+                bmp_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                # Access pixel data
+                variables.pcx_image_data = list(bmp_image.getdata())
+        
+                radius = variables.n // 2
+
+                data = get_grayscale_img(self)
+
+                data_2D = [row[:] for row in data]
+                padded_img = clamp_padding(radius, data)
+
+                for i in range(variables.img_height):
+                    for j in range(variables.img_width):
+                        neighbors = get_neighbors(i + radius, j + radius, radius, padded_img)
+                        data_2D[i][j] = get_pixel_value(neighbors)
+
+                midpoint_img = Image.new('L', (variables.img_width, variables.img_height), 255)
+                draw_midpoint = ImageDraw.Draw(midpoint_img)
+                drawImage(self, draw_midpoint, data_2D)
+                
+                new_frame = cv2.cvtColor(np.array(midpoint_filter), cv2.COLOR_RGB2BGR)
+                
+                # Write the frame to the output video
+                output_video.write(new_frame)
+                
+                if current_frame == 0:
+                    # Convert frame to RGB format
+                    frame1 = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
+                    
+                    # Convert frame to PhotoImage
+                    img = Image.fromarray(frame1)
+                    
+                    # Opens the image using PIL
+                    label_width = self.image_label.winfo_width()
+                    label_height = self.image_label.winfo_height()
+                    
+                    # Define the padding size
+                    padding_x = 20  # Horizontal padding
+                    padding_y = 50  # Vertical padding
+
+                    # Calculate the available space for the image within the label
+                    available_width = label_width - (2 * padding_x)
+                    available_height = label_height - (2 * padding_y)
+                    
+                    thumbnail = img_resize_aspectRatio(self, img, available_width, available_height)
+                    
+                value += (1/total_frames)*100
+                self.progress_var.set(value)
+                self.progress_window.update()
+                
+                num += 1
+                    
+                current_frame += 1
+                    
+            else:
+                break
+            
+        self.progress_window.destroy()
+        
+        img_tk = ImageTk.PhotoImage(thumbnail)
+        # Update label with the new frame
+        self.image_label.img = img_tk
+        self.image_label.config(image=img_tk)
+        variables.video_filepath = output_video_filepath
+    
     else:
         radius = variables.n // 2
 

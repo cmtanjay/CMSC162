@@ -9,6 +9,7 @@ from variables import *
 
 def open_vid_file(self):
     variables.video_filepath = askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi")])
+    variables.orig_video_filepath = variables.video_filepath
     
     if variables.video_filepath:
         variables.file_type = 3
