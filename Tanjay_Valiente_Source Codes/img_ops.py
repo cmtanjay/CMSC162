@@ -27,32 +27,14 @@ def open_img_file(self):
     variables.palette = []
     variables.isDegraded = False
     
-    variables.img_seq = []
-    
-    variables.video_filepath = None
-    variables.orig_video_filepath = None
-
-    variables.file_type = 1
-    variables.image_paths = None
-
-    variables.is_filtered = None
-    
-    # Reverts right sidebar to its original form
-    self.rightsidebar.destroy()
-    self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
-    self.rightsidebar.grid(row=1, column=3, sticky="nsew")
-    
     if os.path.basename(filepath).split('.')[-1] == "bmp": # if a bmp file is opened
         image, bmp_info = openBMP(self,filepath)
     else: # if other image types (jpg, png, tiff, etc) are opened
         image = Image.open(filepath)
     
-    # Reverts right sidebar to its original form
     self.rightsidebar.destroy()
     self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
     self.rightsidebar.grid(row=1, column=3, sticky="nsew")
-    self.rightsidebar.grid_columnconfigure(0, minsize=125)
-    self.rightsidebar.grid_columnconfigure(1, minsize=125)
     
     # Create a progress bar window
     self.progress_window = tk.Toplevel(self)
@@ -105,7 +87,6 @@ def openBMP(self,filepath):
     colors = []
     i=0        
 
-    print(len(bitmap_data))
     while(i < len(bitmap_data)):
         colors.append((bitmap_data[i+2], bitmap_data[i+1], bitmap_data[i]))
         i += 3
@@ -239,7 +220,8 @@ def open_pcx_file(self):
     update_progress(self, 0)
     
     with open(filepath, "rb") as file:
-
+        # content = file.read()
+        # print(len(content))
         variables.orig_img = None
         variables.curr_img = None
         variables.red_channel = []
@@ -248,21 +230,6 @@ def open_pcx_file(self):
         variables.pcx_image_data = []
         variables.palette = []
         variables.isDegraded = False
-        
-        variables.img_seq = []
-        
-        variables.video_filepath = None
-        variables.orig_video_filepath = None
-
-        variables.file_type = 1 
-        variables.image_paths = None
-
-        variables.is_filtered = None
-        
-        # Reverts right sidebar to its original form
-        self.rightsidebar.destroy()
-        self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
-        self.rightsidebar.grid(row=1, column=3, sticky="nsew")
     
         # Extract the filename from the full filepath
         filename = os.path.basename(filepath)

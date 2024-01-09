@@ -14,32 +14,6 @@ def open_zip_file(self):
     directory = filedialog.askdirectory()
     
     if directory:
-        variables.orig_img = None
-        variables.curr_img = None
-        variables.red_channel = []
-        variables.green_channel = []
-        variables.blue_channel = []
-        variables.pcx_image_data = []
-        variables.palette = []
-        variables.isDegraded = False
-        
-        variables.img_seq = []
-        
-        variables.video_filepath = None
-        variables.orig_video_filepath = None
-
-        variables.file_type = None 
-        variables.image_paths = None
-
-        variables.is_filtered = None
-        
-        # Reverts right sidebar to its original form
-        self.rightsidebar.destroy()
-        self.rightsidebar = tk.Frame(self, width=250,  bg="#2B2B2B")
-        self.rightsidebar.grid(row=1, column=3, sticky="nsew")
-        self.rightsidebar.grid_columnconfigure(0, minsize=125)
-        self.rightsidebar.grid_columnconfigure(1, minsize=125)
-        
         variables.file_type = 2
         
         images = os.listdir(directory)
